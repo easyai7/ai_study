@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3주차 복습 · AI로 건강 정보 활용</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+  :root {
+    --main: #D94A4A; --main-light: #FFF0F0; --main-dark: #9A1A1A;
+    --blue: #4A90D9; --blue-light: #EBF4FF;
+    --green: #3DAF78; --green-light: #EDFAF3;
+    --sun: #F5A623; --sun-light: #FFF8EC;
+    --purple: #6B5ED4; --purple-light: #F0EEFF;
+    --bg: #F4F7FB; --card: #FFFFFF; --text: #18243A;
+    --text-mid: #4A5568; --text-soft: #8A9BB0; --border: #DDE6F2;
+    --radius: 22px; --shadow: 0 3px 16px rgba(154,26,26,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  .app-header { background:linear-gradient(140deg,#6A0A0A 0%,#D94A4A 55%,#F07070 100%); padding:32px 22px 70px; position:relative; overflow:hidden; }
+  .hd1 { position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.07); top:-70px; right:-50px; }
+  .hd2 { position:absolute; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,0.05); bottom:-40px; left:30px; }
+  .hplane { position:absolute; right:22px; top:22px; font-size:64px; opacity:0.22; }
+  .week-badge { display:inline-block; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:5px 14px; border-radius:20px; margin-bottom:10px; }
+  .header-title { color:#fff; font-size:27px; font-weight:900; line-height:1.3; margin-bottom:5px; }
+  .header-sub { color:rgba(255,255,255,0.82); font-size:14px; font-weight:500; }
+  .claude-badge { position:absolute; bottom:18px; right:18px; background:rgba(255,255,255,0.18); backdrop-filter:blur(8px); color:#fff; font-size:11px; font-weight:700; padding:5px 12px; border-radius:14px; }
+
+  .tab-nav { display:flex; background:var(--card); border-radius:var(--radius) var(--radius) 0 0; margin:-32px 10px 0; padding:6px; gap:4px; box-shadow:0 4px 20px rgba(154,26,26,0.13); position:relative; z-index:10; }
+  .tab-btn { flex:1; padding:10px 2px; border:none; background:transparent; border-radius:14px; font-family:inherit; font-size:11px; font-weight:700; color:var(--text-soft); cursor:pointer; transition:all 0.22s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tab-btn .ti { font-size:21px; }
+  .tab-btn.active { background:var(--main-light); color:var(--main-dark); }
+
+  .main { padding:14px 10px 110px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .card-title { font-size:18px; font-weight:900; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:9px; }
+  .ic { width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+
+  .explain-btn { display:flex; align-items:center; gap:10px; width:100%; padding:14px 18px; background:linear-gradient(135deg,var(--main-light),#FFE0E0); border:2px solid var(--main); border-radius:16px; cursor:pointer; font-family:inherit; margin-bottom:10px; transition:all 0.2s; text-align:left; }
+  .explain-btn:active { transform:scale(0.98); }
+  .explain-btn .btn-icon { width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 10px rgba(217,74,74,0.35); }
+  .explain-btn .btn-text { flex:1; }
+  .explain-btn .btn-title { font-size:16px; font-weight:900; color:var(--main-dark); }
+  .explain-btn .btn-sub { font-size:13px; color:var(--text-soft); margin-top:2px; }
+  .explain-btn .btn-arrow { font-size:20px; color:var(--main); }
+  .explain-btn.blue { background:linear-gradient(135deg,var(--blue-light),#D6EAFF); border-color:var(--blue); }
+  .explain-btn.blue .btn-icon { background:linear-gradient(135deg,var(--blue),#1E5FA0); }
+  .explain-btn.blue .btn-title { color:#1E5FA0; }
+  .explain-btn.blue .btn-arrow { color:var(--blue); }
+  .explain-btn.green { background:linear-gradient(135deg,var(--green-light),#D4F5E6); border-color:var(--green); }
+  .explain-btn.green .btn-icon { background:linear-gradient(135deg,var(--green),#2A8A5E); }
+  .explain-btn.green .btn-title { color:#1E6642; }
+  .explain-btn.green .btn-arrow { color:var(--green); }
+  .explain-btn.orange { background:linear-gradient(135deg,var(--sun-light),#FFE8C0); border-color:var(--sun); }
+  .explain-btn.orange .btn-icon { background:linear-gradient(135deg,var(--sun),#C07800); }
+  .explain-btn.orange .btn-title { color:#8A5500; }
+  .explain-btn.orange .btn-arrow { color:var(--sun); }
+  .explain-btn.purple { background:linear-gradient(135deg,var(--purple-light),#E4DFFF); border-color:var(--purple); }
+  .explain-btn.purple .btn-icon { background:linear-gradient(135deg,var(--purple),#4A3DAA); }
+  .explain-btn.purple .btn-title { color:#3D2E9A; }
+  .explain-btn.purple .btn-arrow { color:var(--purple); }
+
+  .ai-response { background:linear-gradient(135deg,#FFF5F5,#FFF0F0); border-radius:18px; padding:18px; margin-bottom:12px; border-left:4px solid var(--main); display:none; }
+  .ai-response.show { display:block; }
+  .ai-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .ai-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .ai-name { font-size:14px; font-weight:900; color:var(--main-dark); }
+  .ai-label { font-size:12px; color:var(--text-soft); }
+  .ai-text { font-size:16px; line-height:1.85; color:var(--text); font-weight:500; white-space:pre-wrap; }
+  .speak-controls { display:none; align-items:center; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(217,74,74,0.2); }
+  .speak-play-btn { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius:12px; background:linear-gradient(135deg,var(--main),var(--main-dark)); color:#fff; border:none; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .speak-stop-btn { display:flex; align-items:center; gap:7px; padding:10px 16px; border-radius:12px; background:#fff; color:var(--main); border:2px solid var(--main); font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+
+  .point-list { list-style:none; }
+  .point-item { display:flex; align-items:flex-start; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); font-size:16px; line-height:1.65; color:var(--text-mid); }
+  .point-item:last-child { border-bottom:none; }
+  .pdot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; flex-shrink:0; margin-top:1px; }
+
+  .warn-card { background:var(--sun-light); border-radius:16px; padding:15px 16px; margin-bottom:10px; border-left:4px solid var(--sun); display:flex; gap:12px; align-items:flex-start; }
+  .wi { font-size:22px; flex-shrink:0; }
+  .wt { font-size:15px; line-height:1.65; color:var(--text-mid); }
+  .wt strong { color:var(--text); display:block; margin-bottom:3px; }
+
+  .prompt-ex { border-radius:16px; padding:16px; margin-bottom:10px; }
+  .pe-label { font-size:11px; font-weight:700; margin-bottom:5px; letter-spacing:0.5px; }
+  .pe-text { font-size:15px; line-height:1.75; font-weight:500; padding-right:50px; }
+  .pe-tip { font-size:13px; font-weight:700; margin-top:7px; }
+
+  .score-bar { background:var(--main-light); border-radius:16px; padding:18px 20px; text-align:center; margin-bottom:14px; }
+  .sl { font-size:14px; color:var(--text-soft); margin-bottom:4px; }
+  .sn { font-size:38px; font-weight:900; color:var(--main-dark); }
+  .st { font-size:16px; color:var(--text-soft); }
+  .quiz-card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .qnum { font-size:12px; font-weight:700; color:var(--main); letter-spacing:1px; margin-bottom:8px; }
+  .qtext { font-size:17px; font-weight:700; line-height:1.5; color:var(--text); margin-bottom:14px; }
+  .qopts { display:flex; flex-direction:column; gap:8px; }
+  .qopt { padding:13px 15px; border-radius:12px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:15px; color:var(--text-mid); cursor:pointer; text-align:left; transition:all 0.18s; font-weight:500; }
+  .qopt:active { transform:scale(0.98); }
+  .qopt.correct { border-color:var(--green); background:var(--green-light); color:#1E6642; font-weight:700; }
+  .qopt.wrong { border-color:var(--main); background:var(--main-light); color:var(--main-dark); }
+  .qfb { margin-top:11px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:500; line-height:1.6; display:none; }
+  .qfb.show { display:block; }
+  .qfb.cm { background:var(--green-light); color:#2A6E4E; }
+  .qfb.wm { background:var(--main-light); color:var(--main-dark); }
+  .reset-btn { display:block; width:100%; padding:14px; background:var(--main); color:#fff; border:none; border-radius:14px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; margin-top:4px; }
+
+  .highlight-box { background:linear-gradient(135deg,var(--main),var(--main-dark)); border-radius:18px; padding:20px; margin-bottom:13px; }
+  .hl-label { color:rgba(255,255,255,0.75); font-size:13px; margin-bottom:7px; }
+  .hl-text { color:#fff; font-size:18px; font-weight:900; line-height:1.55; }
+
+  .chip { padding:10px 16px; border-radius:20px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:14px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.18s; }
+  .chip.on { border-color:var(--main); background:var(--main-light); color:var(--main-dark); font-weight:700; }
+  .chip:active { transform:scale(0.95); }
+
+  .bottom-bar { position:fixed; bottom:0; left:0; right:0; height:68px; background:#fff; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:0 20px; z-index:100; }
+  .btip { font-size:13px; color:var(--text-soft); text-align:center; line-height:1.5; }
+  .btip strong { color:var(--main-dark); }
+  .toast { position:fixed; bottom:82px; left:50%; transform:translateX(-50%) translateY(16px); background:#18243A; color:#fff; padding:11px 24px; border-radius:28px; font-size:14px; font-weight:700; opacity:0; transition:all 0.28s; pointer-events:none; z-index:999; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── 보완: 따라 읽기 강조 · 목록 이동 ── */
+.ai-text .sent { border-radius:6px; padding:1px 2px; -webkit-box-decoration-break:clone; box-decoration-break:clone; transition:background .2s; }
+.ai-text .sent.on { background:#FFE680; box-shadow:0 0 0 2px #FFE680; color:#18243A; }
+.app-header { padding-top:54px !important; }
+.ai-response { scroll-margin-top:84px; }
+.home-link { position:absolute; top:12px; left:14px; z-index:5; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:7px 13px; border-radius:14px; text-decoration:none; }
+.home-link:active { background:rgba(255,255,255,0.38); }
+
+/* 읽는 문장을 화면 맨 위로: 아래 고정 바에 가려지지 않게 여백 확보 */
+.ai-text .sent { scroll-margin-top:16px; }
+body { padding-bottom:96px; }
+body.reading { padding-bottom:78vh; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <a class="home-link" href="index.html">← 메인 화면</a>
+  <div class="hd1"></div><div class="hd2"></div>
+  <div class="hplane">💊</div>
+  <div class="week-badge">3주차 복습</div>
+  <div class="header-title">AI로 건강 정보<br>& 병원 활용</div>
+  <div class="header-sub">언제든 다시 들어요 🔁 몇 번이든 OK!</div>
+  <div class="claude-badge">✨ AI와 함께 만든 복습 앱</div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('summary',this)"><span class="ti">📖</span>핵심정리</button>
+  <button class="tab-btn" onclick="switchTab('prompts',this)"><span class="ti">💬</span>질문예시</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)"><span class="ti">✏️</span>퀴즈</button>
+  <button class="tab-btn" onclick="switchTab('helper',this)"><span class="ti">🏥</span>도우미</button>
+</div>
+
+<div class="main">
+
+  <!-- 핵심정리 -->
+  <div id="tab-summary" class="tab-panel active">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎓</div>AI 강사 설명 듣기</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:14px;">버튼을 누르면 AI 강사가 쉽고 친절하게 설명해줘요. 몇 번이든 반복해서 들을 수 있어요!</p>
+
+      <button class="explain-btn" onclick="askAI('health',this)">
+        <div class="btn-icon">💊</div>
+        <div class="btn-text"><div class="btn-title">AI한테 건강 질문을 해도 되나요?</div><div class="btn-sub">AI로 할 수 있는 건강 정보 활용법</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-health"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-health"></div><div class="speak-controls" id="speak-btn-health"><button class="speak-play-btn" onclick="replay('health')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn blue" onclick="askAI('medicine',this)">
+        <div class="btn-icon">💉</div>
+        <div class="btn-text"><div class="btn-title">약 복용법을 AI한테 물어볼 수 있나요?</div><div class="btn-sub">약 이름, 효능, 주의사항 질문법</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-medicine"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-medicine"></div><div class="speak-controls" id="speak-btn-medicine"><button class="speak-play-btn" onclick="replay('medicine')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn green" onclick="askAI('hospital',this)">
+        <div class="btn-icon">🏥</div>
+        <div class="btn-text"><div class="btn-title">병원 가기 전후 AI를 어떻게 활용하나요?</div><div class="btn-sub">진료 전 준비, 다녀온 후 이해하기</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-hospital"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-hospital"></div><div class="speak-controls" id="speak-btn-hospital"><button class="speak-play-btn" onclick="replay('hospital')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn orange" onclick="askAI('limit',this)">
+        <div class="btn-icon">⚠️</div>
+        <div class="btn-text"><div class="btn-title">AI가 틀릴 수도 있나요?</div><div class="btn-sub">AI 한계와 주의사항 꼭 기억하세요</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-limit"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-limit"></div><div class="speak-controls" id="speak-btn-limit"><button class="speak-play-btn" onclick="replay('limit')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn purple" onclick="askAI('dept',this)">
+        <div class="btn-icon">🩺</div>
+        <div class="btn-text"><div class="btn-title">어느 과를 가야 할지 AI한테 물어봐도 되나요?</div><div class="btn-sub">진료과 선택 도움받기</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-dept"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-dept"></div><div class="speak-controls" id="speak-btn-dept"><button class="speak-play-btn" onclick="replay('dept')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎯</div>오늘 핵심 4가지</div>
+      <ul class="point-list">
+        <li class="point-item"><div class="pdot" style="background:var(--main-light);color:var(--main);">1</div>약 복용법, 증상, 진료과 등을 AI에게 물어볼 수 있다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--blue-light);color:var(--blue);">2</div>병원 가기 전 준비하고, 다녀온 후 이해하는 데 AI가 도움된다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--sun-light);color:var(--sun);">3</div>AI는 의사가 아니므로 참고용으로만 활용한다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--purple-light);color:var(--purple);">4</div>주민등록번호 등 개인정보는 절대 입력하지 않는다</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--sun-light);">⚠️</div>반드시 기억하세요</div>
+      <div class="warn-card">
+        <div class="wi">🩺</div>
+        <div class="wt"><strong>AI는 의사가 아니에요</strong>AI 답변은 일반적인 정보예요. 이 증상은 위험하지 않다는 AI 말만 믿고 병원을 안 가면 위험할 수 있어요. AI는 참고용, 결정은 의사 선생님과 함께!</div>
+      </div>
+      <div class="warn-card">
+        <div class="wi">📋</div>
+        <div class="wt"><strong>AI가 틀릴 수 있어요</strong>특히 최신 약 정보나 특정 병원 정보는 다를 수 있어요. 중요한 건강 정보는 꼭 약사나 의사에게 다시 확인하세요.</div>
+      </div>
+      <div class="warn-card">
+        <div class="wi">🔒</div>
+        <div class="wt"><strong>개인정보는 조심하세요</strong>주민번호, 보험번호는 절대 입력 금지. 70대 여성인데요 정도로만 말씀하셔도 충분해요.</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="hl-label">💡 오늘의 핵심 문장</div>
+      <div class="hl-text">"AI는 든든한 건강 백과사전, 하지만 최종 판단은 의사 선생님께!"</div>
+    </div>
+  </div>
+
+  <!-- 질문예시 -->
+  <div id="tab-prompts" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--blue-light);">💊</div>약 복용법 질문</div>
+      <div style="position:relative;background:var(--blue-light);border-radius:16px;padding:16px;margin-bottom:11px;border-left:4px solid var(--blue);">
+        <div style="font-size:11px;font-weight:700;color:#1E5FA0;margin-bottom:5px;">예시 질문 1</div>
+        <div style="font-size:15px;line-height:1.75;font-weight:500;padding-right:52px;">저는 70세 여성이고 고혈압이 있어요. 아세트아미노펜 500mg을 처방받았는데 하루에 몇 번, 언제 먹어야 하나요?</div>
+        <button style="position:absolute;top:14px;right:14px;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="cp(this,'저는 70세 여성이고 고혈압이 있어요. 아세트아미노펜 500mg을 처방받았는데 하루에 몇 번, 언제 먹어야 하나요?')">복사</button>
+      </div>
+      <div style="position:relative;background:var(--blue-light);border-radius:16px;padding:16px;border-left:4px solid var(--blue);">
+        <div style="font-size:11px;font-weight:700;color:#1E5FA0;margin-bottom:5px;">예시 질문 2</div>
+        <div style="font-size:15px;line-height:1.75;font-weight:500;padding-right:52px;">혈압약인 암로디핀을 복용 중인데 함께 먹으면 안 되는 음식이나 약이 있나요? 쉽게 설명해주세요.</div>
+        <button style="position:absolute;top:14px;right:14px;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="cp(this,'혈압약인 암로디핀을 복용 중인데 함께 먹으면 안 되는 음식이나 약이 있나요? 쉽게 설명해주세요.')">복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--green-light);">🤒</div>증상 질문</div>
+      <div style="position:relative;background:var(--green-light);border-radius:16px;padding:16px;margin-bottom:11px;border-left:4px solid var(--green);">
+        <div style="font-size:11px;font-weight:700;color:#1E6642;margin-bottom:5px;">예시 질문 1</div>
+        <div style="font-size:15px;line-height:1.75;font-weight:500;padding-right:52px;">아침에 일어나면 손가락이 뻣뻣하고 1시간 정도 지나야 풀려요. 어떤 이유일 수 있나요? 어떤 과를 가면 좋을지도 알려주세요.</div>
+        <button style="position:absolute;top:14px;right:14px;background:var(--green);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="cp(this,'아침에 일어나면 손가락이 뻣뻣하고 1시간 정도 지나야 풀려요. 어떤 이유일 수 있나요? 어떤 과를 가면 좋을지도 알려주세요.')">복사</button>
+      </div>
+      <div style="position:relative;background:var(--green-light);border-radius:16px;padding:16px;border-left:4px solid var(--green);">
+        <div style="font-size:11px;font-weight:700;color:#1E6642;margin-bottom:5px;">예시 질문 2</div>
+        <div style="font-size:15px;line-height:1.75;font-weight:500;padding-right:52px;">밥을 먹고 나면 속이 더부룩하고 가스가 많이 차요. 병원 가기 전에 집에서 해볼 수 있는 방법이 있나요?</div>
+        <button style="position:absolute;top:14px;right:14px;background:var(--green);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="cp(this,'밥을 먹고 나면 속이 더부룩하고 가스가 많이 차요. 병원 가기 전에 집에서 해볼 수 있는 방법이 있나요?')">복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--sun-light);">🏥</div>병원 준비 질문</div>
+      <div style="position:relative;background:var(--sun-light);border-radius:16px;padding:16px;border-left:4px solid var(--sun);">
+        <div style="font-size:11px;font-weight:700;color:#8A5500;margin-bottom:5px;">예시 질문</div>
+        <div style="font-size:15px;line-height:1.75;font-weight:500;padding-right:52px;">내일 내과 진료를 받으러 가요. 혈압과 당뇨 관련해서 의사 선생님께 꼭 물어봐야 할 것들을 정리해주세요.</div>
+        <button style="position:absolute;top:14px;right:14px;background:var(--sun);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="cp(this,'내일 내과 진료를 받으러 가요. 혈압과 당뇨 관련해서 의사 선생님께 꼭 물어봐야 할 것들을 정리해주세요.')">복사</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퀴즈 -->
+  <div id="tab-quiz" class="tab-panel">
+    <div class="score-bar">
+      <div class="sl">현재 점수</div>
+      <div><span class="sn" id="scoreNum">0</span><span class="st"> / 5</span></div>
+    </div>
+
+    <div class="quiz-card" id="q1">
+      <div class="qnum">문제 1 / 5</div>
+      <div class="qtext">AI에게 건강 관련 질문을 할 때 올바른 태도는?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q1',this,false)">AI가 의사니까 AI 말을 완전히 믿는다</button>
+        <button class="qopt" onclick="ans('q1',this,false)">건강 질문은 AI한테 하면 안 된다</button>
+        <button class="qopt" onclick="ans('q1',this,false)">AI가 괜찮다고 하면 병원을 안 가도 된다</button>
+        <button class="qopt" onclick="ans('q1',this,true)">AI는 참고용으로 쓰고, 최종 판단은 의사 선생님과 함께 한다</button>
+      </div>
+      <div class="qfb" id="q1-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q2">
+      <div class="qnum">문제 2 / 5</div>
+      <div class="qtext">AI에게 약 정보를 물어볼 때 넣으면 좋은 내용이 아닌 것은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q2',this,true)">주민등록번호</button>
+        <button class="qopt" onclick="ans('q2',this,false)">나이와 성별</button>
+        <button class="qopt" onclick="ans('q2',this,false)">갖고 있는 병(고혈압, 당뇨 등)</button>
+        <button class="qopt" onclick="ans('q2',this,false)">복용 중인 약 이름</button>
+      </div>
+      <div class="qfb" id="q2-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q3">
+      <div class="qnum">문제 3 / 5</div>
+      <div class="qtext">병원 가기 전에 AI를 활용하는 좋은 방법은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q3',this,false)">AI한테 진단을 받아서 병원 진단 대신한다</button>
+        <button class="qopt" onclick="ans('q3',this,true)">어느 과를 가야 할지, 의사한테 뭘 물어볼지 미리 정리한다</button>
+        <button class="qopt" onclick="ans('q3',this,false)">AI가 괜찮다고 하면 병원을 안 간다</button>
+        <button class="qopt" onclick="ans('q3',this,false)">AI한테 처방전을 부탁한다</button>
+      </div>
+      <div class="qfb" id="q3-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q4">
+      <div class="qnum">문제 4 / 5</div>
+      <div class="qtext">병원 다녀온 후 AI 활용법으로 올바른 것은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q4',this,false)">처방받은 약을 AI가 추천하는 다른 약으로 바꾼다</button>
+        <button class="qopt" onclick="ans('q4',this,false)">다음 진료 날짜를 AI한테 예약해달라고 한다</button>
+        <button class="qopt" onclick="ans('q4',this,true)">의사 선생님이 한 말 중 모르는 단어를 AI에게 물어본다</button>
+        <button class="qopt" onclick="ans('q4',this,false)">AI 진단이 더 정확하니까 의사 말 대신 AI 말을 따른다</button>
+      </div>
+      <div class="qfb" id="q4-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q5">
+      <div class="qnum">문제 5 / 5</div>
+      <div class="qtext">건강 분야 AI 활용을 한 문장으로 가장 잘 표현한 것은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q5',this,false)">AI가 의사보다 낫다</button>
+        <button class="qopt" onclick="ans('q5',this,false)">건강 질문은 AI한테 하면 안 된다</button>
+        <button class="qopt" onclick="ans('q5',this,false)">AI 말만 믿으면 병원을 안 가도 된다</button>
+        <button class="qopt" onclick="ans('q5',this,true)">AI는 정보를 주고, 판단은 내가, 치료는 의사가 한다</button>
+      </div>
+      <div class="qfb" id="q5-fb"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetQuiz()">🔄 퀴즈 다시 풀기</button>
+  </div>
+
+  <!-- 도우미 -->
+  <div id="tab-helper" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🏥</div>건강 질문 도우미</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:16px;">아래에서 골라주시면 나만의 건강 질문을 만들어드려요!</p>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">어떤 질문인가요?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-htype">
+          <button class="chip" onclick="selChip('htype','약 복용법',this)">약 복용법</button>
+          <button class="chip" onclick="selChip('htype','증상 확인',this)">증상 확인</button>
+          <button class="chip" onclick="selChip('htype','진료과 선택',this)">진료과 선택</button>
+          <button class="chip" onclick="selChip('htype','집에서 관리법',this)">집에서 관리법</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">해당 사항을 골라주세요</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-hcond">
+          <button class="chip" onclick="selChip('hcond','고혈압이 있어요',this)">고혈압</button>
+          <button class="chip" onclick="selChip('hcond','당뇨가 있어요',this)">당뇨</button>
+          <button class="chip" onclick="selChip('hcond','무릎이 안 좋아요',this)">무릎 통증</button>
+          <button class="chip" onclick="selChip('hcond','허리가 아파요',this)">허리 통증</button>
+          <button class="chip" onclick="selChip('hcond','소화가 잘 안 돼요',this)">소화 불량</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">나이대</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-hage">
+          <button class="chip" onclick="selChip('hage','60대',this)">60대</button>
+          <button class="chip" onclick="selChip('hage','70대',this)">70대</button>
+          <button class="chip" onclick="selChip('hage','80대',this)">80대</button>
+        </div>
+      </div>
+
+      <button style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,var(--main),var(--main-dark));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;margin:12px 0;box-shadow:0 4px 16px rgba(217,74,74,0.32);" onclick="makeHQ()">✨ 건강 질문 만들기</button>
+
+      <div style="background:var(--main-light);border-radius:16px;padding:18px;border-left:4px solid var(--main);font-size:15px;line-height:1.8;color:var(--text);font-weight:500;min-height:80px;" id="hq-result"><span style="color:var(--text-soft);">위에서 골라주시면 건강 질문이 만들어져요 😊</span></div>
+      <button id="hq-copy-btn" style="display:none;width:100%;padding:13px;background:#fff;color:var(--main-dark);border:2px solid var(--main);border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;" onclick="copyHQ()">📋 복사해서 ChatGPT에 붙여넣기</button>
+
+      <div style="background:var(--sun-light);border-radius:14px;padding:14px;margin-top:14px;border-left:3px solid var(--sun);">
+        <div style="font-size:14px;font-weight:700;color:#8A5500;margin-bottom:4px;">꼭 기억하세요!</div>
+        <div style="font-size:14px;color:var(--text-mid);line-height:1.6;">AI 답변은 참고용이에요. 중요한 건강 결정은 반드시 의사 선생님과 함께 하세요.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="btip">버튼을 눌러 <strong>AI 강사 설명</strong>을 들어보세요 · 몇 번이든 OK! 🔁</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR'; u.rate=0.88; u.pitch=1.05; u.volume=1;
+  const ko = window.speechSynthesis.getVoices().find(v => v.lang==='ko-KR');
+  if (ko) u.voice=ko;
+  window.speechSynthesis.speak(u);
+}
+function stopSpeech() { if (window.speechSynthesis) window.speechSynthesis.cancel(); }
+if (window.speechSynthesis) { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); }; }
+function cp(btn, text) { navigator.clipboard.writeText(text).then(() => showToast('복사됐어요! ChatGPT에 붙여넣기 해보세요 😊')); }
+
+function playCorrectSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  function chime(freq, st, dur) {
+    [1,2.756,5.404].forEach((m,i) => {
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine'; o.frequency.value=freq*m;
+      const v=[0.6,0.25,0.1][i],d=dur*[1,0.6,0.3][i];
+      g.gain.setValueAtTime(0,ctx.currentTime+st);
+      g.gain.linearRampToValueAtTime(v,ctx.currentTime+st+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+st+d);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime+st);o.stop(ctx.currentTime+st+d);
+    });
+  }
+  chime(1047,0.0,1.2);chime(880,0.35,1.0);chime(784,0.70,1.4);
+}
+function playWrongSound() {
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.type='sine';o.frequency.value=220;
+  g.gain.setValueAtTime(0.4,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);
+  o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime);o.stop(ctx.currentTime+0.65);
+}
+function speakMsg(msg,pitch) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(msg);
+  u.lang='ko-KR';u.rate=0.92;u.pitch=pitch||1.1;u.volume=1;
+  const ko=window.speechSynthesis.getVoices().find(v=>v.lang==='ko-KR');
+  if(ko)u.voice=ko;
+  window.speechSynthesis.speak(u);
+}
+
+const answers = {
+  health: `AI에게 건강 관련 질문을 하셔도 돼요. 오히려 아주 유용하게 쓰실 수 있어요.
+
+약 이름과 효능, 복용 방법, 증상이 어떤 질병과 관련 있는지, 어느 병원 과를 가야 할지, 의사 선생님 말씀을 쉽게 풀어달라고 하기, 건강한 식습관이나 운동법, 검사 결과 용어 뜻풀이 같은 것들을 얼마든지 물어보실 수 있어요.
+
+예를 들어 무릎이 계단 내려올 때 아픈데, 정형외과를 가야 하나요 아니면 재활의학과를 가야 하나요 라고 물어보시면 AI가 차이점을 설명해줘요.
+
+단, 한 가지 꼭 기억하셔야 할 것이 있어요. AI는 의사가 아니에요. 참고용으로 쓰시되, 중요한 건강 결정은 반드시 의사 선생님과 함께 하셔야 해요.`,
+
+  medicine: `약 복용법도 AI에게 물어보실 수 있어요.
+
+예를 들어 이렇게 질문하시면 돼요. 저는 70세 여성이고 고혈압이 있어요. 타이레놀 500mg을 처방받았는데 하루에 몇 번, 언제 먹어야 하나요?
+
+또는 혈압약인 암로디핀을 복용 중인데 자몽주스를 마셔도 되나요? 이런 질문도 할 수 있어요.
+
+AI는 약의 일반적인 복용법과 주의사항, 함께 먹으면 안 되는 음식이나 약 등을 알려줄 수 있어요.
+
+다만 처방전 없이 약을 바꾸거나, AI가 괜찮다고 한다고 복용량을 마음대로 바꾸시면 안 돼요. 꼭 의사나 약사 선생님께 확인하세요.`,
+
+  hospital: `병원을 가기 전과 다녀온 후에 AI를 활용하시면 훨씬 편리해요.
+
+병원 가기 전에는 이렇게 쓰실 수 있어요. 어느 과를 가야 할지 모를 때 AI에게 물어보세요. 의사 선생님한테 뭘 물어볼지 미리 정리해달라고 할 수도 있어요. 증상을 정리하는 데도 도움이 돼요.
+
+병원 다녀오신 후에는 이렇게 쓰세요. 의사 선생님이 하신 말씀 중 어려운 단어가 있으면 AI에게 물어보세요. 처방받은 약의 역할과 주의사항을 확인할 수 있어요. 집에서 어떻게 관리하면 좋은지도 물어볼 수 있어요.
+
+이렇게 병원 방문 전후로 AI를 활용하시면 훨씬 알차게 진료를 받으실 수 있어요.`,
+
+  limit: `AI가 틀릴 수도 있다는 것, 꼭 알고 계셔야 해요. 이게 아주 중요해요.
+
+AI는 가끔 틀린 정보를 아주 자신 있게 말하기도 해요. 특히 최신 약 정보, 특정 병원 정보, 가장 최근에 바뀐 의료 지침 같은 것들은 틀릴 수 있어요.
+
+그래서 AI가 이 증상은 위험하지 않아요 라고 했다고 해서 병원을 안 가시면 위험할 수 있어요.
+
+AI는 건강 백과사전처럼 생각하세요. 백과사전을 읽었다고 치료가 되지는 않잖아요. 정보를 얻는 데 쓰시고, 판단과 치료는 반드시 의사 선생님께 맡기세요.
+
+중요한 약 정보나 건강 결정은 AI 답변 후에 꼭 의사나 약사 선생님께 다시 확인하세요.`,
+
+  dept: `어느 과를 가야 할지 모를 때 AI한테 물어보시면 정말 도움이 돼요.
+
+예를 들어 무릎이 계단 내려올 때 아파요. 정형외과를 가야 하나요, 재활의학과를 가야 하나요? 이렇게 물어보시면 AI가 두 과의 차이를 설명해줘요.
+
+또는 속이 자주 쓰리고 명치가 아파요. 내과를 가야 하나요, 소화기내과를 가야 하나요? 이런 것도 물어볼 수 있어요.
+
+AI가 알려준 과를 참고해서 병원 예약을 하시고, 실제 진료는 의사 선생님과 함께 하세요.
+
+자녀한테 전화해서 어느 과 가야 해? 라고 물어보기 미안하셨던 분들, 이제 AI한테 물어보세요. AI는 24시간 언제든지 친절하게 대답해줘요.`
+};
+
+function askAI(key, btn) {
+  const respDiv = document.getElementById('resp-' + key);
+  const textDiv = document.getElementById('text-' + key);
+  if (respDiv.classList.contains('show')) { respDiv.classList.remove('show'); stopSpeech(); return; }
+  stopSpeech();
+  respDiv.classList.add('show');
+  textDiv.textContent = answers[key];
+  document.getElementById('speak-btn-' + key).style.display = 'flex';
+  speak(answers[key]);
+}
+
+const scores = {};
+const fb = {
+  q1:{ c:'정답이에요! AI는 참고용이에요. 최종 판단은 항상 의사 선생님과 함께 하세요.', w:'아쉬워요! AI는 의사가 아니에요. 참고용으로만 쓰고 중요한 결정은 의사 선생님과 함께 하셔야 해요.' },
+  q2:{ c:'정답이에요! 주민등록번호는 절대 AI에게 입력하면 안 돼요. 나이와 성별, 증상 정도만으로 충분해요.', w:'아쉬워요! 주민등록번호 같은 개인정보는 절대 입력하면 안 된답니다.' },
+  q3:{ c:'정답이에요! 어느 과를 가야 할지, 의사한테 뭘 물어볼지 미리 준비하는 데 AI가 정말 도움이 돼요.', w:'아쉬워요! 병원 가기 전에는 어느 과를 가야 할지, 의사한테 뭘 물어볼지 준비하는 데 AI를 써보세요.' },
+  q4:{ c:'정답이에요! 진료 후에 어려운 의학 단어를 AI에게 물어보면 쉽게 설명해줘요. 아주 유용해요!', w:'아쉬워요! 진료 후에는 모르는 의학 단어나 처방약의 역할을 AI에게 물어보시면 도움이 돼요.' },
+  q5:{ c:'정답이에요! AI는 정보를 주고, 판단은 내가, 치료는 의사가 한다. 이 한 문장을 꼭 기억하세요!', w:'아쉬워요! AI는 정보를 주고, 판단은 내가, 치료는 의사가 한다. 이것이 핵심이에요.' }
+};
+
+function ans(qid, btn, correct) {
+  if (scores[qid] !== undefined) return;
+  scores[qid] = correct;
+  btn.parentElement.querySelectorAll('.qopt').forEach(o => o.disabled = true);
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) btn.parentElement.querySelectorAll('.qopt').forEach(o => { if (o.getAttribute('onclick').includes('true')) o.classList.add('correct'); });
+  const f = document.getElementById(qid + '-fb');
+  f.textContent = fb[qid][correct ? 'c' : 'w'];
+  f.className = 'qfb show ' + (correct ? 'cm' : 'wm');
+  document.getElementById('scoreNum').textContent = Object.values(scores).filter(v => v === true).length;
+  if (correct) { playCorrectSound(); setTimeout(() => speakMsg(fb[qid].c, 1.15), 1400); }
+  else { playWrongSound(); setTimeout(() => speakMsg(fb[qid].w, 0.95), 900); }
+}
+function resetQuiz() {
+  Object.keys(scores).forEach(k => delete scores[k]);
+  document.getElementById('scoreNum').textContent = '0';
+  ['q1','q2','q3','q4','q5'].forEach(qid => {
+    document.querySelectorAll('#' + qid + ' .qopt').forEach(o => { o.disabled = false; o.className = 'qopt'; });
+    const f = document.getElementById(qid + '-fb'); f.className = 'qfb'; f.textContent = '';
+  });
+  showToast('퀴즈가 초기화됐어요! 다시 풀어보세요 😊');
+}
+
+const chipSels = {};
+function selChip(group, value, btn) {
+  chipSels[group] = value;
+  document.getElementById('g-' + group).querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+}
+let genHQ = '';
+const htypeMap = {
+  '약 복용법': '처방받은 약을 언제, 몇 번 먹어야 하는지와 주의사항을 알려주세요.',
+  '증상 확인': '이런 증상이 나타나는데 어떤 이유일 수 있는지 쉽게 설명해주세요.',
+  '진료과 선택': '이런 증상이 있을 때 어느 과 병원을 가면 좋을지 알려주세요.',
+  '집에서 관리법': '병원 가기 전에 집에서 해볼 수 있는 방법이 있는지 알려주세요.'
+};
+function makeHQ() {
+  const { htype, hcond, hage } = chipSels;
+  if (!htype || !hcond || !hage) { showToast('모든 항목을 골라주세요! 😊'); return; }
+  genHQ = `저는 ${hage}이고 ${hcond}. ${htypeMap[htype]}`;
+  document.getElementById('hq-result').textContent = '📝 ' + genHQ;
+  document.getElementById('hq-copy-btn').style.display = 'block';
+  showToast('건강 질문이 만들어졌어요! 복사해서 ChatGPT에 붙여넣어보세요 ✨');
+}
+function copyHQ() {
+  if (!genHQ) return;
+  navigator.clipboard.writeText(genHQ).then(() => showToast('복사됐어요! ChatGPT 앱에 붙여넣기 해보세요 😊'));
+}
+</script>
+
+<script>
+/* ── 문장 단위 따라 읽기(강조) · 안전장치 ── */
+(function () {
+  var session = 0;      // 읽기 번호: 멈추거나 새로 읽으면 올라가 이전 읽기를 끝냅니다
+  var curEl = null;     // 지금 강조 중인 글 영역
+
+  function hasTTS() { return !!(window.speechSynthesis && window.SpeechSynthesisUtterance); }
+  function notice(msg) { if (typeof showToast === 'function') { showToast(msg); } }
+
+  function pickVoice() {
+    var vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    for (var i = 0; i < vs.length; i++) { if (vs[i].lang === 'ko-KR') { return vs[i]; } }
+    for (var j = 0; j < vs.length; j++) { if (/^ko/i.test(vs[j].lang)) { return vs[j]; } }
+    return null;
+  }
+
+
+  // 읽는 곳을 따라 화면이 움직입니다 (손으로 화면을 넘기는 중이면 잠시 따라가지 않습니다)
+  var lastUser = 0;
+  window.addEventListener('wheel', function () { lastUser = Date.now(); }, { passive: true });
+  window.addEventListener('touchmove', function () { lastUser = Date.now(); }, { passive: true });
+  function follow(el, force) {
+    if (!el || !el.scrollIntoView) { return; }
+    if (!force && Date.now() - lastUser < 2500) { return; }
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {}
+  }
+
+  function clearMark() {
+    if (!curEl) { return; }
+    var on = curEl.querySelectorAll('.sent.on');
+    for (var i = 0; i < on.length; i++) { on[i].classList.remove('on'); }
+  }
+
+  function cancelAll() {
+    session++;
+    document.body.classList.remove('reading');
+    clearMark();
+    curEl = null;
+    if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  }
+
+  // 글을 문장 단위로 나눕니다 (줄바꿈은 그대로 둡니다)
+  function splitParts(text) {
+    var parts = [], re = /[^.!?\n]+[.!?]*|\n+/g, m;
+    while ((m = re.exec(text)) !== null) { parts.push(m[0]); }
+    return parts;
+  }
+
+  function render(el, text) {
+    var items = [], parts = splitParts(text);
+    el.textContent = '';
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (/^\s*$/.test(p)) { el.appendChild(document.createTextNode(p)); continue; }
+      var sp = document.createElement('span');
+      sp.className = 'sent';
+      sp.textContent = p;
+      el.appendChild(sp);
+      items.push({ text: p.replace(/^\s+|\s+$/g, ''), span: sp });
+    }
+    return items;
+  }
+
+  function readList(items, my, speed) {
+    var i = 0;
+    function next() {
+      if (my !== session) { return; }
+      if (i >= items.length) { clearMark(); return; }
+      var it = items[i++];
+      clearMark();
+      if (it.span) {
+        it.span.classList.add('on');
+        follow(it.span);
+      }
+      var u = new SpeechSynthesisUtterance(it.text);
+      u.lang = 'ko-KR'; u.rate = speed || 0.88; u.pitch = 1.05; u.volume = 1;
+      var v = pickVoice(); if (v) { u.voice = v; }
+      var done = false, guard = null;
+      function go() { if (done) { return; } done = true; clearTimeout(guard); next(); }
+      u.onend = go;
+      u.onerror = function () { if (my !== session) { return; } go(); };
+      // 일부 기기는 '끝남' 신호를 안 보내서, 넉넉한 시간이 지나면 다음 문장으로 넘어갑니다
+      guard = setTimeout(go, Math.max(4000, it.text.length * 450 + 3000));
+      try { window.speechSynthesis.speak(u); } catch (e) { go(); }
+    }
+    next();
+  }
+
+  // 글 영역에 문장을 나눠 보여 주며 읽기
+  function speakInto(el, text) {
+    if (!el) { return; }
+    if (!hasTTS()) {
+      el.textContent = text;
+      notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.');
+      return;
+    }
+    cancelAll();
+    var items = render(el, text);
+    curEl = el;
+    document.body.classList.add('reading');
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  // 화면에 글이 없는 짧은 안내를 읽을 때(문장 나눔만)
+  function speakPlain(text) {
+    if (!hasTTS()) { return; }
+    cancelAll();
+    var parts = splitParts(text), items = [];
+    for (var i = 0; i < parts.length; i++) {
+      if (!/^\s*$/.test(parts[i])) { items.push({ text: parts[i].replace(/^\s+|\s+$/g, ''), span: null }); }
+    }
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  window.stopSpeech = cancelAll;
+  window.speak = speakPlain;
+
+  window.replay = function (key) {
+    var el = document.getElementById('text-' + key);
+    var base = (typeof answers !== 'undefined' && answers[key]) ? answers[key] : (el ? el.textContent : '');
+    speakInto(el, base);
+  };
+
+  window.askAI = function (key, btn) {
+    var respDiv = document.getElementById('resp-' + key);
+    var textDiv = document.getElementById('text-' + key);
+    if (!respDiv || !textDiv) { return; }
+    if (respDiv.classList.contains('show')) { respDiv.classList.remove('show'); cancelAll(); return; }
+    cancelAll();
+    respDiv.classList.add('show');
+    var sb = document.getElementById('speak-btn-' + key);
+    if (sb) { sb.style.display = 'flex'; }
+    speakInto(textDiv, answers[key]);
+  };
+
+  // 퀴즈 칭찬·안내 음성이 나올 때는 강조를 끄고, 탭을 옮기면 읽기를 멈춥니다
+  if (typeof speakMsg === 'function') {
+    var _speakMsg = speakMsg;
+    window.speakMsg = function (m, p) { session++; clearMark(); curEl = null; _speakMsg(m, p); };
+  }
+  if (typeof switchTab === 'function') {
+    var _switchTab = switchTab;
+    window.switchTab = function (n, b) { cancelAll(); _switchTab(n, b); };
+  }
+  window.addEventListener('pagehide', cancelAll);
+})();
+</script>
+
+</body>
+</html>

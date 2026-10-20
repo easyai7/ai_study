@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8주차 · 내 삶에 AI 연결하기</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --accent: #F5A623;
+  --green: #1A8A42;
+  --bg: #F0F4F8;
+  --text: #1A2A3A;
+  --w8: #0F766E;
+  --w8-dark: #064E3B;
+  --w8-light: #CCFBF1;
+  --w8-mid: #14B8A6;
+  --gold: #F59E0B;
+  --gold-light: #FEF3C7;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Noto Sans KR', sans-serif; }
+
+.slide { display:none; width:100vw; height:100vh; position:absolute; top:0; left:0; flex-direction:column; overflow:hidden; }
+.slide.active { display:flex !important; }
+
+.hdr { flex-shrink:0; height:82px; display:flex; align-items:center; padding:0 40px; gap:16px; }
+.hdr-week { background:rgba(255,255,255,0.25); color:#fff; font-size:24px; font-weight:700; padding:8px 22px; border-radius:30px; flex-shrink:0; }
+.hdr-title { color:#fff; font-size:38px; font-weight:900; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hdr-num { color:rgba(255,255,255,0.7); font-size:21px; font-weight:700; flex-shrink:0; }
+
+.body { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+
+.nav-btn { position:fixed; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.35); color:#fff; border:none; font-size:36px; width:58px; height:100px; cursor:pointer; z-index:1000; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.nav-btn:hover { background:rgba(0,0,0,0.6); }
+#btn-prev { left:0; border-radius:0 8px 8px 0; }
+#btn-next { right:0; border-radius:8px 0 0 8px; }
+.progress-bar { position:fixed; bottom:0; left:0; height:5px; background:var(--w8-mid); transition:width 0.3s; z-index:1000; }
+
+.oxrow { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.14); border-radius:13px; padding:14px 18px; flex:1; }
+.oxq { flex:1; font-size:28px; font-weight:700; color:#fff; line-height:1.4; }
+.obtn,.xbtn { flex-shrink:0; border:none; border-radius:10px; padding:14px 28px; font-size:34px; font-weight:900; cursor:pointer; font-family:inherit; }
+.obtn { background:#1A8A42; color:#fff; }
+.xbtn { background:#E84040; color:#fff; }
+.qbtn { background:rgba(255,255,255,0.15); color:#fff; border:2px solid rgba(255,255,255,0.3); border-radius:40px; padding:10px 24px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; margin:0 6px; }
+.qbtn:hover { background:rgba(255,255,255,0.25); }
+.chip { font-size:25px; font-weight:700; padding:11px 24px; border-radius:50px; cursor:grab; user-select:none; transition:all 0.15s; }
+.chip.used { opacity:0.3 !important; text-decoration:line-through !important; cursor:not-allowed !important; filter:grayscale(1); }
+.chip:hover:not(.used) { transform:scale(1.05); }
+.chip.dragging { opacity:0.4; }
+.dz { border:2.5px dashed rgba(255,255,255,0.3); border-radius:12px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; min-height:60px; padding:4px; transition:all 0.18s; }
+.dz.over  { border-color:#F5A623; background:rgba(245,166,35,0.15); }
+.dz.ok    { border-color:#22C55E; background:rgba(34,197,94,0.18); }
+.dz.fail  { border-color:#EF4444; background:rgba(239,68,68,0.18); animation:shake .35s; }
+.dzlabel  { font-size:20px; color:rgba(255,255,255,0.4); }
+.dzchip   { font-size:24px; font-weight:700; color:#fff; padding:2px 10px; border-radius:20px; text-align:center; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* 수료증 스타일 */
+.cert-outer { background:linear-gradient(135deg,#064E3B,#0F766E,#14B8A6); border-radius:28px; padding:5px; flex:1; min-height:0; overflow:hidden; }
+.cert-inner { background:#FFFDF0; border-radius:24px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px 50px; position:relative; overflow:hidden; }
+.cert-inner::before { content:'🏆'; font-size:200px; position:absolute; top:-20px; right:-20px; opacity:0.05; }
+
+/* 박수 애니메이션 */
+@keyframes clap { 0%,100%{transform:rotate(-10deg) scale(1)} 50%{transform:rotate(10deg) scale(1.15)} }
+.clap-anim { animation:clap 0.5s ease-in-out infinite; display:inline-block; }
+
+/* 별 반짝임 */
+@keyframes twinkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.star1{animation:twinkle 1.2s ease-in-out infinite;}
+.star2{animation:twinkle 1.8s ease-in-out infinite 0.3s;}
+.star3{animation:twinkle 1.5s ease-in-out infinite 0.6s;}
+
+/* ── 보완: 터치 선택 표시 · 메인 링크 · 안내 ── */
+.picked { outline:5px solid #FACC15 !important; outline-offset:3px; transform:scale(1.08); box-shadow:0 0 18px rgba(250,204,21,.7); }
+.to-main { position:fixed; left:12px; bottom:10px; z-index:1000; font-size:18px; color:#fff; background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; text-decoration:none; opacity:.55; }
+.to-main:hover { opacity:1; }
+#pick-toast { display:none; position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:2000; background:#FACC15; color:#1a1a1a; font-size:24px; font-weight:900; padding:10px 22px; border-radius:30px; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">‹</button>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">›</button>
+<div class="progress-bar" id="progress"></div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 1: 표지
+══════════════════════════════════════ -->
+<div class="slide active" id="s1" style="background:linear-gradient(135deg,#022C22 0%,#064E3B 40%,#0F766E 80%,#14B8A6 100%);justify-content:center;align-items:center;">
+  <div style="font-size:130px;position:absolute;top:20px;right:60px;opacity:0.06;">🏆</div>
+  <div style="font-size:130px;position:absolute;bottom:20px;left:60px;opacity:0.06;">🎓</div>
+  <div style="text-align:center;padding:30px 40px;position:relative;z-index:1;">
+    <div style="font-size:26px;font-weight:700;color:var(--gold);letter-spacing:3px;margin-bottom:16px;">
+      <span class="star1">⭐</span> 8주차 · 마지막 수업 <span class="star2">⭐</span>
+    </div>
+    <div style="font-size:72px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px;">
+      내 삶에 AI 연결하기
+    </div>
+    <div style="font-size:30px;color:rgba(255,255,255,0.85);margin-bottom:12px;font-weight:700;">총정리 · 발표 · 수료식</div>
+    <div style="font-size:24px;color:rgba(255,255,255,0.7);margin-bottom:44px;">8주 동안 정말 수고 많으셨어요! 🎉</div>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:16px;padding:14px 22px;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;">
+        <span style="background:var(--gold);color:#000;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;">1</span>8주 총복습
+      </div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:16px;padding:14px 22px;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;">
+        <span style="background:var(--gold);color:#000;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;">2</span>경험 발표
+      </div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:16px;padding:14px 22px;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;">
+        <span style="background:var(--gold);color:#000;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;">3</span>자가학습법
+      </div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:16px;padding:14px 22px;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px;">
+        <span style="background:var(--gold);color:#000;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;">4</span>🏆 수료식
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">1 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 2: 마음 열기
+══════════════════════════════════════ -->
+<div class="slide" id="s2" style="background:#fff;">
+  <div class="hdr" style="background:var(--w8);">
+    <span class="hdr-week">마음 열기</span>
+    <span class="hdr-title">8주 전 기억하세요? 처음 AI 켰던 그날!</span>
+    <span class="hdr-num">2 / 22</span>
+  </div>
+  <div class="body" style="padding:14px 44px 16px; gap:14px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; display:flex; gap:22px; overflow:hidden;">
+      <div style="flex:1; background:linear-gradient(135deg,#FEF2F2,#FEE2E2); border-radius:22px; padding:28px 30px; display:flex; flex-direction:column; justify-content:center; border-left:8px solid #EF4444;">
+        <div style="font-size:56px;text-align:center;margin-bottom:14px;">😰</div>
+        <div style="font-size:30px;font-weight:900;color:#991B1B;text-align:center;margin-bottom:12px;">8주 전 나</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:24px;color:#B91C1C;font-weight:600;">"AI가 뭔지 모르겠어요..."</div>
+          <div style="font-size:24px;color:#B91C1C;font-weight:600;">"스마트폰도 잘 못 쓰는데..."</div>
+          <div style="font-size:24px;color:#B91C1C;font-weight:600;">"나 같은 사람도 할 수 있을까요?"</div>
+        </div>
+      </div>
+      <div style="flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+        <div style="font-size:60px;">➡️</div>
+      </div>
+      <div style="flex:1; background:linear-gradient(135deg,#ECFDF5,#D1FAE5); border-radius:22px; padding:28px 30px; display:flex; flex-direction:column; justify-content:center; border-left:8px solid #10B981;">
+        <div style="font-size:56px;text-align:center;margin-bottom:14px;"><span class="clap-anim">👏</span></div>
+        <div style="font-size:30px;font-weight:900;color:#064E3B;text-align:center;margin-bottom:12px;">지금의 나</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:24px;color:#065F46;font-weight:600;">✅ 여행 계획 AI로 짰어요!</div>
+          <div style="font-size:24px;color:#065F46;font-weight:600;">✅ 가족한테 편지도 써줬어요!</div>
+          <div style="font-size:24px;color:#065F46;font-weight:600;">✅ 복지 혜택도 찾았어요!</div>
+        </div>
+      </div>
+    </div>
+    <div style="flex-shrink:0; background:linear-gradient(135deg,var(--w8),var(--w8-dark)); border-radius:18px; padding:20px 28px; color:#fff; text-align:center;">
+      <div style="font-size:32px;font-weight:900;">🌟 여러분은 이미 AI를 쓸 줄 아는 분들이에요! 대단해요!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 3: 8주 총복습 — 주차별 한줄 정리
+══════════════════════════════════════ -->
+<div class="slide" id="s3" style="background:#fff;">
+  <div class="hdr" style="background:var(--w8);">
+    <span class="hdr-week">총복습</span>
+    <span class="hdr-title">8주 동안 배운 것 — 핵심 한 줄 정리!</span>
+    <span class="hdr-num">3 / 22</span>
+  </div>
+  <div class="body" style="padding:12px 44px 14px; gap:8px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; display:flex; gap:10px; overflow:hidden;">
+      <div style="flex:1; display:flex; flex-direction:column; gap:7px; overflow:hidden;">
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:var(--w8-light); border-radius:14px; padding:14px 20px; border-left:8px solid var(--w8);">
+          <div style="flex-shrink:0; background:var(--w8); color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">1</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:var(--w8-dark);">AI 첫 만남</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">AI는 전기밥솥처럼 편리한 도구예요</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#FFF7ED; border-radius:14px; padding:14px 20px; border-left:8px solid var(--accent);">
+          <div style="flex-shrink:0; background:var(--accent); color:#000; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">2</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#92400E;">프롬프트 5원칙</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">말을 잘 해야 AI도 잘 도와줘요</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#F0FFF4; border-radius:14px; padding:14px 20px; border-left:8px solid #16A34A;">
+          <div style="flex-shrink:0; background:#16A34A; color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">3</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#14532D;">건강 정보 활용</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">AI는 정보, 판단은 내가, 치료는 의사가</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#EFF6FF; border-radius:14px; padding:14px 20px; border-left:8px solid #3B82F6;">
+          <div style="flex-shrink:0; background:#3B82F6; color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">4</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#1E40AF;">여행·맛집 계획</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">여행 계획은 이제 혼자서도 OK</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:7px; overflow:hidden;">
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#FDF4FF; border-radius:14px; padding:14px 20px; border-left:8px solid #A855F7;">
+          <div style="flex-shrink:0; background:#A855F7; color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">5</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#581C87;">문서·글쓰기</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">마음은 내가, 글은 AI가 써줘요</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#FEF3C7; border-radius:14px; padding:14px 20px; border-left:8px solid #D97706;">
+          <div style="flex-shrink:0; background:#D97706; color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">6</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#78350F;">이미지·영상</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">말로 설명하면 AI가 그려줘요</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:#EDE9FE; border-radius:14px; padding:14px 20px; border-left:8px solid #7C3AED;">
+          <div style="flex-shrink:0; background:#7C3AED; color:#fff; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900;">7</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:#4C1D95;">복지·생활 서비스</div>
+            <div style="font-size:26px;font-weight:700;color:var(--text);">복지 혜택도 AI가 찾아줘요</div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; align-items:center; gap:14px; background:linear-gradient(135deg,var(--w8-light),#A7F3D0); border-radius:14px; padding:14px 20px; border-left:8px solid var(--w8);">
+          <div style="flex-shrink:0; background:linear-gradient(135deg,var(--w8),var(--gold));  width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; color:#fff;">8</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;color:var(--w8-dark);">총정리·발표 (오늘!)</div>
+            <div style="font-size:26px;font-weight:900;color:var(--w8-dark);">이제 AI는 내 일상 친구예요 🎉</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 4: 퀴즈 소개
+══════════════════════════════════════ -->
+<div class="slide" id="s4" style="background:linear-gradient(135deg,#022C22,#064E3B);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:28px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎯</div>
+    <div style="font-size:68px;font-weight:900;color:#fff;margin-bottom:16px;">8주 복습 퀴즈!</div>
+    <div style="font-size:30px;color:rgba(255,255,255,0.85);margin-bottom:28px;">8주 동안 배운 것을 함께 맞춰봐요! · 총 4문제</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px 24px;color:#fff;font-size:23px;font-weight:700;">🟡 Q1 좋은 질문 만들기</div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px 24px;color:#fff;font-size:23px;font-weight:700;">🔴 Q2 절대 입력 금지</div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px 24px;color:#fff;font-size:23px;font-weight:700;">🟢 Q3 건강 정보 활용법</div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px 24px;color:#fff;font-size:23px;font-weight:700;">🔵 Q4 맛집 추천 주의사항</div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">4 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 5: 퀴즈 1 — 좋은 질문 (O/X 4개)
+══════════════════════════════════════ -->
+<div class="slide" id="s5" style="background:linear-gradient(135deg,#022C22,#064E3B);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">Q1</span>
+    <span class="hdr-title">AI에게 좋은 질문을 하는 방법은?</span>
+    <span class="hdr-num">5 / 22</span>
+  </div>
+  <div class="body" style="padding:12px 44px 12px; gap:10px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex-shrink:0; text-align:center; color:#A7F3D0; font-size:25px; font-weight:700;">맞으면 O, 틀리면 X! &nbsp; 점수: <span id="sc_q1">0</span> / 4</div>
+    <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+      <div class="oxrow" id="q1_1">
+        <div class="oxq">AI에게 "저는 65세 여성이에요. 혈압약 먹는데 복지 혜택 알려주세요"처럼 나를 소개하면 더 잘 도와줘요</div>
+        <button class="obtn" onclick="oxAns8(this,1,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,1,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q1_2">
+        <div class="oxq">AI가 마음에 안 드는 답을 하면 다시 요청하거나 더 자세히 설명해도 돼요</div>
+        <button class="obtn" onclick="oxAns8(this,1,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,1,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q1_3">
+        <div class="oxq">AI는 한 번만 물어볼 수 있어요. 두 번 물어보면 이상해해요</div>
+        <button class="obtn" onclick="oxAns8(this,1,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,1,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q1_4">
+        <div class="oxq">"표로 정리해줘", "쉽게 설명해줘"처럼 형식을 요청하면 더 보기 좋게 답해줘요</div>
+        <button class="obtn" onclick="oxAns8(this,1,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,1,4,'X')">X</button>
+      </div>
+    </div>
+    <div style="flex-shrink:0; text-align:center;">
+      <button class="qbtn" onclick="resetOX8(1)">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX8(1)">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 6: 퀴즈 2 — 절대 입력 금지 (분류)
+══════════════════════════════════════ -->
+<div class="slide" id="s6" style="background:linear-gradient(135deg,#022C22,#064E3B);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">Q2</span>
+    <span class="hdr-title">AI에 입력해도 되는 것 vs 절대 안 되는 것!</span>
+    <span class="hdr-num">6 / 22</span>
+  </div>
+  <div class="body" style="padding:10px 44px 10px; gap:9px; display:flex; flex-direction:column; overflow:hidden;">
+    <div id="wb_q2" style="flex-shrink:0; display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:64px;align-items:center;">
+      <div class="chip" draggable="true" id="q2_1" data-ans="ok" style="background:#A7F3D0;color:#022C27;">여행지 추천</div>
+      <div class="chip" draggable="true" id="q2_2" data-ans="no" style="background:#FCA5A5;color:#450A0A;">주민등록번호</div>
+      <div class="chip" draggable="true" id="q2_3" data-ans="ok" style="background:#A7F3D0;color:#022C27;">건강 궁금증</div>
+      <div class="chip" draggable="true" id="q2_4" data-ans="no" style="background:#FCA5A5;color:#450A0A;">비밀번호</div>
+      <div class="chip" draggable="true" id="q2_5" data-ans="ok" style="background:#A7F3D0;color:#022C27;">맛집 추천</div>
+      <div class="chip" draggable="true" id="q2_6" data-ans="no" style="background:#FCA5A5;color:#450A0A;">카드번호</div>
+    </div>
+    <div style="flex:1; min-height:0; display:flex; gap:16px; overflow:hidden;">
+      <div style="flex:1; display:flex; flex-direction:column; gap:9px; overflow:hidden;">
+        <div style="flex-shrink:0; background:rgba(34,197,94,0.2); border-radius:12px; padding:12px; text-align:center; font-size:28px; font-weight:900; color:#A7F3D0;">✅ AI에 입력해도 돼요</div>
+        <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:9px; overflow:hidden;">
+          <div class="dz" data-col="ok" data-q="q2"><span class="dzlabel">여기에</span></div>
+          <div class="dz" data-col="ok" data-q="q2"><span class="dzlabel">여기에</span></div>
+          <div class="dz" data-col="ok" data-q="q2" style="grid-column:span 2;"><span class="dzlabel">여기에</span></div>
+        </div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:9px; overflow:hidden;">
+        <div style="flex-shrink:0; background:rgba(239,68,68,0.2); border-radius:12px; padding:12px; text-align:center; font-size:28px; font-weight:900; color:#FCA5A5;">🚫 절대 입력 금지!</div>
+        <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:9px; overflow:hidden;">
+          <div class="dz" data-col="no" data-q="q2"><span class="dzlabel">여기에</span></div>
+          <div class="dz" data-col="no" data-q="q2"><span class="dzlabel">여기에</span></div>
+          <div class="dz" data-col="no" data-q="q2" style="grid-column:span 2;"><span class="dzlabel">여기에</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex-shrink:0; text-align:center; color:#fff; font-size:23px; font-weight:700;">
+      점수: <span id="sc_q2">0</span>/6 &nbsp;
+      <button class="qbtn" onclick="resetDrag('wb_q2','q2')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showDrag('q2')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 7: 퀴즈 3 & 4 — O/X
+══════════════════════════════════════ -->
+<div class="slide" id="s7" style="background:linear-gradient(135deg,#022C22,#064E3B);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">Q3·Q4</span>
+    <span class="hdr-title">건강 정보 & 맛집 추천 — 맞으면 O 틀리면 X!</span>
+    <span class="hdr-num">7 / 22</span>
+  </div>
+  <div class="body" style="padding:10px 44px 10px; gap:10px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex-shrink:0; text-align:center; color:#A7F3D0; font-size:25px; font-weight:700;">점수: <span id="sc_q34">0</span> / 4</div>
+    <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+      <div class="oxrow" id="q34_1">
+        <div class="oxq">🏥 AI가 건강 정보를 알려줬을 때 — 참고만 하고 중요한 결정은 의사 선생님과 함께 해야 해요</div>
+        <button class="obtn" onclick="oxAns8(this,34,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,34,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q34_2">
+        <div class="oxq">🏥 AI가 "이 증상은 큰 병이 아니에요"라고 하면 병원에 안 가도 됩니다</div>
+        <button class="obtn" onclick="oxAns8(this,34,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,34,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q34_3">
+        <div class="oxq">🍽️ AI가 맛집을 추천해줬을 때 — 네이버 지도나 카카오맵에서 한 번 더 확인하는 게 좋아요</div>
+        <button class="obtn" onclick="oxAns8(this,34,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,34,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="q34_4">
+        <div class="oxq">🍽️ AI가 추천한 맛집은 100% 최신 정보이므로 확인 없이 바로 방문해도 됩니다</div>
+        <button class="obtn" onclick="oxAns8(this,34,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns8(this,34,4,'X')">X</button>
+      </div>
+    </div>
+    <div style="flex-shrink:0; text-align:center;">
+      <button class="qbtn" onclick="resetOX8(34)">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX8(34)">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 8: 경험 발표 안내
+══════════════════════════════════════ -->
+<div class="slide" id="s8" style="background:linear-gradient(135deg,#022C22,#064E3B);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:28px;max-width:1100px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎤</div>
+    <div style="font-size:62px;font-weight:900;color:#fff;margin-bottom:16px;">AI 활용 경험 발표!</div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.85);margin-bottom:30px;">8주 동안 AI를 써본 경험을 함께 나눠봐요</div>
+    <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;">
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:16px;padding:18px 24px;color:#fff;font-size:24px;font-weight:700;text-align:left;">
+        📌 가장 도움 됐던 것은?
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:16px;padding:18px 24px;color:#fff;font-size:24px;font-weight:700;text-align:left;">
+        💡 AI로 해결한 문제는?
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:16px;padding:18px 24px;color:#fff;font-size:24px;font-weight:700;text-align:left;">
+        😊 지금 솔직한 느낌은?
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:16px;padding:18px 24px;color:#fff;font-size:24px;font-weight:700;text-align:left;">
+        🔜 앞으로 꼭 해보고 싶은 것?
+      </div>
+    </div>
+    <div style="background:rgba(245,166,35,0.2);border:3px solid rgba(245,166,35,0.5);border-radius:20px;padding:18px 30px;font-size:27px;font-weight:700;color:#FCD34D;">
+      1인당 2~3분 · 잘 못해도 괜찮아요! 경험을 나누는 자리예요 😊
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">8 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 9: 발표 중 — 경청 화면
+══════════════════════════════════════ -->
+<div class="slide" id="s9" style="background:linear-gradient(135deg,#022C22,#064E3B);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;">
+    <div style="font-size:120px;margin-bottom:20px;"><span class="clap-anim">👏</span></div>
+    <div style="font-size:54px;font-weight:900;color:#fff;margin-bottom:18px;">발표 중입니다!</div>
+    <div style="font-size:30px;color:rgba(255,255,255,0.8);margin-bottom:30px;">귀 기울여 들어주세요 🙏</div>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:50px;padding:16px 28px;color:#A7F3D0;font-size:26px;font-weight:700;">👍 따뜻한 박수로 응원해요!</div>
+      <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:50px;padding:16px 28px;color:#FCD34D;font-size:26px;font-weight:700;">😊 틀려도 괜찮아요!</div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">9 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 10: 앞으로도 혼자 배우는 법
+══════════════════════════════════════ -->
+<div class="slide" id="s10" style="background:#fff;">
+  <div class="hdr" style="background:var(--w8);">
+    <span class="hdr-week">자가학습</span>
+    <span class="hdr-title">수료 후에도 혼자서 계속 배우는 방법!</span>
+    <span class="hdr-num">10 / 22</span>
+  </div>
+  <div class="body" style="padding:14px 44px 16px; gap:12px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; display:flex; gap:16px; overflow:hidden;">
+      <div style="flex:1; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+        <div style="font-size:28px;font-weight:900;color:var(--w8-dark);flex-shrink:0;">📺 유튜브 활용</div>
+        <div style="flex:1; background:var(--w8-light); border-radius:16px; padding:18px 22px; display:flex; flex-direction:column; justify-content:space-around; overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:38px;flex-shrink:0;">🔍</span>
+            <div>
+              <div style="font-size:27px;font-weight:900;color:var(--w8-dark);">검색어 그대로 따라 해보세요</div>
+              <div style="font-size:23px;color:#065F46;margin-top:4px;">"ChatGPT 사용법 초보"</div>
+              <div style="font-size:23px;color:#065F46;">"AI 활용법 시니어"</div>
+            </div>
+          </div>
+          <div style="height:2px;background:rgba(15,118,110,0.15);"></div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:38px;flex-shrink:0;">🎬</span>
+            <div style="font-size:24px;color:var(--text);font-weight:600;line-height:1.6;">유튜브는 무료! 무서워하지 말고<br>찾아보면 수백 개 강좌가 기다려요</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+        <div style="font-size:28px;font-weight:900;color:var(--w8-dark);flex-shrink:0;">👥 커뮤니티 활용</div>
+        <div style="flex:1; background:#FFF7ED; border-radius:16px; padding:18px 22px; display:flex; flex-direction:column; justify-content:space-around; overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:38px;flex-shrink:0;">💚</span>
+            <div>
+              <div style="font-size:27px;font-weight:900;color:#92400E;">네이버 카페</div>
+              <div style="font-size:23px;color:#78350F;margin-top:4px;">"시니어 AI 활용" 검색</div>
+            </div>
+          </div>
+          <div style="height:2px;background:rgba(245,166,35,0.2);"></div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:38px;flex-shrink:0;">💬</span>
+            <div>
+              <div style="font-size:27px;font-weight:900;color:#92400E;">카카오톡 오픈채팅</div>
+              <div style="font-size:23px;color:#78350F;margin-top:4px;">"AI 배우기" 검색</div>
+            </div>
+          </div>
+          <div style="height:2px;background:rgba(245,166,35,0.2);"></div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:38px;flex-shrink:0;">📱</span>
+            <div style="font-size:24px;color:#78350F;font-weight:600;">우리 수강생 카카오톡 단체방도<br>계속 유지해요!</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:10px; overflow:hidden;">
+        <div style="font-size:28px;font-weight:900;color:var(--w8-dark);flex-shrink:0;">✅ 실천 방법</div>
+        <div style="flex:1; background:linear-gradient(135deg,var(--w8),var(--w8-dark)); border-radius:16px; padding:18px 22px; display:flex; flex-direction:column; justify-content:space-around; overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:36px;flex-shrink:0;">1️⃣</span>
+            <span style="font-size:25px;color:#fff;font-weight:700;">하루 한 번 ChatGPT에 질문하기</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:36px;flex-shrink:0;">2️⃣</span>
+            <span style="font-size:25px;color:#fff;font-weight:700;">모르는 것 생기면 바로 AI한테 물어보기</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:36px;flex-shrink:0;">3️⃣</span>
+            <span style="font-size:25px;color:#fff;font-weight:700;">새로 배운 것 가족·친구에게 알려주기</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 11: AI 활용 생활 수칙 10가지 (1~5)
+══════════════════════════════════════ -->
+<div class="slide" id="s11" style="background:#fff;">
+  <div class="hdr" style="background:var(--w8);">
+    <span class="hdr-week">생활 수칙</span>
+    <span class="hdr-title">AI 활용 생활 수칙 10가지 — 1~5번!</span>
+    <span class="hdr-num">11 / 22</span>
+  </div>
+  <div class="body" style="padding:14px 44px 16px; gap:10px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:9px; overflow:hidden;">
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:var(--w8-light); border-radius:14px; padding:16px 22px; border-left:8px solid var(--w8);">
+        <div style="flex-shrink:0; background:var(--w8); color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">1</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">모르는 것이 생기면 AI한테 먼저 물어보자 🔍</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#FEF2F2; border-radius:14px; padding:16px 22px; border-left:8px solid #EF4444;">
+        <div style="flex-shrink:0; background:#EF4444; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">2</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">주민번호·비밀번호는 절대 입력하지 말자 🚫</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#F0FFF4; border-radius:14px; padding:16px 22px; border-left:8px solid #16A34A;">
+        <div style="flex-shrink:0; background:#16A34A; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">3</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">AI 답변은 참고용, 중요한 건 전문가 확인 🏥</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#FFF7ED; border-radius:14px; padding:16px 22px; border-left:8px solid var(--accent);">
+        <div style="flex-shrink:0; background:var(--accent); color:#000; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">4</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">마음에 안 들면 다시 요청하자 🔄</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#EDE9FE; border-radius:14px; padding:16px 22px; border-left:8px solid #7C3AED;">
+        <div style="flex-shrink:0; background:#7C3AED; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">5</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">틀려도 괜찮다. AI는 기분 나빠하지 않는다 😊</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 12: AI 활용 생활 수칙 10가지 (6~10)
+══════════════════════════════════════ -->
+<div class="slide" id="s12" style="background:#fff;">
+  <div class="hdr" style="background:var(--w8);">
+    <span class="hdr-week">생활 수칙</span>
+    <span class="hdr-title">AI 활용 생활 수칙 10가지 — 6~10번!</span>
+    <span class="hdr-num">12 / 22</span>
+  </div>
+  <div class="body" style="padding:14px 44px 16px; gap:10px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:9px; overflow:hidden;">
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#FEF9C3; border-radius:14px; padding:16px 22px; border-left:8px solid #EAB308;">
+        <div style="flex-shrink:0; background:#EAB308; color:#000; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">6</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">매일 조금씩 써볼수록 실력이 쑥쑥 는다 📈</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#ECFDF5; border-radius:14px; padding:16px 22px; border-left:8px solid #10B981;">
+        <div style="flex-shrink:0; background:#10B981; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">7</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">가족·친구에게 배운 것을 알려주자 👨‍👩‍👧</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#EFF6FF; border-radius:14px; padding:16px 22px; border-left:8px solid #3B82F6;">
+        <div style="flex-shrink:0; background:#3B82F6; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">8</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">새로운 AI 앱이 나오면 두려워 말고 써보자 🚀</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:#FDF4FF; border-radius:14px; padding:16px 22px; border-left:8px solid #A855F7;">
+        <div style="flex-shrink:0; background:#A855F7; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900;">9</div>
+        <div style="font-size:30px; font-weight:700; color:var(--text);">AI가 만든 그림·글은 진짜인지 한 번 더 생각하자 🤔</div>
+      </div>
+      <div style="flex:1; display:flex; align-items:center; gap:18px; background:linear-gradient(135deg,var(--w8-light),#A7F3D0); border-radius:14px; padding:16px 22px; border-left:8px solid var(--w8);">
+        <div style="flex-shrink:0; background:linear-gradient(135deg,var(--w8),var(--gold)); width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900; color:#fff;">10</div>
+        <div style="font-size:30px; font-weight:900; color:var(--w8-dark);">AI는 내 삶을 편리하게 해주는 도구임을 기억하자 🏠</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 13: 수료식 시작 — 팡파르
+══════════════════════════════════════ -->
+<div class="slide" id="s13" style="background:linear-gradient(135deg,#022C22,#064E3B,#0F766E);align-items:center;justify-content:center;">
+  <div style="font-size:150px;position:absolute;top:10px;left:30px;opacity:0.06;">🎓</div>
+  <div style="font-size:150px;position:absolute;bottom:10px;right:30px;opacity:0.06;">🏆</div>
+  <div style="text-align:center;padding:28px;position:relative;z-index:1;">
+    <div style="font-size:24px;font-weight:700;color:var(--gold);letter-spacing:4px;margin-bottom:16px;">
+      <span class="star1">🌟</span> 수료식 <span class="star2">🌟</span>
+    </div>
+    <div style="font-size:80px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:18px;">
+      축하합니다!<br>
+      <span style="font-size:90px;"><span class="star1">🎉</span><span class="star2">🎊</span><span class="star3">🎉</span></span>
+    </div>
+    <div style="font-size:34px;color:rgba(255,255,255,0.9);font-weight:700;margin-bottom:24px;">
+      8주 동안 정말 수고 많으셨어요!
+    </div>
+    <div style="background:rgba(255,255,255,0.12);border:3px solid rgba(255,255,255,0.25);border-radius:24px;padding:22px 40px;font-size:28px;color:#fff;font-weight:600;line-height:1.8;">
+      처음에는 낯설었던 AI가<br>
+      이제는 <strong style="color:#FCD34D;">내 일상의 친구</strong>가 됐어요!
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">13 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 14: 수료증 — 샘플
+══════════════════════════════════════ -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#022C22,#064E3B);">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">수료증</span>
+    <span class="hdr-title">수료증 수여 — 한 분씩 호명합니다!</span>
+    <span class="hdr-num">14 / 22</span>
+  </div>
+  <div class="body" style="padding:14px 60px 16px; display:flex; flex-direction:column; overflow:hidden;">
+    <div class="cert-outer">
+      <div class="cert-inner">
+        <div style="font-size:22px;font-weight:700;color:var(--w8);letter-spacing:4px;margin-bottom:10px;">칠곡군 시니어 AI 교육 과정</div>
+        <div style="font-size:52px;font-weight:900;color:var(--w8-dark);margin-bottom:16px;">수 료 증</div>
+        <div style="width:80px;height:4px;background:linear-gradient(90deg,var(--w8),var(--gold));border-radius:4px;margin-bottom:22px;"></div>
+        <div style="font-size:30px;color:#444;margin-bottom:8px;">성명</div>
+        <div style="font-size:54px;font-weight:900;color:var(--w8-dark);margin-bottom:20px;letter-spacing:4px;">홍 길 동</div>
+        <div style="font-size:24px;color:#555;text-align:center;line-height:1.8;max-width:600px;">
+          위 분은 칠곡군 시니어 AI 교육 8주 과정을<br>
+          성실히 이수하였기에 이 증서를 수여합니다.
+        </div>
+        <div style="margin-top:20px;font-size:22px;color:#666;">2026년 &nbsp;&nbsp;&nbsp; 월 &nbsp;&nbsp;&nbsp; 일</div>
+        <div style="margin-top:14px;font-size:24px;font-weight:700;color:var(--w8-dark);">칠곡군수 &nbsp; <span style="font-size:30px;">🏛️</span></div>
+        <div style="position:absolute;bottom:16px;right:16px;font-size:70px;opacity:0.06;">🎓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 15~19: 소감 카드 (5장)
+══════════════════════════════════════ -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#022C22,#064E3B);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;max-width:1000px;">
+    <div style="font-size:80px;margin-bottom:20px;">😊</div>
+    <div style="font-size:46px;font-weight:900;color:#fff;margin-bottom:20px;">"처음엔 무서웠는데..."</div>
+    <div style="background:rgba(255,255,255,0.1);border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 40px;font-size:32px;color:#fff;font-weight:600;line-height:1.75;">
+      스마트폰도 잘 못 쓰던 내가<br>
+      이제는 <strong style="color:#FCD34D;">AI로 여행 계획</strong>을 짜고<br>
+      <strong style="color:#A7F3D0;">가족한테 예쁜 문자</strong>도 보내요!
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">— 수강생 소감 나누기 💬</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">15 / 22</div>
+</div>
+
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#1A0035,#2D004A);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;max-width:1000px;">
+    <div style="font-size:80px;margin-bottom:20px;">🏥</div>
+    <div style="font-size:46px;font-weight:900;color:#fff;margin-bottom:20px;">"건강 걱정될 때 AI한테 먼저 물어봐요"</div>
+    <div style="background:rgba(255,255,255,0.1);border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 40px;font-size:32px;color:#fff;font-weight:600;line-height:1.75;">
+      병원 가기 전에 <strong style="color:#FCD34D;">증상을 먼저 물어보면</strong><br>
+      의사 선생님한테 더 <strong style="color:#A7F3D0;">잘 설명할 수 있어요!</strong><br>
+      AI 덕분에 병원 진료가 편해졌어요
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">— 수강생 소감 나누기 💬</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">16 / 22</div>
+</div>
+
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#1E3A0A,#14532D);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;max-width:1000px;">
+    <div style="font-size:80px;margin-bottom:20px;">✈️</div>
+    <div style="font-size:46px;font-weight:900;color:#fff;margin-bottom:20px;">"AI가 여행 친구가 됐어요!"</div>
+    <div style="background:rgba(255,255,255,0.1);border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 40px;font-size:32px;color:#fff;font-weight:600;line-height:1.75;">
+      경주 여행 계획을 <strong style="color:#FCD34D;">AI한테 짜달라고 했더니</strong><br>
+      맛집도 알려주고 코스도 짜줬어요!<br>
+      <strong style="color:#A7F3D0;">가족들이 너무 좋아했어요 😄</strong>
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">— 수강생 소감 나누기 💬</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">17 / 22</div>
+</div>
+
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#2D1300,#78350F);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;max-width:1000px;">
+    <div style="font-size:80px;margin-bottom:20px;">💰</div>
+    <div style="font-size:46px;font-weight:900;color:#fff;margin-bottom:20px;">"복지 혜택을 AI가 찾아줬어요!"</div>
+    <div style="background:rgba(255,255,255,0.1);border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 40px;font-size:32px;color:#fff;font-weight:600;line-height:1.75;">
+      AI한테 물어봤더니 <strong style="color:#FCD34D;">몰랐던 혜택</strong>이 있었어요!<br>
+      주민센터 가서 확인했더니 <strong style="color:#A7F3D0;">진짜로 받게 됐어요!</strong><br>
+      AI 없었으면 몰랐을 거예요 😊
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">— 수강생 소감 나누기 💬</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">18 / 22</div>
+</div>
+
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#0C0032,#190061);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;max-width:1000px;">
+    <div style="font-size:80px;margin-bottom:20px;">✉️</div>
+    <div style="font-size:46px;font-weight:900;color:#fff;margin-bottom:20px;">"AI가 마음을 글로 써줬어요"</div>
+    <div style="background:rgba(255,255,255,0.1);border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:28px 40px;font-size:32px;color:#fff;font-weight:600;line-height:1.75;">
+      아들한테 하고 싶은 말을 <strong style="color:#FCD34D;">AI한테 대신 써달라고 했더니</strong><br>
+      너무 예쁜 문자가 나왔어요!<br>
+      <strong style="color:#A7F3D0;">아들이 감동받았다고 전화했어요 ❤️</strong>
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">— 수강생 소감 나누기 💬</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">19 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 20: 단체 사진 화면
+══════════════════════════════════════ -->
+<div class="slide" id="s20" style="background:linear-gradient(135deg,#022C22,#064E3B,#0F766E);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:36px;">
+    <div style="font-size:110px;margin-bottom:20px;">📸</div>
+    <div style="font-size:62px;font-weight:900;color:#fff;margin-bottom:18px;">단체 기념 사진 촬영!</div>
+    <div style="font-size:32px;color:rgba(255,255,255,0.9);margin-bottom:28px;font-weight:700;">다 함께 밝게 웃어요! 😁</div>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+      <div style="background:rgba(245,166,35,0.2);border:3px solid rgba(245,166,35,0.5);border-radius:20px;padding:18px 30px;font-size:28px;font-weight:700;color:#FCD34D;">
+        "하나, 둘, 셋 — 김치~! 🧀"
+      </div>
+    </div>
+    <div style="margin-top:24px;font-size:26px;color:rgba(255,255,255,0.7);">📱 사진 찍고 카카오톡 단체방에 공유해요!</div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">20 / 22</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 21: 강사 마지막 인사
+══════════════════════════════════════ -->
+<div class="slide" id="s21" style="background:linear-gradient(135deg,#022C22,#064E3B);">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">마지막 인사</span>
+    <span class="hdr-title">강사 마지막 인사</span>
+    <span class="hdr-num">21 / 22</span>
+  </div>
+  <div class="body" style="padding:18px 50px 20px; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="flex:1; min-height:0; background:rgba(255,255,255,0.06); border:3px solid rgba(255,255,255,0.15); border-radius:28px; padding:32px 44px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; position:relative;">
+      <div style="font-size:100px;position:absolute;top:-10px;right:20px;opacity:0.06;">💬</div>
+      <div style="font-size:32px;color:#A7F3D0;font-weight:700;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:44px;">🌿</span> 강사 인사말
+      </div>
+      <div style="font-size:29px;color:#fff;font-weight:600;line-height:1.9;">
+        "8주 동안 정말 수고 많으셨어요.<br>
+        처음에 AI가 무섭고 낯설었던 분들이 이제는<br>
+        <strong style="color:#FCD34D;">직접 여행 계획도 짜고,</strong><br>
+        <strong style="color:#A7F3D0;">가족에게 편지도 쓰고,</strong><br>
+        <strong style="color:#BAE6FD;">복지 혜택도 찾으셨잖아요.</strong><br><br>
+        여러분은 이미 <strong style="color:#FCD34D; font-size:34px;">AI를 쓸 줄 아는 분들</strong>이에요.<br>
+        앞으로도 두려워하지 마시고 조금씩 써보세요.<br>
+        <strong style="color:#A7F3D0;">AI는 언제나 기다리고 있답니다.</strong><br><br>
+        감사합니다! 🙏"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SLIDE 22: 마무리 — 끝
+══════════════════════════════════════ -->
+<div class="slide" id="s22" style="background:linear-gradient(135deg,#022C22,#064E3B,#0F766E,#14B8A6);align-items:center;justify-content:center;">
+  <div style="font-size:140px;position:absolute;top:10px;left:40px;opacity:0.05;">🌟</div>
+  <div style="font-size:140px;position:absolute;bottom:10px;right:40px;opacity:0.05;">🌟</div>
+  <div style="text-align:center;padding:32px 40px;position:relative;z-index:1;">
+    <div style="font-size:100px;margin-bottom:14px;"><span class="clap-anim">🎊</span></div>
+    <div style="font-size:72px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px;">
+      이제 AI는<br><span style="color:#FCD34D;">내 일상 친구</span>예요!
+    </div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.85);margin-bottom:32px;font-weight:600;">8주 동안 함께해 주셔서 진심으로 감사합니다 🙏</div>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;">
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:50px;padding:14px 26px;color:#fff;font-size:24px;font-weight:700;">🤖 AI는 도구</div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:50px;padding:14px 26px;color:#fff;font-size:24px;font-weight:700;">💪 쓸수록 늘어요</div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:50px;padding:14px 26px;color:#fff;font-size:24px;font-weight:700;">😊 두려워하지 마세요</div>
+      <div style="background:rgba(255,255,255,0.12);border:2px solid rgba(255,255,255,0.25);border-radius:50px;padding:14px 26px;color:#fff;font-size:24px;font-weight:700;">🌟 여러분은 이미 할 수 있어요</div>
+    </div>
+    <div style="background:rgba(245,166,35,0.2);border:3px solid rgba(245,166,35,0.5);border-radius:22px;padding:20px 36px;font-size:28px;font-weight:900;color:#FCD34D;">
+      🏆 칠곡군 시니어 AI 교육 수료를 진심으로 축하드립니다! 🏆
+    </div>
+  </div>
+  <div style="position:absolute;bottom:16px;right:22px;font-size:20px;color:rgba(255,255,255,0.35);font-weight:700;">22 / 22</div>
+</div>
+
+<script>
+// ── 슬라이드 네비게이션 ──
+const TOTAL = 22;
+let cur = 1;
+
+function showSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.getElementById('progress').style.width = (n/TOTAL*100)+'%';
+  document.getElementById('btn-prev').style.display = n===1 ? 'none':'flex';
+  document.getElementById('btn-next').style.display = n===TOTAL ? 'none':'flex';
+}
+function nextSlide(){ if(cur<TOTAL){ cur++; showSlide(cur); } }
+function prevSlide(){ if(cur>1){ cur--; showSlide(cur); } }
+
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key===' ') nextSlide();
+  if(e.key==='ArrowLeft') prevSlide();
+  if(e.key==='f'||e.key==='F') {
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+
+// ── O/X 퀴즈 — Q1 (q번호=1) ──
+const oxAnswers8 = {
+  1: { 1:'O', 2:'O', 3:'X', 4:'O' },
+  34: { 1:'O', 2:'X', 3:'O', 4:'X' }
+};
+
+function oxAns8(btn, qset, idx, chosen) {
+  const row = document.getElementById((qset===1?'q1_':'q34_')+idx);
+  if(row.dataset.done) return;
+  const correct = oxAnswers8[qset][idx];
+  const isRight = chosen === correct;
+  row.style.background = isRight ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)';
+  row.style.borderColor = isRight ? '#22C55E' : '#EF4444';
+  if(!isRight) {
+    const msg = document.createElement('div');
+    msg.style.cssText='font-size:22px;color:#FCA5A5;font-weight:700;margin-top:6px;';
+    msg.textContent = '정답: '+correct+' ✗';
+    row.appendChild(msg);
+    beep8(false);
+  } else { beep8(true); }
+  row.dataset.done = '1';
+  const sc = document.getElementById('sc_q'+qset) || document.getElementById('sc_q34');
+  const scEl = qset===1 ? document.getElementById('sc_q1') : document.getElementById('sc_q34');
+  scEl.textContent = parseInt(scEl.textContent) + (isRight?1:0);
+}
+
+function resetOX8(qset) {
+  const prefix = qset===1?'q1_':'q34_';
+  for(let i=1;i<=4;i++){
+    const row = document.getElementById(prefix+i);
+    row.style.background=''; row.style.borderColor=''; delete row.dataset.done;
+    const msgs = row.querySelectorAll('div[style*="FCA5A5"]');
+    msgs.forEach(m=>m.remove());
+  }
+  const scEl = qset===1 ? document.getElementById('sc_q1') : document.getElementById('sc_q34');
+  scEl.textContent='0';
+}
+
+function showOX8(qset) {
+  const answers = oxAnswers8[qset];
+  const prefix = qset===1?'q1_':'q34_';
+  for(let i=1;i<=4;i++){
+    const row = document.getElementById(prefix+i);
+    if(!row.dataset.done){
+      const a = answers[i];
+      row.style.background='rgba(124,58,237,0.2)';
+      row.style.borderColor='#7C3AED';
+      const msg=document.createElement('div');
+      msg.style.cssText='font-size:22px;color:#DDD6FE;font-weight:700;margin-top:6px;';
+      msg.textContent='정답: '+a;
+      row.appendChild(msg);
+      row.dataset.done='1';
+    }
+  }
+}
+
+// ── 드래그 퀴즈 — Q2 ──
+let dragEl = null;
+const dragScores = { q2: 0 };
+const dragMax = { q2: 6 };
+const dropCounts = {};
+
+function beep8(ok) {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = ok?880:220;
+    g.gain.setValueAtTime(0.18,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    o.start(); o.stop(ctx.currentTime+0.25);
+  } catch(e){}
+}
+
+document.addEventListener('dragstart', e => {
+  if(e.target.classList.contains('chip') && !e.target.classList.contains('used')) {
+    dragEl = e.target;
+    e.target.classList.add('dragging');
+  }
+});
+document.addEventListener('dragend', e => {
+  if(e.target.classList.contains('chip')) e.target.classList.remove('dragging');
+});
+
+document.addEventListener('dragover', e => {
+  const dz = e.target.closest('.dz');
+  if(dz && !dz.dataset.done) { e.preventDefault(); dz.classList.add('over'); }
+});
+document.addEventListener('dragleave', e => {
+  const dz = e.target.closest('.dz');
+  if(dz) dz.classList.remove('over');
+});
+
+document.addEventListener('drop', e => {
+  const dz = e.target.closest('.dz');
+  if(!dz || !dragEl) return;
+  e.preventDefault();
+  dz.classList.remove('over');
+  if(dz.dataset.done) return;
+
+  const qKey = dz.dataset.q;
+  const col = dz.dataset.col;
+  const ans = dragEl.dataset.ans;
+  const correct = ans === col;
+
+  dz.dataset.done = '1';
+  dragEl.classList.add('used');
+
+  const chip = document.createElement('div');
+  chip.className = 'dzchip';
+  chip.textContent = dragEl.textContent;
+  chip.style.background = correct ? '#166534' : '#7F1D1D';
+  dz.innerHTML='';
+  dz.appendChild(chip);
+  dz.classList.add(correct?'ok':'fail');
+
+  if(correct) {
+    if(!dragScores[qKey]) dragScores[qKey]=0;
+    dragScores[qKey]++;
+    const scEl = document.getElementById('sc_'+qKey);
+    if(scEl) scEl.textContent = dragScores[qKey];
+    beep8(true);
+  } else {
+    beep8(false);
+    setTimeout(()=>{
+      dz.classList.remove('fail');
+      dz.classList.remove('ok');
+      dz.innerHTML='<span class="dzlabel">여기에</span>';
+      delete dz.dataset.done;
+      dragEl.classList.remove('used');
+    },700);
+  }
+});
+
+function resetDrag(wbId, qKey) {
+  const wb = document.getElementById(wbId);
+  wb.querySelectorAll('.chip').forEach(c=>c.classList.remove('used'));
+  document.querySelectorAll('.dz[data-q="'+qKey+'"]').forEach(dz=>{
+    dz.innerHTML='<span class="dzlabel">여기에</span>';
+    delete dz.dataset.done;
+    dz.className='dz';
+  });
+  dragScores[qKey]=0;
+  const scEl=document.getElementById('sc_'+qKey);
+  if(scEl) scEl.textContent='0';
+}
+
+function showDrag(qKey) {
+  document.querySelectorAll('.dz[data-q="'+qKey+'"]').forEach(dz=>{
+    if(!dz.dataset.done) {
+      dz.style.background='rgba(124,58,237,0.2)';
+      dz.style.borderColor='#7C3AED';
+    }
+  });
+  document.querySelectorAll('.chip[data-ans]').forEach(chip=>{
+    chip.classList.remove('used');
+  });
+}
+
+// 초기화
+showSlide(1);
+</script>
+
+<a class="to-main" href="index.html">☰ 메인</a>
+<div id="pick-toast"></div>
+<script>
+/* ── 보완 1: 터치·클릭으로도 '낱말 끌어다 놓기' (낱말을 누르고 → 놓을 칸을 누르세요) ── */
+(function () {
+  var picked = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('pick-toast');
+    if (!t) { return; }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function fire(el, type) { el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); }
+  function clearPick() { if (picked) { picked.classList.remove('picked'); picked = null; } }
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('[draggable="true"]') : null;
+    if (chip) {
+      if (chip.classList.contains('used') || chip.style.display === 'none') { return; }
+      if (picked === chip) { clearPick(); return; }
+      clearPick(); picked = chip; chip.classList.add('picked');
+      toast('이제 놓을 칸을 눌러 주세요 👇');
+      return;
+    }
+    var dz = e.target.closest ? e.target.closest('.dz') : null;
+    if (dz && picked) {
+      var c = picked; clearPick();
+      fire(c, 'dragstart'); fire(dz, 'dragover'); fire(dz, 'drop'); fire(c, 'dragend');
+      setTimeout(function () { c.classList.remove('dragging'); }, 40);
+    }
+  });
+})();
+
+/* ── 보완 2: 화면이 작아 글이 잘리면 그 슬라이드만 자동으로 줄여서 맞춥니다 ── */
+(function () {
+  function overflowed(sl) {
+    var els = sl.querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.clientHeight > 0 && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+        var cs = window.getComputedStyle(el);
+        if (/(hidden|auto|scroll)/.test(cs.overflow + cs.overflowX + cs.overflowY)) { return true; }
+      }
+    }
+    return (sl.scrollHeight > sl.clientHeight + 2) || (sl.scrollWidth > sl.clientWidth + 2);
+  }
+  function fit(sl) {
+    if (!sl || !('zoom' in document.documentElement.style)) { return; }
+    try {
+      sl.style.zoom = ''; sl.style.width = ''; sl.style.height = '';
+      var s = 1, n = 0;
+      while (overflowed(sl) && n < 10 && s > 0.6) {
+        s = s * 0.94; n++;
+        sl.style.zoom = s; sl.style.width = (100 / s) + 'vw'; sl.style.height = (100 / s) + 'vh';
+      }
+    } catch (e) {}
+  }
+  function fitActive() { fit(document.querySelector('.slide.active')); }
+  window.__fitActive = fitActive;
+  ['go', 'showSlide'].forEach(function (name) {
+    if (typeof window[name] === 'function') {
+      var orig = window[name];
+      window[name] = function () { var r = orig.apply(this, arguments); fitActive(); return r; };
+    }
+  });
+  window.addEventListener('resize', fitActive);
+  window.addEventListener('load', function () { setTimeout(fitActive, 150); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitActive); }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2주차 복습 · 말 잘 하면 AI도 잘 답한다</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+  :root {
+    --main: #E07B3A; --main-light: #FFF3EB; --main-dark: #A04A10;
+    --blue: #4A90D9; --blue-light: #EBF4FF;
+    --green: #3DAF78; --green-light: #EDFAF3;
+    --coral: #E05A3A; --coral-light: #FFF0ED;
+    --purple: #6B5ED4; --purple-light: #F0EEFF;
+    --bg: #F4F7FB; --card: #FFFFFF; --text: #18243A;
+    --text-mid: #4A5568; --text-soft: #8A9BB0; --border: #DDE6F2;
+    --radius: 22px; --shadow: 0 3px 16px rgba(160,74,16,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  .app-header { background:linear-gradient(140deg,#7A2E08 0%,#E07B3A 55%,#F0A060 100%); padding:32px 22px 70px; position:relative; overflow:hidden; }
+  .hd1 { position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.07); top:-70px; right:-50px; }
+  .hd2 { position:absolute; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,0.05); bottom:-40px; left:30px; }
+  .hplane { position:absolute; right:22px; top:22px; font-size:64px; opacity:0.22; }
+  .week-badge { display:inline-block; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:5px 14px; border-radius:20px; margin-bottom:10px; }
+  .header-title { color:#fff; font-size:27px; font-weight:900; line-height:1.3; margin-bottom:5px; }
+  .header-sub { color:rgba(255,255,255,0.82); font-size:14px; font-weight:500; }
+  .claude-badge { position:absolute; bottom:18px; right:18px; background:rgba(255,255,255,0.18); backdrop-filter:blur(8px); color:#fff; font-size:11px; font-weight:700; padding:5px 12px; border-radius:14px; }
+
+  .tab-nav { display:flex; background:var(--card); border-radius:var(--radius) var(--radius) 0 0; margin:-32px 10px 0; padding:6px; gap:4px; box-shadow:0 4px 20px rgba(160,74,16,0.13); position:relative; z-index:10; }
+  .tab-btn { flex:1; padding:10px 2px; border:none; background:transparent; border-radius:14px; font-family:inherit; font-size:11px; font-weight:700; color:var(--text-soft); cursor:pointer; transition:all 0.22s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tab-btn .ti { font-size:21px; }
+  .tab-btn.active { background:var(--main-light); color:var(--main-dark); }
+
+  .main { padding:14px 10px 110px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .card-title { font-size:18px; font-weight:900; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:9px; }
+  .ic { width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+
+  .explain-btn { display:flex; align-items:center; gap:10px; width:100%; padding:14px 18px; background:linear-gradient(135deg,var(--main-light),#FFE5D0); border:2px solid var(--main); border-radius:16px; cursor:pointer; font-family:inherit; margin-bottom:10px; transition:all 0.2s; text-align:left; }
+  .explain-btn:active { transform:scale(0.98); }
+  .explain-btn .btn-icon { width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 10px rgba(224,123,58,0.35); }
+  .explain-btn .btn-text { flex:1; }
+  .explain-btn .btn-title { font-size:16px; font-weight:900; color:var(--main-dark); }
+  .explain-btn .btn-sub { font-size:13px; color:var(--text-soft); margin-top:2px; }
+  .explain-btn .btn-arrow { font-size:20px; color:var(--main); }
+  .explain-btn.blue { background:linear-gradient(135deg,var(--blue-light),#D6EAFF); border-color:var(--blue); }
+  .explain-btn.blue .btn-icon { background:linear-gradient(135deg,var(--blue),#1E5FA0); }
+  .explain-btn.blue .btn-title { color:#1E5FA0; }
+  .explain-btn.blue .btn-arrow { color:var(--blue); }
+  .explain-btn.green { background:linear-gradient(135deg,var(--green-light),#D4F5E6); border-color:var(--green); }
+  .explain-btn.green .btn-icon { background:linear-gradient(135deg,var(--green),#2A8A5E); }
+  .explain-btn.green .btn-title { color:#1E6642; }
+  .explain-btn.green .btn-arrow { color:var(--green); }
+  .explain-btn.purple { background:linear-gradient(135deg,var(--purple-light),#E4DFFF); border-color:var(--purple); }
+  .explain-btn.purple .btn-icon { background:linear-gradient(135deg,var(--purple),#4A3DAA); }
+  .explain-btn.purple .btn-title { color:#3D2E9A; }
+  .explain-btn.purple .btn-arrow { color:var(--purple); }
+  .explain-btn.coral { background:linear-gradient(135deg,var(--coral-light),#FFE0D8); border-color:var(--coral); }
+  .explain-btn.coral .btn-icon { background:linear-gradient(135deg,var(--coral),#A03020); }
+  .explain-btn.coral .btn-title { color:#8A2010; }
+  .explain-btn.coral .btn-arrow { color:var(--coral); }
+
+  .ai-response { background:linear-gradient(135deg,#FFF8F2,#FFF3EB); border-radius:18px; padding:18px; margin-bottom:12px; border-left:4px solid var(--main); display:none; }
+  .ai-response.show { display:block; }
+  .ai-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .ai-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .ai-name { font-size:14px; font-weight:900; color:var(--main-dark); }
+  .ai-label { font-size:12px; color:var(--text-soft); }
+  .ai-text { font-size:16px; line-height:1.85; color:var(--text); font-weight:500; white-space:pre-wrap; }
+  .speak-controls { display:none; align-items:center; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(224,123,58,0.2); }
+  .speak-play-btn { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius:12px; background:linear-gradient(135deg,var(--main),var(--main-dark)); color:#fff; border:none; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .speak-stop-btn { display:flex; align-items:center; gap:7px; padding:10px 16px; border-radius:12px; background:#fff; color:var(--coral); border:2px solid var(--coral); font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+
+  .point-list { list-style:none; }
+  .point-item { display:flex; align-items:flex-start; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); font-size:16px; line-height:1.65; color:var(--text-mid); }
+  .point-item:last-child { border-bottom:none; }
+  .pdot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; flex-shrink:0; margin-top:1px; }
+
+  .principle-card { border-radius:16px; padding:16px; margin-bottom:10px; }
+  .pc-num { font-size:13px; font-weight:900; margin-bottom:4px; }
+  .pc-title { font-size:17px; font-weight:900; margin-bottom:6px; }
+  .pc-bad { font-size:14px; color:var(--coral); margin-bottom:3px; }
+  .pc-good { font-size:14px; color:#1E6642; font-weight:700; }
+
+  .compare-row { display:flex; gap:8px; margin-bottom:10px; }
+  .compare-box { flex:1; border-radius:14px; padding:13px 12px; }
+  .compare-box .cb-label { font-size:11px; font-weight:700; margin-bottom:5px; }
+  .compare-box .cb-text { font-size:14px; line-height:1.6; font-weight:500; }
+
+  .score-bar { background:var(--main-light); border-radius:16px; padding:18px 20px; text-align:center; margin-bottom:14px; }
+  .sl { font-size:14px; color:var(--text-soft); margin-bottom:4px; }
+  .sn { font-size:38px; font-weight:900; color:var(--main-dark); }
+  .st { font-size:16px; color:var(--text-soft); }
+  .quiz-card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .qnum { font-size:12px; font-weight:700; color:var(--main); letter-spacing:1px; margin-bottom:8px; }
+  .qtext { font-size:17px; font-weight:700; line-height:1.5; color:var(--text); margin-bottom:14px; }
+  .qopts { display:flex; flex-direction:column; gap:8px; }
+  .qopt { padding:13px 15px; border-radius:12px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:15px; color:var(--text-mid); cursor:pointer; text-align:left; transition:all 0.18s; font-weight:500; }
+  .qopt:active { transform:scale(0.98); }
+  .qopt.correct { border-color:var(--green); background:var(--green-light); color:#1E6642; font-weight:700; }
+  .qopt.wrong { border-color:var(--coral); background:var(--coral-light); color:var(--coral); }
+  .qfb { margin-top:11px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:500; line-height:1.6; display:none; }
+  .qfb.show { display:block; }
+  .qfb.cm { background:var(--green-light); color:#2A6E4E; }
+  .qfb.wm { background:var(--coral-light); color:#A03020; }
+  .reset-btn { display:block; width:100%; padding:14px; background:var(--main); color:#fff; border:none; border-radius:14px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; margin-top:4px; }
+
+  .highlight-box { background:linear-gradient(135deg,var(--main),var(--main-dark)); border-radius:18px; padding:20px; margin-bottom:13px; }
+  .hl-label { color:rgba(255,255,255,0.75); font-size:13px; margin-bottom:7px; }
+  .hl-text { color:#fff; font-size:18px; font-weight:900; line-height:1.55; }
+
+  .chip { padding:10px 16px; border-radius:20px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:14px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.18s; }
+  .chip.on { border-color:var(--main); background:var(--main-light); color:var(--main-dark); font-weight:700; }
+  .chip:active { transform:scale(0.95); }
+
+  .bottom-bar { position:fixed; bottom:0; left:0; right:0; height:68px; background:#fff; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:0 20px; z-index:100; }
+  .btip { font-size:13px; color:var(--text-soft); text-align:center; line-height:1.5; }
+  .btip strong { color:var(--main-dark); }
+  .toast { position:fixed; bottom:82px; left:50%; transform:translateX(-50%) translateY(16px); background:#18243A; color:#fff; padding:11px 24px; border-radius:28px; font-size:14px; font-weight:700; opacity:0; transition:all 0.28s; pointer-events:none; z-index:999; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── 보완: 따라 읽기 강조 · 목록 이동 ── */
+.ai-text .sent { border-radius:6px; padding:1px 2px; -webkit-box-decoration-break:clone; box-decoration-break:clone; transition:background .2s; }
+.ai-text .sent.on { background:#FFE680; box-shadow:0 0 0 2px #FFE680; color:#18243A; }
+.app-header { padding-top:54px !important; }
+.ai-response { scroll-margin-top:84px; }
+.home-link { position:absolute; top:12px; left:14px; z-index:5; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:7px 13px; border-radius:14px; text-decoration:none; }
+.home-link:active { background:rgba(255,255,255,0.38); }
+
+/* 읽는 문장을 화면 맨 위로: 아래 고정 바에 가려지지 않게 여백 확보 */
+.ai-text .sent { scroll-margin-top:16px; }
+body { padding-bottom:96px; }
+body.reading { padding-bottom:78vh; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <a class="home-link" href="index.html">← 메인 화면</a>
+  <div class="hd1"></div><div class="hd2"></div>
+  <div class="hplane">💬</div>
+  <div class="week-badge">2주차 복습</div>
+  <div class="header-title">말 잘 하면<br>AI도 잘 답한다</div>
+  <div class="header-sub">언제든 다시 들어요 🔁 몇 번이든 OK!</div>
+  <div class="claude-badge">✨ AI와 함께 만든 복습 앱</div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('summary',this)"><span class="ti">📖</span>핵심정리</button>
+  <button class="tab-btn" onclick="switchTab('prompts',this)"><span class="ti">💬</span>질문비교</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)"><span class="ti">✏️</span>퀴즈</button>
+  <button class="tab-btn" onclick="switchTab('helper',this)"><span class="ti">✍️</span>만들기</button>
+</div>
+
+<div class="main">
+
+  <!-- 핵심정리 -->
+  <div id="tab-summary" class="tab-panel active">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎓</div>AI 강사 설명 듣기</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:14px;">버튼을 누르면 AI 강사가 쉽고 친절하게 설명해줘요. 몇 번이든 반복해서 들을 수 있어요!</p>
+
+      <button class="explain-btn" onclick="askAI('prompt',this)">
+        <div class="btn-icon">💡</div>
+        <div class="btn-text"><div class="btn-title">프롬프트가 뭔가요?</div><div class="btn-sub">프롬프트 개념을 쉽게 설명해드려요</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-prompt"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-prompt"></div><div class="speak-controls" id="speak-btn-prompt"><button class="speak-play-btn" onclick="replay('prompt')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn blue" onclick="askAI('p1',this)">
+        <div class="btn-icon">1️⃣</div>
+        <div class="btn-text"><div class="btn-title">원칙 1. 나를 소개하세요</div><div class="btn-sub">왜 나이, 성별을 알려줘야 하나요?</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-p1"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-p1"></div><div class="speak-controls" id="speak-btn-p1"><button class="speak-play-btn" onclick="replay('p1')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn green" onclick="askAI('p2',this)">
+        <div class="btn-icon">2️⃣</div>
+        <div class="btn-text"><div class="btn-title">원칙 2. 구체적으로 말하세요</div><div class="btn-sub">어떻게 구체적으로 말하면 되나요?</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-p2"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-p2"></div><div class="speak-controls" id="speak-btn-p2"><button class="speak-play-btn" onclick="replay('p2')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn purple" onclick="askAI('p3',this)">
+        <div class="btn-icon">3️⃣</div>
+        <div class="btn-text"><div class="btn-title">원칙 3·4·5 한꺼번에 알려주세요</div><div class="btn-sub">형식 요청, 역할 부여, 다시 요청</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-p3"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-p3"></div><div class="speak-controls" id="speak-btn-p3"><button class="speak-play-btn" onclick="replay('p3')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn coral" onclick="askAI('retry',this)">
+        <div class="btn-icon">🔁</div>
+        <div class="btn-text"><div class="btn-title">마음에 안 들면 어떻게 하나요?</div><div class="btn-sub">AI에게 다시 요청하는 방법</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-retry"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-retry"></div><div class="speak-controls" id="speak-btn-retry"><button class="speak-play-btn" onclick="replay('retry')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">📋</div>프롬프트 5원칙</div>
+      <div class="principle-card" style="background:var(--blue-light);">
+        <div class="pc-num" style="color:#1E5FA0;">원칙 1</div>
+        <div class="pc-title" style="color:#1E5FA0;">나를 소개하세요</div>
+        <div class="pc-bad">나쁜 예: 운동 알려줘</div>
+        <div class="pc-good">좋은 예: 저는 65세 여성이고 무릎이 안 좋아요. 집에서 할 수 있는 가벼운 운동 3가지 알려주세요</div>
+      </div>
+      <div class="principle-card" style="background:var(--green-light);">
+        <div class="pc-num" style="color:#1E6642;">원칙 2</div>
+        <div class="pc-title" style="color:#1E6642;">구체적으로 말하세요</div>
+        <div class="pc-bad">나쁜 예: 레시피 알려줘</div>
+        <div class="pc-good">좋은 예: 30분 안에, 재료 5가지 이하로 만들 수 있는 국 레시피 알려주세요</div>
+      </div>
+      <div class="principle-card" style="background:var(--main-light);">
+        <div class="pc-num" style="color:var(--main-dark);">원칙 3</div>
+        <div class="pc-title" style="color:var(--main-dark);">형식을 요청하세요</div>
+        <div class="pc-good" style="color:var(--main-dark);">3가지만 알려줘 / 짧게 요약해줘 / 쉬운 말로 설명해줘</div>
+      </div>
+      <div class="principle-card" style="background:var(--purple-light);">
+        <div class="pc-num" style="color:#3D2E9A;">원칙 4</div>
+        <div class="pc-title" style="color:#3D2E9A;">역할을 줘보세요</div>
+        <div class="pc-good" style="color:#3D2E9A;">의사처럼 설명해줘 / 친절한 선생님처럼 쉽게 알려줘</div>
+      </div>
+      <div class="principle-card" style="background:var(--coral-light);">
+        <div class="pc-num" style="color:#8A2010;">원칙 5</div>
+        <div class="pc-title" style="color:#8A2010;">마음에 안 들면 다시 요청하세요</div>
+        <div class="pc-good" style="color:#8A2010;">좀 더 쉽게 해줘 / 더 짧게 해줘 / 다른 방법 알려줘</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="hl-label">💡 오늘의 핵심 문장</div>
+      <div class="hl-text">"AI는 내 마음을 못 읽어요. 말을 잘 해줘야 잘 도와줄 수 있어요!"</div>
+    </div>
+  </div>
+
+  <!-- 질문비교 -->
+  <div id="tab-prompts" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--blue-light);">🆚</div>나쁜 질문 vs 좋은 질문</div>
+      <p style="font-size:15px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">어떤 질문이 더 좋은지 비교해보세요!</p>
+
+      <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">건강</div>
+      <div class="compare-row">
+        <div class="compare-box" style="background:var(--coral-light)"><div class="cb-label" style="color:var(--coral);">나쁜 질문</div><div class="cb-text">건강에 좋은 거 알려줘</div></div>
+        <div class="compare-box" style="background:var(--green-light)"><div class="cb-label" style="color:#1E6642;">좋은 질문</div><div class="cb-text">60대 여성인데 무릎이 안 좋아요. 집에서 할 수 있는 가벼운 운동 3가지만 알려주세요</div></div>
+      </div>
+
+      <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin:14px 0 8px;">요리</div>
+      <div class="compare-row">
+        <div class="compare-box" style="background:var(--coral-light)"><div class="cb-label" style="color:var(--coral);">나쁜 질문</div><div class="cb-text">요리 레시피 알려줘</div></div>
+        <div class="compare-box" style="background:var(--green-light)"><div class="cb-label" style="color:#1E6642;">좋은 질문</div><div class="cb-text">냉장고에 두부, 애호박, 달걀이 있어요. 20분 안에 만들 수 있는 간단한 반찬 알려주세요</div></div>
+      </div>
+
+      <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin:14px 0 8px;">여행</div>
+      <div class="compare-row">
+        <div class="compare-box" style="background:var(--coral-light)"><div class="cb-label" style="color:var(--coral);">나쁜 질문</div><div class="cb-text">여행지 추천해줘</div></div>
+        <div class="compare-box" style="background:var(--green-light)"><div class="cb-label" style="color:#1E6642;">좋은 질문</div><div class="cb-text">70대 부모님과 가을에 1박 2일 국내 여행. 걷기 편하고 경치 좋은 곳 추천해주세요</div></div>
+      </div>
+
+      <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin:14px 0 8px;">글쓰기</div>
+      <div class="compare-row">
+        <div class="compare-box" style="background:var(--coral-light)"><div class="cb-label" style="color:var(--coral);">나쁜 질문</div><div class="cb-text">문자 써줘</div></div>
+        <div class="compare-box" style="background:var(--green-light)"><div class="cb-label" style="color:#1E6642;">좋은 질문</div><div class="cb-text">오랫동안 못 만난 친구에게 안부 문자를 보내려고 해요. 따뜻하고 짧게 3줄로 써주세요</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퀴즈 -->
+  <div id="tab-quiz" class="tab-panel">
+    <div class="score-bar">
+      <div class="sl">현재 점수</div>
+      <div><span class="sn" id="scoreNum">0</span><span class="st"> / 5</span></div>
+    </div>
+
+    <div class="quiz-card" id="q1">
+      <div class="qnum">문제 1 / 5</div>
+      <div class="qtext">AI에게 보내는 나의 질문이나 요청을 무엇이라고 하나요?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q1',this,false)">메시지</button>
+        <button class="qopt" onclick="ans('q1',this,false)">댓글</button>
+        <button class="qopt" onclick="ans('q1',this,true)">프롬프트</button>
+        <button class="qopt" onclick="ans('q1',this,false)">검색어</button>
+      </div>
+      <div class="qfb" id="q1-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q2">
+      <div class="qnum">문제 2 / 5</div>
+      <div class="qtext">프롬프트 5원칙 중 첫 번째는 무엇인가요?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q2',this,false)">구체적으로 말하기</button>
+        <button class="qopt" onclick="ans('q2',this,false)">역할 주기</button>
+        <button class="qopt" onclick="ans('q2',this,false)">형식 요청하기</button>
+        <button class="qopt" onclick="ans('q2',this,true)">나를 소개하기</button>
+      </div>
+      <div class="qfb" id="q2-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q3">
+      <div class="qnum">문제 3 / 5</div>
+      <div class="qtext">다음 중 가장 좋은 질문은 무엇인가요?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q3',this,true)">저는 65세 여성이고 무릎이 안 좋아요. 집에서 할 수 있는 가벼운 운동 3가지만 알려주세요</button>
+        <button class="qopt" onclick="ans('q3',this,false)">건강에 좋은 거 알려줘</button>
+        <button class="qopt" onclick="ans('q3',this,false)">운동 알려줘</button>
+        <button class="qopt" onclick="ans('q3',this,false)">무릎에 좋은 운동</button>
+      </div>
+      <div class="qfb" id="q3-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q4">
+      <div class="qnum">문제 4 / 5</div>
+      <div class="qtext">AI 답변이 마음에 안 들었을 때 올바른 행동은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q4',this,false)">그냥 포기한다</button>
+        <button class="qopt" onclick="ans('q4',this,true)">좀 더 쉽게 해줘, 다르게 해줘 라고 다시 요청한다</button>
+        <button class="qopt" onclick="ans('q4',this,false)">AI한테 화를 낸다</button>
+        <button class="qopt" onclick="ans('q4',this,false)">앱을 껐다 다시 켠다</button>
+      </div>
+      <div class="qfb" id="q4-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q5">
+      <div class="qnum">문제 5 / 5</div>
+      <div class="qtext">AI에게 역할을 줄 때 올바른 예시는?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q5',this,false)">빨리빨리 대답해줘</button>
+        <button class="qopt" onclick="ans('q5',this,false)">짧게 써줘</button>
+        <button class="qopt" onclick="ans('q5',this,true)">친절한 선생님처럼 쉽게 설명해줘</button>
+        <button class="qopt" onclick="ans('q5',this,false)">3가지만 알려줘</button>
+      </div>
+      <div class="qfb" id="q5-fb"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetQuiz()">🔄 퀴즈 다시 풀기</button>
+  </div>
+
+  <!-- 질문 만들기 -->
+  <div id="tab-helper" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">✍️</div>나만의 질문 만들기</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:16px;">5원칙을 활용해서 나만의 질문을 만들어보세요!</p>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">주제를 골라주세요</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-topic">
+          <button class="chip" onclick="selChip('topic','요리 반찬',this)">요리 반찬</button>
+          <button class="chip" onclick="selChip('topic','건강 운동',this)">건강 운동</button>
+          <button class="chip" onclick="selChip('topic','여행 나들이',this)">여행 나들이</button>
+          <button class="chip" onclick="selChip('topic','문자 편지',this)">문자 편지</button>
+          <button class="chip" onclick="selChip('topic','생활 정보',this)">생활 정보</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">나이대를 알려주세요</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-age">
+          <button class="chip" onclick="selChip('age','60대',this)">60대</button>
+          <button class="chip" onclick="selChip('age','70대',this)">70대</button>
+          <button class="chip" onclick="selChip('age','80대',this)">80대</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">어떻게 받고 싶으세요?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-format">
+          <button class="chip" onclick="selChip('format','3가지만',this)">3가지만</button>
+          <button class="chip" onclick="selChip('format','쉽게 설명해서',this)">쉽게 설명해서</button>
+          <button class="chip" onclick="selChip('format','짧게 요약해서',this)">짧게 요약해서</button>
+          <button class="chip" onclick="selChip('format','자세하게',this)">자세하게</button>
+        </div>
+      </div>
+
+      <button style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,var(--main),var(--main-dark));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;margin:12px 0;box-shadow:0 4px 16px rgba(224,123,58,0.32);" onclick="makePrompt()">✨ 질문 만들기</button>
+
+      <div style="background:var(--main-light);border-radius:16px;padding:18px;border-left:4px solid var(--main);font-size:15px;line-height:1.8;color:var(--text);font-weight:500;min-height:80px;" id="q-result"><span style="color:var(--text-soft);">위에서 골라주시면 질문이 만들어져요 😊</span></div>
+      <button id="q-copy-btn" style="display:none;width:100%;padding:13px;background:#fff;color:var(--main-dark);border:2px solid var(--main);border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;" onclick="copyPrompt()">📋 복사해서 ChatGPT에 붙여넣기</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="btip">버튼을 눌러 <strong>AI 강사 설명</strong>을 들어보세요 · 몇 번이든 OK! 🔁</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+let currentUtterance = null;
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.lang = 'ko-KR'; currentUtterance.rate = 0.88; currentUtterance.pitch = 1.05; currentUtterance.volume = 1;
+  const ko = window.speechSynthesis.getVoices().find(v => v.lang === 'ko-KR');
+  if (ko) currentUtterance.voice = ko;
+  window.speechSynthesis.speak(currentUtterance);
+}
+function stopSpeech() { if (window.speechSynthesis) window.speechSynthesis.cancel(); }
+if (window.speechSynthesis) { window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); }; }
+
+function playCorrectSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  function chime(freq, st, dur) {
+    [1, 2.756, 5.404].forEach((m, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = freq * m;
+      const v = [0.6,0.25,0.1][i], d = dur * [1,0.6,0.3][i];
+      g.gain.setValueAtTime(0, ctx.currentTime+st);
+      g.gain.linearRampToValueAtTime(v, ctx.currentTime+st+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+st+d);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime+st); o.stop(ctx.currentTime+st+d);
+    });
+  }
+  chime(1047,0.0,1.2); chime(880,0.35,1.0); chime(784,0.70,1.4);
+}
+function playWrongSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine'; o.frequency.value = 220;
+  g.gain.setValueAtTime(0.4, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.6);
+  o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime); o.stop(ctx.currentTime+0.65);
+}
+function speakMsg(msg, pitch) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(msg);
+  u.lang='ko-KR'; u.rate=0.92; u.pitch=pitch||1.1; u.volume=1;
+  const ko = window.speechSynthesis.getVoices().find(v => v.lang==='ko-KR');
+  if (ko) u.voice=ko;
+  window.speechSynthesis.speak(u);
+}
+
+const answers = {
+  prompt: `프롬프트라는 단어가 낯설게 느껴지시죠. 아주 간단하게 설명해 드릴게요.
+
+프롬프트는 AI에게 보내는 나의 말이에요. 질문이나 부탁, 요청, 이 모든 것이 다 프롬프트예요.
+
+식당에서 주문하는 것과 똑같아요. 아무거나 주세요 라고 하면 종업원이 당황하죠. 하지만 된장찌개 하나, 맵지 않게, 빨리 주세요 라고 하면 딱 원하는 것이 나오잖아요.
+
+AI도 똑같아요. 말을 구체적으로, 자세하게 해줄수록 내가 원하는 답을 받을 수 있어요.
+
+오늘 배울 프롬프트 5원칙만 기억하시면 ChatGPT에서 훨씬 좋은 답변을 받으실 수 있어요.`,
+
+  p1: `첫 번째 원칙은 나를 소개하는 거예요.
+
+AI는 나에 대해 아무것도 몰라요. 내가 몇 살인지, 어디가 아픈지, 어떤 상황인지 전혀 모르는 상태예요.
+
+그래서 먼저 나를 소개해줘야 해요. 예를 들어 저는 68세 여성이에요, 무릎 수술을 했어요, 고혈압이 있어요, 이런 정보를 알려주면 AI가 나에게 딱 맞는 답을 줄 수 있어요.
+
+같은 운동 질문이라도 20대 청년한테 맞는 운동과 70대 어르신한테 맞는 운동이 다르잖아요. AI는 내가 알려주기 전까지는 내가 어떤 사람인지 모른답니다.
+
+이름이나 주민번호 같은 민감한 개인정보는 필요 없고요, 나이, 성별, 상황 정도만 알려주셔도 충분해요.`,
+
+  p2: `두 번째 원칙은 구체적으로 말하는 거예요.
+
+막연한 말보다 숫자나 조건을 넣어주시면 훨씬 좋아요.
+
+예를 들어 레시피 알려줘 라고 하면 수천 가지 레시피 중 뭘 알려줄지 AI도 막막해요. 하지만 냉장고에 두부, 애호박, 달걀이 있어요. 20분 안에 만들 수 있는 국 레시피 알려주세요 라고 하면 딱 맞는 답이 나와요.
+
+시간, 재료 개수, 예산, 인원수, 이런 숫자를 넣어주시면 더 좋아요. 3가지만, 5분 안에, 1만 원 이하로, 이런 식으로요.
+
+처음에는 어색하게 느껴지실 수 있지만, 조금만 연습하시면 금방 익숙해지세요.`,
+
+  p3: `세 번째, 네 번째, 다섯 번째 원칙을 함께 말씀드릴게요.
+
+세 번째는 형식을 요청하는 거예요. 어떤 형태로 받고 싶은지 말해주시면 읽기 편해요. 3가지만 알려줘, 짧게 요약해줘, 표로 만들어줘, 쉬운 말로 설명해줘 이런 식으로 말씀하시면 돼요.
+
+네 번째는 역할을 줘보는 거예요. AI에게 특정 역할을 맡기면 더 좋은 답변이 나와요. 의사처럼 설명해줘, 친절한 선생님처럼 쉽게 알려줘, 요리사라고 생각하고 조언해줘 이런 식으로요.
+
+다섯 번째는 마음에 안 들면 다시 요청하는 거예요. AI는 다시 물어봐도 전혀 기분 나빠하지 않아요. 좀 더 쉽게 해줘, 더 짧게 해줘, 다른 방법 알려줘 라고 얼마든지 다시 요청하실 수 있어요.`,
+
+  retry: `AI 답변이 마음에 안 드셨을 때 어떻게 하면 좋을지 알려드릴게요.
+
+많은 분들이 마음에 안 드는 답변이 나오면 그냥 포기하시거나 AI가 별로라고 생각하세요. 하지만 대부분은 질문 방식을 조금만 바꾸면 훨씬 좋은 답이 나온답니다.
+
+이렇게 말씀해보세요. 좀 더 쉽게 설명해줘, 더 짧게 해줘, 아까 답변이 너무 어려웠어. 초등학생도 알 수 있게 다시 해줘, 다른 방법은 없을까?
+
+AI는 절대 기분 나빠하지 않아요. 같은 것을 열 번 물어봐도 항상 친절하게 다시 대답해줘요. 이게 사람 선생님과 다른 점이에요.
+
+마음에 들 때까지 계속 요청하셔도 된다는 것, 꼭 기억해 주세요.`
+};
+
+function askAI(key, btn) {
+  const respDiv = document.getElementById('resp-' + key);
+  const textDiv = document.getElementById('text-' + key);
+  if (respDiv.classList.contains('show')) { respDiv.classList.remove('show'); stopSpeech(); return; }
+  stopSpeech();
+  respDiv.classList.add('show');
+  textDiv.textContent = answers[key];
+  document.getElementById('speak-btn-' + key).style.display = 'flex';
+  speak(answers[key]);
+}
+
+const scores = {};
+const fb = {
+  q1:{ c:'정답이에요! AI에게 보내는 질문이나 요청을 프롬프트라고 해요. 잘 기억해 두세요!', w:'아쉬워요! AI에게 보내는 질문이나 요청을 프롬프트라고 한답니다.' },
+  q2:{ c:'정답이에요! 5원칙 중 첫 번째는 나를 소개하기예요. 나이, 성별, 상황을 먼저 알려주세요!', w:'아쉬워요! 5원칙의 첫 번째는 나를 소개하기랍니다.' },
+  q3:{ c:'정답이에요! 나이, 상황, 숫자 조건까지 넣은 질문이 훨씬 좋은 답변을 만들어내요!', w:'아쉬워요! 나이와 상황, 숫자 조건을 넣은 구체적인 질문이 가장 좋은 답변을 받을 수 있어요.' },
+  q4:{ c:'정답이에요! AI는 다시 요청해도 기분 나빠하지 않아요. 마음에 들 때까지 계속 요청하세요!', w:'아쉬워요! AI는 기분 나빠하지 않으니 좀 더 쉽게 해줘, 다르게 해줘 라고 다시 요청하시면 돼요.' },
+  q5:{ c:'정답이에요! 친절한 선생님처럼 쉽게 설명해줘, 이런 식으로 역할을 주면 더 좋은 답이 나와요!', w:'아쉬워요! 역할 주기는 의사처럼, 선생님처럼 이런 식으로 특정 역할을 부여하는 거예요.' }
+};
+
+function ans(qid, btn, correct) {
+  if (scores[qid] !== undefined) return;
+  scores[qid] = correct;
+  btn.parentElement.querySelectorAll('.qopt').forEach(o => o.disabled = true);
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) btn.parentElement.querySelectorAll('.qopt').forEach(o => { if (o.getAttribute('onclick').includes('true')) o.classList.add('correct'); });
+  const f = document.getElementById(qid + '-fb');
+  f.textContent = fb[qid][correct ? 'c' : 'w'];
+  f.className = 'qfb show ' + (correct ? 'cm' : 'wm');
+  document.getElementById('scoreNum').textContent = Object.values(scores).filter(v => v === true).length;
+  if (correct) { playCorrectSound(); setTimeout(() => speakMsg(fb[qid].c, 1.15), 1400); }
+  else { playWrongSound(); setTimeout(() => speakMsg(fb[qid].w, 0.95), 900); }
+}
+function resetQuiz() {
+  Object.keys(scores).forEach(k => delete scores[k]);
+  document.getElementById('scoreNum').textContent = '0';
+  ['q1','q2','q3','q4','q5'].forEach(qid => {
+    document.querySelectorAll('#' + qid + ' .qopt').forEach(o => { o.disabled = false; o.className = 'qopt'; });
+    const f = document.getElementById(qid + '-fb'); f.className = 'qfb'; f.textContent = '';
+  });
+  showToast('퀴즈가 초기화됐어요! 다시 풀어보세요 😊');
+}
+
+const chipSels = {};
+function selChip(group, value, btn) {
+  chipSels[group] = value;
+  document.getElementById('g-' + group).querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+}
+let genP = '';
+const topicMap = { '요리 반찬': '맛있는 반찬 레시피를 알려주세요.', '건강 운동': '집에서 할 수 있는 건강에 좋은 운동을 알려주세요.', '여행 나들이': '당일치기로 가기 좋은 여행지를 추천해주세요.', '문자 편지': '오랜 친구에게 보낼 따뜻한 안부 문자를 써주세요.', '생활 정보': '일상에서 유용하게 쓸 수 있는 정보를 알려주세요.' };
+function makePrompt() {
+  const { topic, age, format } = chipSels;
+  if (!topic || !age || !format) { showToast('모든 항목을 골라주세요! 😊'); return; }
+  genP = `저는 ${age}인데요, ${topicMap[topic]} ${format} 알려주세요.`;
+  document.getElementById('q-result').textContent = '📝 ' + genP;
+  document.getElementById('q-copy-btn').style.display = 'block';
+  showToast('질문이 만들어졌어요! 복사해서 ChatGPT에 붙여넣어보세요 ✨');
+}
+function copyPrompt() {
+  if (!genP) return;
+  navigator.clipboard.writeText(genP).then(() => showToast('복사됐어요! ChatGPT 앱에 붙여넣기 해보세요 😊'));
+}
+</script>
+
+<script>
+/* ── 문장 단위 따라 읽기(강조) · 안전장치 ── */
+(function () {
+  var session = 0;      // 읽기 번호: 멈추거나 새로 읽으면 올라가 이전 읽기를 끝냅니다
+  var curEl = null;     // 지금 강조 중인 글 영역
+
+  function hasTTS() { return !!(window.speechSynthesis && window.SpeechSynthesisUtterance); }
+  function notice(msg) { if (typeof showToast === 'function') { showToast(msg); } }
+
+  function pickVoice() {
+    var vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    for (var i = 0; i < vs.length; i++) { if (vs[i].lang === 'ko-KR') { return vs[i]; } }
+    for (var j = 0; j < vs.length; j++) { if (/^ko/i.test(vs[j].lang)) { return vs[j]; } }
+    return null;
+  }
+
+
+  // 읽는 곳을 따라 화면이 움직입니다 (손으로 화면을 넘기는 중이면 잠시 따라가지 않습니다)
+  var lastUser = 0;
+  window.addEventListener('wheel', function () { lastUser = Date.now(); }, { passive: true });
+  window.addEventListener('touchmove', function () { lastUser = Date.now(); }, { passive: true });
+  function follow(el, force) {
+    if (!el || !el.scrollIntoView) { return; }
+    if (!force && Date.now() - lastUser < 2500) { return; }
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {}
+  }
+
+  function clearMark() {
+    if (!curEl) { return; }
+    var on = curEl.querySelectorAll('.sent.on');
+    for (var i = 0; i < on.length; i++) { on[i].classList.remove('on'); }
+  }
+
+  function cancelAll() {
+    session++;
+    document.body.classList.remove('reading');
+    clearMark();
+    curEl = null;
+    if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  }
+
+  // 글을 문장 단위로 나눕니다 (줄바꿈은 그대로 둡니다)
+  function splitParts(text) {
+    var parts = [], re = /[^.!?\n]+[.!?]*|\n+/g, m;
+    while ((m = re.exec(text)) !== null) { parts.push(m[0]); }
+    return parts;
+  }
+
+  function render(el, text) {
+    var items = [], parts = splitParts(text);
+    el.textContent = '';
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (/^\s*$/.test(p)) { el.appendChild(document.createTextNode(p)); continue; }
+      var sp = document.createElement('span');
+      sp.className = 'sent';
+      sp.textContent = p;
+      el.appendChild(sp);
+      items.push({ text: p.replace(/^\s+|\s+$/g, ''), span: sp });
+    }
+    return items;
+  }
+
+  function readList(items, my, speed) {
+    var i = 0;
+    function next() {
+      if (my !== session) { return; }
+      if (i >= items.length) { clearMark(); return; }
+      var it = items[i++];
+      clearMark();
+      if (it.span) {
+        it.span.classList.add('on');
+        follow(it.span);
+      }
+      var u = new SpeechSynthesisUtterance(it.text);
+      u.lang = 'ko-KR'; u.rate = speed || 0.88; u.pitch = 1.05; u.volume = 1;
+      var v = pickVoice(); if (v) { u.voice = v; }
+      var done = false, guard = null;
+      function go() { if (done) { return; } done = true; clearTimeout(guard); next(); }
+      u.onend = go;
+      u.onerror = function () { if (my !== session) { return; } go(); };
+      // 일부 기기는 '끝남' 신호를 안 보내서, 넉넉한 시간이 지나면 다음 문장으로 넘어갑니다
+      guard = setTimeout(go, Math.max(4000, it.text.length * 450 + 3000));
+      try { window.speechSynthesis.speak(u); } catch (e) { go(); }
+    }
+    next();
+  }
+
+  // 글 영역에 문장을 나눠 보여 주며 읽기
+  function speakInto(el, text) {
+    if (!el) { return; }
+    if (!hasTTS()) {
+      el.textContent = text;
+      notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.');
+      return;
+    }
+    cancelAll();
+    var items = render(el, text);
+    curEl = el;
+    document.body.classList.add('reading');
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  // 화면에 글이 없는 짧은 안내를 읽을 때(문장 나눔만)
+  function speakPlain(text) {
+    if (!hasTTS()) { return; }
+    cancelAll();
+    var parts = splitParts(text), items = [];
+    for (var i = 0; i < parts.length; i++) {
+      if (!/^\s*$/.test(parts[i])) { items.push({ text: parts[i].replace(/^\s+|\s+$/g, ''), span: null }); }
+    }
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  window.stopSpeech = cancelAll;
+  window.speak = speakPlain;
+
+  window.replay = function (key) {
+    var el = document.getElementById('text-' + key);
+    var base = (typeof answers !== 'undefined' && answers[key]) ? answers[key] : (el ? el.textContent : '');
+    speakInto(el, base);
+  };
+
+  window.askAI = function (key, btn) {
+    var respDiv = document.getElementById('resp-' + key);
+    var textDiv = document.getElementById('text-' + key);
+    if (!respDiv || !textDiv) { return; }
+    if (respDiv.classList.contains('show')) { respDiv.classList.remove('show'); cancelAll(); return; }
+    cancelAll();
+    respDiv.classList.add('show');
+    var sb = document.getElementById('speak-btn-' + key);
+    if (sb) { sb.style.display = 'flex'; }
+    speakInto(textDiv, answers[key]);
+  };
+
+  // 퀴즈 칭찬·안내 음성이 나올 때는 강조를 끄고, 탭을 옮기면 읽기를 멈춥니다
+  if (typeof speakMsg === 'function') {
+    var _speakMsg = speakMsg;
+    window.speakMsg = function (m, p) { session++; clearMark(); curEl = null; _speakMsg(m, p); };
+  }
+  if (typeof switchTab === 'function') {
+    var _switchTab = switchTab;
+    window.switchTab = function (n, b) { cancelAll(); _switchTab(n, b); };
+  }
+  window.addEventListener('pagehide', cancelAll);
+})();
+</script>
+
+</body>
+</html>

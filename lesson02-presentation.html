@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2주차 · 말 잘 하면 AI도 잘 답한다</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --main: #1B6CA8;
+  --main-dark: #0D4A7A;
+  --main-light: #E8F4FF;
+  --accent: #F5A623;
+  --accent2: #E84040;
+  --green: #1A8A42;
+  --green-light: #E8F8EE;
+  --purple: #6B3FA0;
+  --purple-light: #F0EAFF;
+  --bg: #F0F4F8;
+  --dark: #0D1B2E;
+  --text: #1A2A3A;
+  --white: #FFFFFF;
+  --w2: #7C3AED;
+  --w2-dark: #5B21B6;
+  --w2-light: #EDE9FE;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Noto Sans KR', sans-serif; }
+
+/* ── 슬라이드 기본 ── */
+.slide {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0; left: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+.slide.active { display: flex !important; }
+
+/* ── 헤더 ── */
+.hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 14px 44px;
+  gap: 16px;
+}
+.hdr-week {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 30px;
+  flex-shrink: 0;
+}
+.hdr-title {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 900;
+  flex: 1;
+}
+.hdr-num {
+  color: rgba(255,255,255,0.7);
+  font-size:20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── 바디 ── */
+.body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 슬라이드 번호 ── */
+.slide-num {
+  position: absolute;
+  bottom: 14px;
+  right: 24px;
+  font-size:21px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 700;
+  z-index: 10;
+}
+
+/* ── 네비게이션 ── */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  border: none;
+  font-size: 36px;
+  width: 60px;
+  height: 100px;
+  cursor: pointer;
+  z-index: 1000;
+  border-radius: 8px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-btn:hover { background: rgba(0,0,0,0.6); }
+#btn-prev { left: 0; border-radius: 0 8px 8px 0; }
+#btn-next { right: 0; border-radius: 8px 0 0 8px; }
+
+.progress-bar {
+  position: fixed;
+  bottom: 0; left: 0;
+  height: 5px;
+  background: var(--w2);
+  transition: width 0.3s;
+  z-index: 1000;
+}
+
+/* ══════════════════════════════════
+   SLIDE 1: 표지
+══════════════════════════════════ */
+#s1 {
+  background: linear-gradient(135deg, #1E0A3E 0%, #3D1A7A 50%, #7C3AED 100%);
+  justify-content: center;
+  align-items: center;
+}
+.cover-inner { text-align: center; padding: 40px; }
+.cover-week { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: 3px; margin-bottom: 20px; }
+.cover-title { font-size: 72px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 16px; }
+.cover-sub { font-size: 30px; color: rgba(255,255,255,0.75); margin-bottom: 50px; }
+.cover-goals { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.cover-goal {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 16px;
+  padding: 12px 20px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cover-goal .num {
+  background: var(--accent);
+  color: #000;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size:21px; font-weight: 900;
+  flex-shrink: 0;
+}
+.cover-deco { font-size: 120px; position: absolute; top: 40px; right: 80px; opacity: 0.08; }
+
+/* ══════════════════════════════════
+   SLIDE 2: 마음 열기
+══════════════════════════════════ */
+#s2 { background: #fff; }
+#s2 .hdr { background: var(--w2); }
+.open-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px 40px; gap: 30px; }
+.open-question {
+  flex: 1;
+  background: linear-gradient(135deg, var(--w2), var(--w2-dark));
+  border-radius: 24px;
+  padding: 36px;
+  color: #fff;
+  text-align: center;
+}
+.open-question .q-icon { font-size: 70px; margin-bottom: 20px; }
+.open-question .q-text { font-size: 40px; font-weight: 900; line-height: 1.4; }
+.open-reactions { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.reaction-card {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--bg); border-radius: 16px;
+  padding: 18px 24px; border-left: 6px solid var(--w2);
+}
+.reaction-card .ri { font-size: 44px; flex-shrink: 0; }
+.reaction-card .rt { font-size: 32px; font-weight: 700; color: var(--text); }
+.reaction-card .rs { font-size: 24px; color: #666; margin-top: 4px; }
+.open-msg {
+  text-align: center; padding: 18px;
+  background: linear-gradient(135deg, var(--w2), var(--w2-dark));
+  border-radius: 20px; color: #fff;
+  font-size: 32px; font-weight: 900;
+  margin: 0 40px 12px;
+}
+
+/* ══════════════════════════════════
+   SLIDE 3: 프롬프트란?
+══════════════════════════════════ */
+#s3 { background: #fff; }
+#s3 .hdr { background: var(--w2); }
+.prompt-body { flex: 1; display: flex; align-items: center; padding: 14px 40px; gap: 30px; }
+.prompt-left { flex: 1; }
+.prompt-def-box {
+  background: linear-gradient(135deg, var(--w2), var(--w2-dark));
+  border-radius: 24px;
+  padding: 28px 32px;
+  color: #fff;
+  margin-bottom: 24px;
+}
+.prompt-def-label { font-size: 22px; color: rgba(255,255,255,0.7); margin-bottom: 10px; }
+.prompt-def-text { font-size: 44px; font-weight: 900; line-height: 1.35; }
+.prompt-keywords { display: flex; gap: 14px; flex-wrap: wrap; }
+.pkw {
+  background: var(--w2-light); color: var(--w2-dark);
+  border-radius: 50px; padding: 12px 24px;
+  font-size: 26px; font-weight: 700;
+  border: 2px solid var(--w2);
+}
+.prompt-right { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.prompt-ex {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--bg); border-radius: 16px; padding: 16px 22px;
+}
+.prompt-ex .pe-icon { font-size: 46px; flex-shrink: 0; }
+.prompt-ex .pe-text { font-size: 28px; font-weight: 700; color: var(--text); }
+.prompt-ex .pe-sub { font-size: 22px; color: #666; }
+
+/* ══════════════════════════════════
+   SLIDE 4: 비유로 이해하기
+══════════════════════════════════ */
+#s4 { background: var(--dark); }
+#s4 .hdr { background: rgba(255,255,255,0.08); }
+.analogy-body {
+  flex: 1; display: flex; align-items: center;
+  padding: 10px 36px 10px; gap: 20px;
+}
+.analogy-card {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 22px;
+  padding: 24px 22px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.analogy-title {
+  font-size: 28px; font-weight: 900; color: var(--accent);
+  text-align: center; padding-bottom: 12px;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+.analogy-bad {
+  background: rgba(232,64,64,0.15);
+  border: 2px solid rgba(232,64,64,0.4);
+  border-radius: 12px; padding: 14px 18px;
+  color: #FCA5A5; font-size: 26px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.analogy-arrow { text-align: center; font-size: 24px; color: rgba(255,255,255,0.4); }
+.analogy-good {
+  background: rgba(26,138,66,0.2);
+  border: 2px solid rgba(26,138,66,0.45);
+  border-radius: 12px; padding: 14px 18px;
+  color: #6EE7B7; font-size: 26px; font-weight: 700;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.analogy-msg {
+  background: linear-gradient(135deg, var(--w2), var(--w2-dark));
+  border-radius: 16px; padding: 16px 28px;
+  color: #fff; font-size: 28px; font-weight: 900;
+  text-align: center; flex-shrink: 0;
+  margin: 0 36px 8px;
+}
+
+/* ══════════════════════════════════
+   SLIDE 5, 6: 나쁜 vs 좋은 질문
+══════════════════════════════════ */
+#s5 { background: #fff; }
+#s5 .hdr { background: var(--w2); }
+#s6 { background: #fff; }
+#s6 .hdr { background: var(--w2); }
+.compare-body { flex: 1; display: flex; flex-direction: column; padding: 10px 40px 14px; gap: 12px; }
+.compare-head-row { display: flex; gap: 20px; flex-shrink: 0; }
+.compare-col-hdr {
+  flex: 1; border-radius: 14px; padding: 14px 20px;
+  text-align: center; font-size: 30px; font-weight: 900; color: #fff;
+}
+.compare-rows { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.compare-row { display: flex; gap: 20px; flex: 1; }
+.compare-cell {
+  flex: 1; border-radius: 16px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px;
+  font-size: 28px; font-weight: 600;
+}
+.compare-cell .cc-icon { font-size: 44px; flex-shrink: 0; }
+.compare-cell .cc-text { line-height: 1.5; }
+.compare-cell .cc-sub { font-size: 21px; color: #888; margin-top: 4px; font-weight: 500; }
+.compare-cell.bad { background: #FFF0F0; border-left: 6px solid var(--accent2); color: #7A1A1A; }
+.compare-cell.good { background: var(--green-light); border-left: 6px solid var(--green); color: #1A4A2A; }
+.tip-banner {
+  background: linear-gradient(135deg, var(--accent), #E08000);
+  border-radius: 16px; padding: 14px 24px;
+  color: #fff; font-size: 26px; font-weight: 900;
+  text-align: center; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════
+   SLIDE 7, 8: 원칙 1~4
+══════════════════════════════════ */
+#s7 { background: #fff; }
+#s7 .hdr { background: var(--w2); }
+#s8 { background: #fff; }
+#s8 .hdr { background: var(--w2); }
+.principle-body { flex: 1; display: flex; padding: 10px 40px 14px; gap: 24px; align-items: flex-start; }
+.principle-card { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.p-header {
+  border-radius: 20px; padding: 18px 26px;
+  display: flex; align-items: center; gap: 16px; color: #fff;
+}
+.p-num {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; font-weight: 900; flex-shrink: 0;
+}
+.p-name { font-size: 34px; font-weight: 900; }
+.p-desc { font-size: 22px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+.p-examples { display: flex; flex-direction: column; gap: 10px; padding: 0 4px; flex: 1; }
+.p-ex-bad {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #FFF0F0; border-radius: 12px; padding: 12px 16px;
+  font-size: 26px; font-weight: 600; color: #7A1A1A;
+  border-left: 5px solid var(--accent2); line-height: 1.4;
+}
+.p-ex-good {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--green-light); border-radius: 12px; padding: 12px 16px;
+  font-size: 26px; font-weight: 600; color: #1A4A2A;
+  border-left: 5px solid var(--green); line-height: 1.4;
+}
+.p-divider { width: 4px; background: var(--bg); flex-shrink: 0; margin: 10px 0; border-radius: 4px; }
+
+/* ══════════════════════════════════
+   SLIDE 9: 원칙 5 + 핵심 메시지
+══════════════════════════════════ */
+#s9 { background: var(--dark); }
+#s9 .hdr { background: rgba(255,255,255,0.08); }
+.p5-body { flex: 1; display: flex; flex-direction: column; padding: 10px 40px 14px; gap: 14px; }
+.p5-card {
+  background: rgba(255,255,255,0.07);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 22px; padding: 24px 30px;
+  flex: 1; display: flex; flex-direction: column; gap: 14px;
+}
+.p5-header { display: flex; align-items: center; gap: 16px; }
+.p5-num {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--w2); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 900; flex-shrink: 0;
+}
+.p5-name { font-size: 38px; font-weight: 900; color: #fff; }
+.p5-desc { font-size: 26px; color: rgba(255,255,255,0.7); }
+.p5-examples { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.p5-ex {
+  background: rgba(255,255,255,0.1); border-radius: 12px;
+  padding: 14px 20px; font-size: 28px; color: #C4B5FD;
+  font-weight: 600; display: flex; align-items: center; gap: 12px;
+}
+.core-msg {
+  background: linear-gradient(135deg, var(--w2), var(--w2-dark));
+  border-radius: 22px; padding: 24px 32px;
+  text-align: center; flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+}
+.core-msg-icon { font-size: 58px; }
+.core-msg-text { font-size: 36px; font-weight: 900; color: #fff; line-height: 1.5; }
+
+/* ══════════════════════════════════
+   SLIDE 10: 실습 워크시트
+══════════════════════════════════ */
+#s10 { background: #fff; }
+#s10 .hdr { background: var(--w2); }
+.ws-body { flex: 1; display: flex; padding: 10px 40px 14px; gap: 28px; align-items: flex-start; }
+.ws-left { flex: 1.2; display: flex; flex-direction: column; gap: 14px; }
+.ws-section-title {
+  font-size: 28px; font-weight: 900; color: var(--w2-dark);
+  padding-bottom: 8px; border-bottom: 3px solid var(--w2-light);
+}
+.ws-template {
+  background: linear-gradient(135deg, var(--w2-light), #F8F4FF);
+  border: 3px solid var(--w2);
+  border-radius: 20px; padding: 24px 28px;
+  font-size: 28px; font-weight: 600; color: var(--text);
+  line-height: 2; flex: 1;
+}
+.ws-blank {
+  background: #fff; border: 2px solid var(--w2);
+  border-radius: 8px; padding: 2px 14px;
+  color: var(--w2); font-weight: 900;
+  display: inline-block;
+}
+.ws-example {
+  background: var(--green-light); border: 2px solid var(--green);
+  border-radius: 16px; padding: 16px 20px;
+  font-size: 24px; font-weight: 600; color: #1A4A2A;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.ws-right { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.ws-topic-title { font-size: 28px; font-weight: 900; color: var(--main); }
+.topic-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1;
+}
+.topic-card {
+  background: var(--bg); border-radius: 16px; padding: 18px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px;
+  border: 2px solid transparent; transition: all 0.2s; cursor: pointer;
+}
+.topic-card:hover { background: var(--w2-light); border-color: var(--w2); }
+.topic-icon { font-size: 40px; }
+.topic-name { font-size: 24px; font-weight: 700; color: var(--text); }
+
+/* ══════════════════════════════════
+   SLIDE 11: 실습 따라하기
+══════════════════════════════════ */
+#s11 { background: #000; }
+#s11 .hdr { background: var(--w2); }
+.tryit-body { flex: 1; display: flex; flex-direction: column; padding: 10px 40px 14px; gap: 10px; }
+.tryit-header {
+  background: rgba(124,58,237,0.2); border-radius: 14px;
+  padding: 14px 22px; color: #C4B5FD;
+  font-size: 28px; font-weight: 700;
+  flex-shrink: 0; text-align: center;
+}
+.tryit-card {
+  background: rgba(255,255,255,0.07);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 18px; padding: 20px 28px;
+  display: flex; align-items: center; gap: 20px; flex: 1;
+}
+.tryit-num {
+  width: 50px; height: 50px; background: var(--w2);
+  color: #fff; border-radius: 50%;
+  font-size: 26px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.tryit-text { font-size: 30px; color: #fff; font-weight: 600; flex: 1; line-height: 1.5; }
+.tryit-hint { font-size: 22px; color: rgba(255,255,255,0.5); }
+
+/* ══════════════════════════════════
+   SLIDE 12: 정리
+══════════════════════════════════ */
+#s12 { background: #fff; }
+#s12 .hdr { background: var(--w2); }
+.review-body { flex: 1; display: flex; padding: 12px 40px 14px; gap: 28px; align-items: center; }
+.review-checks { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+.check-item {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--w2-light); border-radius: 16px;
+  padding: 18px 24px; border-left: 6px solid var(--w2);
+}
+.check-icon { font-size: 40px; flex-shrink: 0; }
+.check-text { font-size: 30px; font-weight: 700; color: var(--text); }
+.review-hw { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.hw-box {
+  background: linear-gradient(135deg, var(--accent), #F08000);
+  border-radius: 20px; padding: 18px 22px; color: #fff;
+}
+.hw-title { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+.hw-text { font-size: 26px; line-height: 1.6; }
+.hw-example {
+  background: rgba(0,0,0,0.15); border-radius: 12px;
+  padding: 12px 16px; font-size: 22px;
+  margin-top: 12px; font-style: italic; line-height: 1.6;
+}
+.next-box {
+  background: var(--w2-light); border: 3px solid var(--w2);
+  border-radius: 20px; padding: 16px 20px; color: var(--w2-dark);
+}
+.next-title { font-size: 26px; font-weight: 900; margin-bottom: 10px; }
+.next-text { font-size: 22px; line-height: 1.6; }
+
+/* ══════════════════════════════════
+   퀴즈 공통 스타일
+══════════════════════════════════ */
+.dz {
+  border: 2.5px dashed rgba(255,255,255,0.3);
+  border-radius: 12px; background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 64px; padding: 6px;
+  transition: all 0.18s;
+  flex-direction: column; gap: 4px; cursor: pointer;
+}
+.dz.over  { border-color: #F5A623; background: rgba(245,166,35,0.15); }
+.dz.ok    { border-color: #22C55E; background: rgba(34,197,94,0.18); }
+.dz.fail  { border-color: #EF4444; background: rgba(239,68,68,0.18); animation: shake .35s; }
+.dzlabel  { font-size:21px; color: rgba(255,255,255,0.4); }
+.dzchip   { font-size: 24px; font-weight: 700; color: #fff; padding: 4px 12px; border-radius: 20px; }
+.qbtn {
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 40px; padding: 10px 24px;
+  font-size: 22px; font-weight: 700;
+  cursor: pointer; font-family: inherit; margin: 0 6px;
+}
+.qbtn:hover { background: rgba(255,255,255,0.25); }
+.word-chip {
+  background: var(--accent); color: #000;
+  font-size: 26px; font-weight: 700;
+  padding: 12px 24px; border-radius: 50px;
+  cursor: grab; user-select: none;
+  transition: all 0.15s; border: 3px solid transparent;
+}
+.word-chip.used {
+  opacity: 0.3 !important;
+  text-decoration: line-through !important;
+  cursor: not-allowed !important;
+  filter: grayscale(1); transform: none !important;
+}
+.word-chip:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.word-chip.dragging { opacity: 0.4; transform: scale(0.95); }
+.oxrow {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255,255,255,0.07);
+  border: 2px solid rgba(255,255,255,0.14);
+  border-radius: 14px; padding: 12px 18px; flex: 1;
+}
+.oxq { flex: 1; font-size: 28px; font-weight: 700; color: #fff; line-height: 1.4; }
+.obtn, .xbtn {
+  border: none; border-radius: 10px; padding: 14px 28px;
+  font-size: 34px; font-weight: 900; cursor: pointer; font-family: inherit;
+}
+.obtn { background: #1A8A42; color: #fff; }
+.xbtn { background: #E84040; color: #fff; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
+}
+
+/* ── 보완: 터치 선택 표시 · 메인 링크 · 안내 ── */
+.picked { outline:5px solid #FACC15 !important; outline-offset:3px; transform:scale(1.08); box-shadow:0 0 18px rgba(250,204,21,.7); }
+.to-main { position:fixed; left:12px; bottom:10px; z-index:1000; font-size:18px; color:#fff; background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; text-decoration:none; opacity:.55; }
+.to-main:hover { opacity:1; }
+#pick-toast { display:none; position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:2000; background:#FACC15; color:#1a1a1a; font-size:24px; font-weight:900; padding:10px 22px; border-radius:30px; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+
+<!-- ── 네비게이션 ── -->
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">‹</button>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">›</button>
+<div class="progress-bar" id="progress"></div>
+
+<!-- ══ SLIDE 1: 표지 ══ -->
+<div class="slide active" id="s1">
+  <div class="cover-deco">💬</div>
+  <div class="cover-inner">
+    <div class="cover-week">📅 2주차</div>
+    <div class="cover-title">말 잘 하면<br>AI도 잘 답한다!</div>
+    <div class="cover-sub">프롬프트의 비밀을 알면 AI가 달라져요!</div>
+    <div class="cover-goals">
+      <div class="cover-goal"><div class="num">1</div>프롬프트가 무엇인지 이해한다</div>
+      <div class="cover-goal"><div class="num">2</div>나쁜 질문 vs 좋은 질문 차이</div>
+      <div class="cover-goal"><div class="num">3</div>프롬프트 5원칙 익히기</div>
+      <div class="cover-goal"><div class="num">4</div>내 실생활 맞춤 질문 만들기</div>
+    </div>
+  </div>
+  <div class="slide-num">1 / 19</div>
+</div>
+
+<!-- ══ SLIDE 2: 마음 열기 - 지난주 복습 ══ -->
+<div class="slide" id="s2">
+  <div class="hdr">
+    <span class="hdr-week">마음 열기</span>
+    <span class="hdr-title">지난주 숙제, 해보셨나요?</span>
+    <span class="hdr-num">2 / 19</span>
+  </div>
+  <div class="body">
+    <div class="open-body">
+      <div class="open-question">
+        <div class="q-icon">🏠</div>
+        <div class="q-text">"집에서 ChatGPT에게<br>뭘 물어봤나요?"</div>
+      </div>
+      <div class="open-reactions">
+        <div class="reaction-card">
+          <div class="ri">😊</div>
+          <div>
+            <div class="rt">신기하게 잘 답해줬어요!</div>
+            <div class="rs">→ 오늘 배우면 더 잘 받을 수 있어요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent);">
+          <div class="ri">😕</div>
+          <div>
+            <div class="rt">이상한 대답이 나왔어요</div>
+            <div class="rs">→ 질문 방법이 문제였을 수도 있어요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent2);">
+          <div class="ri">😅</div>
+          <div>
+            <div class="rt">못 해봤어요</div>
+            <div class="rs">→ 괜찮아요! 오늘 함께 해봐요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="open-msg">💡 "AI가 이상한 대답을 했다면, 질문 방법이 문제였을 수 있어요!"</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: 프롬프트란? ══ -->
+<div class="slide" id="s3">
+  <div class="hdr">
+    <span class="hdr-week">핵심 개념</span>
+    <span class="hdr-title">프롬프트가 뭔가요?</span>
+    <span class="hdr-num">3 / 19</span>
+  </div>
+  <div class="body">
+    <div class="prompt-body">
+      <div class="prompt-left">
+        <div class="prompt-def-box">
+          <div class="prompt-def-label">프롬프트를 한마디로 표현하면?</div>
+          <div class="prompt-def-text">"AI에게 보내는<br>나의 말<br>(질문 또는 요청)"</div>
+        </div>
+        <div class="prompt-keywords">
+          <div class="pkw">💬 질문</div>
+          <div class="pkw">📝 요청</div>
+          <div class="pkw">🎯 구체적</div>
+          <div class="pkw">✨ 원하는 것</div>
+        </div>
+      </div>
+      <div class="prompt-right">
+        <div class="prompt-ex">
+          <div class="pe-icon">🤔</div>
+          <div>
+            <div class="pe-text">프롬프트를 잘 쓰면</div>
+            <div class="pe-sub">원하는 답변을 정확하게 받을 수 있어요</div>
+          </div>
+        </div>
+        <div class="prompt-ex">
+          <div class="pe-icon">😬</div>
+          <div>
+            <div class="pe-text">프롬프트를 못 쓰면</div>
+            <div class="pe-sub">엉뚱한 답변이 나와요</div>
+          </div>
+        </div>
+        <div class="prompt-ex">
+          <div class="pe-icon">🏆</div>
+          <div>
+            <div class="pe-text">AI 활용의 핵심!</div>
+            <div class="pe-sub">말만 잘 해도 AI 고수가 될 수 있어요</div>
+          </div>
+        </div>
+        <div class="prompt-ex">
+          <div class="pe-icon">🎓</div>
+          <div>
+            <div class="pe-text">오늘 5가지 원칙을 익히면</div>
+            <div class="pe-sub">AI를 내 편으로 만들 수 있어요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: 비유로 이해하기 ══ -->
+<div class="slide" id="s4">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">쉽게 이해해요</span>
+    <span class="hdr-title">이렇게 생각해보세요!</span>
+    <span class="hdr-num">4 / 19</span>
+  </div>
+  <div class="body">
+    <div class="analogy-body">
+      <div class="analogy-card">
+        <div class="analogy-title">🍽️ 식당에서 주문할 때</div>
+        <div class="analogy-bad">❌ "아무거나 주세요"</div>
+        <div class="analogy-arrow">↓ 구체적으로 말하면!</div>
+        <div class="analogy-good">✅ "된장찌개 하나,<br>맵지 않게, 빨리 주세요"</div>
+      </div>
+      <div class="analogy-card">
+        <div class="analogy-title">🚕 택시 탈 때</div>
+        <div class="analogy-bad">❌ "어디 좀 가요"</div>
+        <div class="analogy-arrow">↓ 구체적으로 말하면!</div>
+        <div class="analogy-good">✅ "강남역 2번 출구로<br>가주세요"</div>
+      </div>
+      <div class="analogy-card">
+        <div class="analogy-title">🤖 AI에게 물어볼 때</div>
+        <div class="analogy-bad">❌ "건강에 좋은 거 알려줘"</div>
+        <div class="analogy-arrow">↓ 구체적으로 말하면!</div>
+        <div class="analogy-good">✅ "60대 여성, 무릎이 안 좋아요.<br>집에서 할 운동 3가지만"</div>
+      </div>
+    </div>
+    <div class="analogy-msg">💡 말을 구체적으로 할수록 원하는 답을 받을 수 있어요!</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: 나쁜 vs 좋은 질문 ① ══ -->
+<div class="slide" id="s5">
+  <div class="hdr">
+    <span class="hdr-week">비교 실습 ①</span>
+    <span class="hdr-title">나쁜 질문 vs 좋은 질문</span>
+    <span class="hdr-num">5 / 19</span>
+  </div>
+  <div class="body">
+    <div class="compare-body">
+      <div class="compare-head-row">
+        <div class="compare-col-hdr" style="background:var(--accent2);">❌ 나쁜 질문</div>
+        <div class="compare-col-hdr" style="background:var(--green);">✅ 좋은 질문</div>
+      </div>
+      <div class="compare-rows">
+        <div class="compare-row">
+          <div class="compare-cell bad">
+            <div class="cc-icon">🏥</div>
+            <div>
+              <div class="cc-text">"건강에 좋은 거 알려줘"</div>
+              <div class="cc-sub">→ 누구? 어떤 상태? 뭘 원하는지 모름</div>
+            </div>
+          </div>
+          <div class="compare-cell good">
+            <div class="cc-icon">🏥</div>
+            <div class="cc-text">"60대 여성인데 무릎이 안 좋아요. 집에서 할 수 있는 가벼운 운동 3가지만 알려주세요"</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell bad">
+            <div class="cc-icon">🍳</div>
+            <div>
+              <div class="cc-text">"요리 레시피 알려줘"</div>
+              <div class="cc-sub">→ 무슨 재료? 어떤 요리? 시간은?</div>
+            </div>
+          </div>
+          <div class="compare-cell good">
+            <div class="cc-icon">🍳</div>
+            <div class="cc-text">"냉장고에 두부, 애호박, 달걀이 있어요. 20분 안에 만들 수 있는 간단한 반찬 알려주세요"</div>
+          </div>
+        </div>
+      </div>
+      <div class="tip-banner">✏️ 직접 ChatGPT에 두 가지를 입력해보고 답변 차이를 느껴보세요!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: 나쁜 vs 좋은 질문 ② ══ -->
+<div class="slide" id="s6">
+  <div class="hdr">
+    <span class="hdr-week">비교 실습 ②</span>
+    <span class="hdr-title">나쁜 질문 vs 좋은 질문</span>
+    <span class="hdr-num">6 / 19</span>
+  </div>
+  <div class="body">
+    <div class="compare-body">
+      <div class="compare-head-row">
+        <div class="compare-col-hdr" style="background:var(--accent2);">❌ 나쁜 질문</div>
+        <div class="compare-col-hdr" style="background:var(--green);">✅ 좋은 질문</div>
+      </div>
+      <div class="compare-rows">
+        <div class="compare-row">
+          <div class="compare-cell bad">
+            <div class="cc-icon">✈️</div>
+            <div>
+              <div class="cc-text">"여행지 추천해줘"</div>
+              <div class="cc-sub">→ 누구랑? 언제? 어디로? 예산은?</div>
+            </div>
+          </div>
+          <div class="compare-cell good">
+            <div class="cc-icon">✈️</div>
+            <div class="cc-text">"70대 부모님과 가을에 1박 2일 국내 여행. 걷기 편하고 경치 좋은 곳 추천해주세요"</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell bad">
+            <div class="cc-icon">💌</div>
+            <div>
+              <div class="cc-text">"문자 써줘"</div>
+              <div class="cc-sub">→ 누구에게? 무슨 내용? 어떤 느낌?</div>
+            </div>
+          </div>
+          <div class="compare-cell good">
+            <div class="cc-icon">💌</div>
+            <div class="cc-text">"오랫동안 못 만난 친구에게 안부 문자. 따뜻하고 짧게 3줄로 써주세요"</div>
+          </div>
+        </div>
+      </div>
+      <div class="tip-banner">💬 "어떤 답변이 더 마음에 드세요?" — 직접 비교해보면 차이가 느껴져요!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: 원칙 ①② ══ -->
+<div class="slide" id="s7">
+  <div class="hdr">
+    <span class="hdr-week">5원칙 ①②</span>
+    <span class="hdr-title">프롬프트 황금 5원칙</span>
+    <span class="hdr-num">7 / 19</span>
+  </div>
+  <div class="body">
+    <div class="principle-body">
+      <div class="principle-card">
+        <div class="p-header" style="background:linear-gradient(135deg,var(--w2),var(--w2-dark));">
+          <div class="p-num">①</div>
+          <div>
+            <div class="p-name">나를 소개하세요</div>
+            <div class="p-desc">AI는 내가 누구인지 전혀 몰라요!</div>
+          </div>
+        </div>
+        <div class="p-examples">
+          <div class="p-ex-bad">❌ "운동 알려줘"</div>
+          <div class="p-ex-good">✅ "저는 65세 남성이고 고혈압이 있어요. 집에서 할 수 있는 운동 알려줘"</div>
+        </div>
+      </div>
+      <div class="p-divider"></div>
+      <div class="principle-card">
+        <div class="p-header" style="background:linear-gradient(135deg,#1A8A42,#0D5A2A);">
+          <div class="p-num">②</div>
+          <div>
+            <div class="p-name">구체적으로 말하세요</div>
+            <div class="p-desc">숫자, 상황, 조건을 넣어요!</div>
+          </div>
+        </div>
+        <div class="p-examples">
+          <div class="p-ex-bad">❌ "레시피 알려줘"</div>
+          <div class="p-ex-good">✅ "30분 안에, 재료 5가지 이하로 만들 수 있는 국 레시피 알려줘"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: 원칙 ③④ ══ -->
+<div class="slide" id="s8">
+  <div class="hdr">
+    <span class="hdr-week">5원칙 ③④</span>
+    <span class="hdr-title">프롬프트 황금 5원칙</span>
+    <span class="hdr-num">8 / 19</span>
+  </div>
+  <div class="body">
+    <div class="principle-body">
+      <div class="principle-card">
+        <div class="p-header" style="background:linear-gradient(135deg,#D97706,#92400E);">
+          <div class="p-num">③</div>
+          <div>
+            <div class="p-name">형식을 요청하세요</div>
+            <div class="p-desc">읽기 편한 형태로 받아요!</div>
+          </div>
+        </div>
+        <div class="p-examples">
+          <div class="p-ex-good">✅ "3가지만 알려줘"</div>
+          <div class="p-ex-good">✅ "짧게 요약해줘"</div>
+          <div class="p-ex-good">✅ "표로 만들어줘"</div>
+          <div class="p-ex-good">✅ "쉬운 말로 설명해줘"</div>
+        </div>
+      </div>
+      <div class="p-divider"></div>
+      <div class="principle-card">
+        <div class="p-header" style="background:linear-gradient(135deg,#DC2626,#7F1D1D);">
+          <div class="p-num">④</div>
+          <div>
+            <div class="p-name">역할을 줘보세요</div>
+            <div class="p-desc">전문가처럼 답변받을 수 있어요!</div>
+          </div>
+        </div>
+        <div class="p-examples">
+          <div class="p-ex-good">✅ "의사처럼 설명해줘"</div>
+          <div class="p-ex-good">✅ "친절한 선생님처럼 쉽게 알려줘"</div>
+          <div class="p-ex-good">✅ "요리사라고 생각하고 조언해줘"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: 원칙 ⑤ + 핵심 메시지 ══ -->
+<div class="slide" id="s9">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">5원칙 완성!</span>
+    <span class="hdr-title">프롬프트 황금 5원칙 ⑤</span>
+    <span class="hdr-num">9 / 19</span>
+  </div>
+  <div class="body">
+    <div class="p5-body">
+      <div class="p5-card">
+        <div class="p5-header">
+          <div class="p5-num">⑤</div>
+          <div>
+            <div class="p5-name">마음에 안 들면 다시 요청하세요!</div>
+            <div class="p5-desc">AI는 다시 물어봐도 전혀 기분 나빠하지 않아요 😊</div>
+          </div>
+        </div>
+        <div class="p5-examples">
+          <div class="p5-ex">💬 "좀 더 쉽게 설명해줘"</div>
+          <div class="p5-ex">💬 "더 짧게 해줘"</div>
+          <div class="p5-ex">💬 "다른 방법도 알려줘"</div>
+          <div class="p5-ex">💬 "아까 답변이 마음에 안 들었어. 다르게 해줘"</div>
+        </div>
+      </div>
+      <div class="core-msg">
+        <div class="core-msg-icon">🎯</div>
+        <div class="core-msg-text">"AI는 내 마음을 못 읽어요.<br>말을 잘 해줘야 잘 도와줄 수 있어요!"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: 실습 워크시트 ══ -->
+<div class="slide" id="s10">
+  <div class="hdr">
+    <span class="hdr-week">실습</span>
+    <span class="hdr-title">나만의 질문 만들어보기!</span>
+    <span class="hdr-num">10 / 19</span>
+  </div>
+  <div class="body">
+    <div class="ws-body">
+      <div class="ws-left">
+        <div class="ws-section-title">📝 질문 만들기 공식</div>
+        <div class="ws-template">
+          저는 <span class="ws-blank">나이·성별 또는 상황</span> 인데요,<br><br>
+          <span class="ws-blank">원하는 것</span> 을 알려주세요.<br><br>
+          <span class="ws-blank">조건이나 형식</span> 으로 해주세요.
+        </div>
+        <div class="ws-example">
+          <div style="font-size:30px;flex-shrink:0;">💡</div>
+          <div>
+            <div style="font-size:20px;font-weight:900;color:var(--green);margin-bottom:6px;">완성 예시</div>
+            <div style="font-size:24px;line-height:1.6;">"저는 <strong>68세 여성</strong>인데요, <strong>혼자 사는 딸에게 안부 문자</strong>를 써주세요. <strong>따뜻하고 짧게 2~3줄</strong>로 해주세요."</div>
+          </div>
+        </div>
+      </div>
+      <div class="ws-right">
+        <div class="ws-topic-title">💡 관심 있는 주제 하나를 골라보세요!</div>
+        <div class="topic-grid">
+          <div class="topic-card"><div class="topic-icon">🍳</div><div class="topic-name">요리 / 반찬</div></div>
+          <div class="topic-card"><div class="topic-icon">💊</div><div class="topic-name">건강 / 운동</div></div>
+          <div class="topic-card"><div class="topic-icon">✈️</div><div class="topic-name">여행 / 나들이</div></div>
+          <div class="topic-card"><div class="topic-icon">📱</div><div class="topic-name">스마트폰 사용법</div></div>
+          <div class="topic-card"><div class="topic-icon">💌</div><div class="topic-name">문자 / 편지</div></div>
+          <div class="topic-card"><div class="topic-icon">🌱</div><div class="topic-name">취미 / 원예</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: 실습 따라하기 ══ -->
+<div class="slide" id="s11">
+  <div class="hdr" style="background:var(--w2);">
+    <span class="hdr-week">실습 따라하기</span>
+    <span class="hdr-title">5원칙을 담은 완성 프롬프트!</span>
+    <span class="hdr-num">11 / 19</span>
+  </div>
+  <div class="body">
+    <div class="tryit-body">
+      <div class="tryit-header">📱 ChatGPT에 직접 입력해보세요! 5원칙이 모두 들어 있어요</div>
+      <div class="tryit-card">
+        <div class="tryit-num">1</div>
+        <div class="tryit-text">저는 68세 여성이고 당뇨가 있어요. 혈당에 좋은 아침 식단을 3가지만 쉽게 알려주세요.</div>
+        <div class="tryit-hint">🏥 건강</div>
+      </div>
+      <div class="tryit-card">
+        <div class="tryit-num">2</div>
+        <div class="tryit-text">냉장고에 감자, 양파, 소고기가 있어요. 30분 안에 만들 수 있는 따뜻한 국 요리 알려주세요.</div>
+        <div class="tryit-hint">🍳 요리</div>
+      </div>
+      <div class="tryit-card">
+        <div class="tryit-num">3</div>
+        <div class="tryit-text">75세 어머니와 봄에 1박 2일 여행 가려고요. 버스로 갈 수 있고 경치 좋은 국내 여행지 추천해주세요.</div>
+        <div class="tryit-hint">✈️ 여행</div>
+      </div>
+      <div class="tryit-card">
+        <div class="tryit-num">4</div>
+        <div class="tryit-text">10년 만에 연락하는 친구에게 문자 보내려고요. 반갑고 따뜻하게, 짧게 2~3줄로 써주세요.</div>
+        <div class="tryit-hint">💌 문자</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: 오늘 배운 것 정리 ══ -->
+<div class="slide" id="s12">
+  <div class="hdr">
+    <span class="hdr-week">정리</span>
+    <span class="hdr-title">오늘 배운 것</span>
+    <span class="hdr-num">12 / 19</span>
+  </div>
+  <div class="body">
+    <div class="review-body">
+      <div class="review-checks">
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">프롬프트 = AI에게 보내는 나의 말</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">구체적으로 말할수록 더 좋은 답변이 나온다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">5원칙: ①나 소개 ②구체적 ③형식 ④역할 ⑤다시 요청</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">나만의 질문을 직접 만들어봤다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI는 다시 물어봐도 기분 나빠하지 않는다</div>
+        </div>
+      </div>
+      <div class="review-hw">
+        <div class="hw-box">
+          <div class="hw-title">📝 이번 주 숙제</div>
+          <div class="hw-text">5원칙 중 하나를 활용해서<br>집에서 질문 2개 만들어보기!</div>
+          <div class="hw-example">핸드폰 메모앱에 저장해두세요.<br>다음 주에 선생님께 보여주세요 😊</div>
+        </div>
+        <div class="next-box">
+          <div class="next-title">🔜 다음 주 예고</div>
+          <div class="next-text">ChatGPT로 일상에서 바로 쓸 수 있는 실용 활용법! 문자 대신 써주기, 건강 정보 찾기, 여행 계획 짜기 — 진짜 쓸모있는 것들만!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">12 / 19</div>
+</div>
+
+<!-- ══ SLIDE 13: 퀴즈 소개 ══ -->
+<div class="slide" id="s13" style="background:linear-gradient(135deg,#1E0A3E,#3D1A7A);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:30px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎯</div>
+    <div style="font-size:64px;font-weight:900;color:#fff;margin-bottom:16px;">복습 퀴즈 타임!</div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.8);margin-bottom:30px;">오늘 배운 프롬프트 5원칙을 퀴즈로 확인해봐요! · 총 5종류 퀴즈</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;">🟡 퀴즈1 나쁜/좋은 질문 분류</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;">🟢 퀴즈2 5원칙 설명 매칭</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;">🔵 퀴즈3 프롬프트 구성 순서</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;">🔴 퀴즈4 O/X 퀴즈</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;">🟣 퀴즈5 빈칸 채우기</div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 19</div>
+</div>
+
+<!-- ══ SLIDE 14: 퀴즈1 — 나쁜/좋은 질문 분류 ══ -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#1E0A3E,#3D1A7A);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 1</span>
+    <span class="hdr-title">나쁜 질문과 좋은 질문으로 분류해보세요!</span>
+    <span class="hdr-num">14 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb1" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c1_1" data-ans="bad" style="background:#FCA5A5;color:#7A1A1A;font-size:23px;">건강에 좋은 거 알려줘</div>
+      <div class="word-chip" draggable="true" id="c1_2" data-ans="good" style="background:#6EE7B7;color:#0A3A2A;font-size:23px;">60대 여성 무릎 운동 3가지</div>
+      <div class="word-chip" draggable="true" id="c1_3" data-ans="bad" style="background:#FCA5A5;color:#7A1A1A;font-size:23px;">요리 알려줘</div>
+      <div class="word-chip" draggable="true" id="c1_4" data-ans="good" style="background:#6EE7B7;color:#0A3A2A;font-size:23px;">냉장고 재료로 20분 반찬</div>
+      <div class="word-chip" draggable="true" id="c1_5" data-ans="bad" style="background:#FCA5A5;color:#7A1A1A;font-size:23px;">문자 써줘</div>
+      <div class="word-chip" draggable="true" id="c1_6" data-ans="good" style="background:#6EE7B7;color:#0A3A2A;font-size:23px;">친구에게 따뜻한 3줄 안부문자</div>
+    </div>
+    <div style="display:flex;gap:16px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(232,64,64,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#FCA5A5;">❌ 나쁜 질문</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="bad" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="bad" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="bad" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(26,138,66,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#6EE7B7;">✅ 좋은 질문</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="good" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="good" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="good" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc1">0</span> / 6 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb1','1')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('1')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 15: 퀴즈2 — 5원칙 설명 매칭 ══ -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#1E0A3E,#3D1A7A);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 2</span>
+    <span class="hdr-title">프롬프트 5원칙 이름을 알맞은 설명에 연결해보세요!</span>
+    <span class="hdr-num">15 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb2" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c2_1" data-ans="p1" style="background:#C4B5FD;color:#1E0A3E;">나 소개</div>
+      <div class="word-chip" draggable="true" id="c2_2" data-ans="p2" style="background:#6EE7B7;color:#0A3A2A;">구체적으로</div>
+      <div class="word-chip" draggable="true" id="c2_3" data-ans="p3" style="background:#FCD34D;color:#3A2A00;">형식 요청</div>
+      <div class="word-chip" draggable="true" id="c2_4" data-ans="p4" style="background:#F87171;color:#3A0A0A;">역할 부여</div>
+      <div class="word-chip" draggable="true" id="c2_5" data-ans="p5" style="background:#60A5FA;color:#0A1A3A;">다시 요청</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">👤 AI는 내가 누구인지 몰라요. 나이, 상황을 먼저 알려주세요!</div>
+        <div class="dz" data-col="p1" data-q="2" style="width:160px;flex-shrink:0;"><span class="dzlabel">원칙 이름</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">🎯 숫자, 상황, 조건을 넣어서 말해주세요!</div>
+        <div class="dz" data-col="p2" data-q="2" style="width:160px;flex-shrink:0;"><span class="dzlabel">원칙 이름</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">📋 3가지만, 짧게, 표로, 쉽게 — 원하는 형태를 말해요!</div>
+        <div class="dz" data-col="p3" data-q="2" style="width:160px;flex-shrink:0;"><span class="dzlabel">원칙 이름</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">👨‍⚕️ 의사처럼, 선생님처럼 — 전문가 역할을 맡겨봐요!</div>
+        <div class="dz" data-col="p4" data-q="2" style="width:160px;flex-shrink:0;"><span class="dzlabel">원칙 이름</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">🔄 마음에 안 들면 "더 쉽게", "다르게" 라고 또 부탁해요!</div>
+        <div class="dz" data-col="p5" data-q="2" style="width:160px;flex-shrink:0;"><span class="dzlabel">원칙 이름</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc2">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb2','2')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('2')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: 퀴즈3 — 프롬프트 구성 순서 ══ -->
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 3</span>
+    <span class="hdr-title">프롬프트를 완성해주세요! 각 부분을 알맞은 자리에!</span>
+    <span class="hdr-num">16 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:12px 20px;font-size:24px;color:#C4B5FD;font-weight:700;text-align:center;flex-shrink:0;">
+      💡 좋은 프롬프트를 구성하는 요소들을 올바른 순서에 놓아보세요!
+    </div>
+    <div id="wb3" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c3_1" data-ans="s3" style="background:#FCD34D;color:#3A2A00;">따뜻하고 재미있게</div>
+      <div class="word-chip" draggable="true" id="c3_2" data-ans="s1" style="background:#C4B5FD;color:#1E0A3E;">저는 70세 할머니예요</div>
+      <div class="word-chip" draggable="true" id="c3_3" data-ans="s5" style="background:#F9A8D4;color:#3A0A2A;">친절한 선생님처럼</div>
+      <div class="word-chip" draggable="true" id="c3_4" data-ans="s2" style="background:#6EE7B7;color:#0A3A2A;">손녀 생일문자 써주세요</div>
+      <div class="word-chip" draggable="true" id="c3_5" data-ans="s4" style="background:#60A5FA;color:#0A1A3A;">3줄로</div>
+    </div>
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(196,181,253,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#C4B5FD;text-align:center;">① 나 소개</div>
+        <div class="dz" data-col="s1" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(110,231,183,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#6EE7B7;text-align:center;">② 원하는 것</div>
+        <div class="dz" data-col="s2" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(252,211,77,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#FCD34D;text-align:center;">③ 조건</div>
+        <div class="dz" data-col="s3" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(96,165,250,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#60A5FA;text-align:center;">④ 형식</div>
+        <div class="dz" data-col="s4" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(249,168,212,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#F9A8D4;text-align:center;">⑤ 역할</div>
+        <div class="dz" data-col="s5" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc3">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb3','3')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('3')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: 퀴즈4 — O/X ══ -->
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#2A0A3E,#4A1A7A);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 4</span>
+    <span class="hdr-title">맞으면 O, 틀리면 X를 눌러보세요!</span>
+    <span class="hdr-num">17 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div style="text-align:center;color:#C4B5FD;font-size:22px;font-weight:700;flex-shrink:0;">점수: <span id="sc4">0</span> / 5</div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div class="oxrow" id="ox1">
+        <div class="oxq">프롬프트란 AI에게 보내는 나의 말(질문·요청)이다</div>
+        <button class="obtn" onclick="oxAns(this,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox2">
+        <div class="oxq">AI는 짧고 모호한 질문을 더 좋아한다</div>
+        <button class="obtn" onclick="oxAns(this,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox3">
+        <div class="oxq">AI에게 같은 질문을 다시 해도 전혀 괜찮다</div>
+        <button class="obtn" onclick="oxAns(this,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox4">
+        <div class="oxq">AI에게 "의사처럼 설명해줘"라고 역할을 주면 더 전문적인 답변이 나온다</div>
+        <button class="obtn" onclick="oxAns(this,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,4,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox5">
+        <div class="oxq">AI는 내 마음속 생각을 자동으로 알아낼 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,5,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,5,'X')">X</button>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <button class="qbtn" onclick="resetOX()">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX()">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 18: 퀴즈5 — 빈칸 채우기 ══ -->
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 5</span>
+    <span class="hdr-title">빈칸에 알맞은 단어를 끌어다 놓으세요!</span>
+    <span class="hdr-num">18 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb5" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c5_1" data-ans="b_prompt" style="background:#C4B5FD;color:#1E0A3E;">프롬프트</div>
+      <div class="word-chip" draggable="true" id="c5_2" data-ans="b_specific" style="background:#6EE7B7;color:#0A3A2A;">구체적</div>
+      <div class="word-chip" draggable="true" id="c5_3" data-ans="b_role" style="background:#F87171;color:#3A0A0A;">역할</div>
+      <div class="word-chip" draggable="true" id="c5_4" data-ans="b_feel" style="background:#FCD34D;color:#3A2A00;">기분</div>
+      <div class="word-chip" draggable="true" id="c5_5" data-ans="b_five" style="background:#60A5FA;color:#0A1A3A;">다섯</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI에게 보내는 나의 말을 <span style="color:#C4B5FD;">( &nbsp;&nbsp;&nbsp; )</span> 라고 해요.</div>
+        <div class="dz" data-col="b_prompt" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;"><span style="color:#6EE7B7;">( &nbsp;&nbsp;&nbsp; )</span>으로 말할수록 AI에게 더 좋은 답변을 받을 수 있어요.</div>
+        <div class="dz" data-col="b_specific" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI는 다시 물어봐도 <span style="color:#FCD34D;">( &nbsp;&nbsp;&nbsp; )</span>나빠하지 않아요.</div>
+        <div class="dz" data-col="b_feel" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI에게 "의사처럼"이라고 하는 것이 <span style="color:#F87171;">( &nbsp;&nbsp;&nbsp; )</span> 부여예요.</div>
+        <div class="dz" data-col="b_role" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">오늘 배운 프롬프트 원칙은 모두 <span style="color:#60A5FA;">( &nbsp;&nbsp;&nbsp; )</span>가지예요.</div>
+        <div class="dz" data-col="b_five" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc5">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb5','5')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('5')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 19: 마무리 ══ -->
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#1E0A3E,#3D1A7A,#7C3AED);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:40px;">
+    <div style="font-size:90px;margin-bottom:16px;">🎉</div>
+    <div style="font-size:58px;font-weight:900;color:#fff;margin-bottom:12px;">오늘도 수고하셨어요!</div>
+    <div style="font-size:26px;color:rgba(255,255,255,0.8);margin-bottom:32px;">이제 여러분도 프롬프트 고수예요!</div>
+    <div style="background:rgba(255,255,255,0.15);border-radius:20px;padding:24px 36px;font-size:24px;color:#fff;font-weight:600;line-height:1.8;max-width:760px;margin:0 auto;">
+      집에서 5원칙 중 하나를 활용해서 질문 2개를 만들어보세요.<br>
+      <strong style="color:#FCD34D;">"저는 [나이·상황]인데요, [원하는 것]을 [형식]으로 알려주세요."</strong><br><br>
+      다음 주에 선생님께 보여주세요! 😊
+    </div>
+  </div>
+  <div class="slide-num">19 / 19</div>
+</div>
+
+<script>
+/* ── 슬라이드 네비게이션 ── */
+var cur = 0, total = 19;
+var slides = document.querySelectorAll('.slide');
+function go(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total-1));
+  slides[cur].classList.add('active');
+  document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+  document.getElementById('btn-prev').style.opacity = cur===0?'0.3':'1';
+  document.getElementById('btn-next').style.opacity = cur===total-1?'0.3':'1';
+}
+function nextSlide(){ if(cur<total-1) go(cur+1); }
+function prevSlide(){ if(cur>0) go(cur-1); }
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='f'||e.key==='F'){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+go(0);
+
+/* ── 효과음 ── */
+function beep(ok){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ok){
+      [1047,1319,1568].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.4,ctx.currentTime+i*0.12+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.4);
+        o.connect(g);g.connect(ctx.destination);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.5);
+      });
+    } else {
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sawtooth';o.frequency.value=180;
+      g.gain.setValueAtTime(0.35,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+0.6);
+    }
+  }catch(e){}
+}
+
+/* ── 드래그&드롭 ── */
+var dragId = null;
+var scores = {};
+
+document.addEventListener('dragstart', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(!chip||chip.classList.contains('used')){e.preventDefault();return;}
+  dragId = chip.id;
+  setTimeout(function(){ chip.classList.add('dragging'); }, 0);
+});
+document.addEventListener('dragend', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(chip) chip.classList.remove('dragging');
+});
+document.addEventListener('dragover', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz && !dz.querySelector('.dzchip')) { e.preventDefault(); dz.classList.add('over'); }
+});
+document.addEventListener('dragleave', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz) dz.classList.remove('over');
+});
+document.addEventListener('drop', function(e){
+  var dz = e.target.closest('.dz');
+  if(!dz||!dragId) return;
+  e.preventDefault();
+  dz.classList.remove('over');
+  if(dz.querySelector('.dzchip')) return;
+
+  var chip = document.getElementById(dragId);
+  if(!chip||chip.classList.contains('used')) { dragId=null; return; }
+  chip.classList.remove('dragging');
+
+  var q   = dz.getAttribute('data-q');
+  var col = dz.getAttribute('data-col');
+  var ok  = chip.getAttribute('data-ans') === col;
+
+  if(ok){
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+    scores[q] = (scores[q]||0) + 1;
+    var sc = document.getElementById('sc'+q);
+    if(sc) sc.textContent = scores[q];
+    beep(true);
+  } else {
+    dz.classList.add('fail');
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#EF4444';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    chip.classList.add('used');
+    beep(false);
+    setTimeout(function(){
+      dz.classList.remove('fail'); chip.classList.remove('used');
+      dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+    }, 800);
+  }
+  dragId = null;
+});
+
+/* ── 리셋 ── */
+function resetQ(bankId, q){
+  scores[q] = 0;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = '0';
+  document.getElementById(bankId).querySelectorAll('.word-chip').forEach(function(c){
+    c.style.display = '';
+    c.classList.remove('used','dragging');
+  });
+  document.querySelectorAll('.dz[data-q="'+q+'"]').forEach(function(dz){
+    dz.className = 'dz';
+    dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+  });
+}
+
+/* ── 정답 보기 ── */
+var ansMap = {
+  '1': [['c1_1','bad'],['c1_2','good'],['c1_3','bad'],['c1_4','good'],['c1_5','bad'],['c1_6','good']],
+  '2': [['c2_1','p1'],['c2_2','p2'],['c2_3','p3'],['c2_4','p4'],['c2_5','p5']],
+  '3': [['c3_1','s3'],['c3_2','s1'],['c3_3','s5'],['c3_4','s2'],['c3_5','s4']],
+  '5': [['c5_1','b_prompt'],['c5_2','b_specific'],['c5_3','b_role'],['c5_4','b_feel'],['c5_5','b_five']]
+};
+var bankMap = {'1':'wb1','2':'wb2','3':'wb3','5':'wb5'};
+
+function showAns(q){
+  resetQ(bankMap[q], q);
+  var pairs = ansMap[q];
+  pairs.forEach(function(pair){
+    var chipId = pair[0], col = pair[1];
+    var chip = document.getElementById(chipId);
+    var dz = document.querySelector('.dz[data-q="'+q+'"][data-col="'+col+'"]');
+    if(!chip||!dz) return;
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+  });
+  scores[q] = pairs.length;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = pairs.length;
+}
+
+/* ── O/X 퀴즈 ── */
+var oxKey = {1:'O', 2:'X', 3:'O', 4:'O', 5:'X'};
+var oxDone = {};
+var oxScore = 0;
+
+function oxAns(btn, n, ans){
+  if(oxDone[n]) return;
+  oxDone[n] = true;
+  var row = document.getElementById('ox'+n);
+  var ok = (ans === oxKey[n]);
+  row.querySelectorAll('button').forEach(function(b){ b.disabled=true; b.style.opacity='0.35'; });
+  btn.style.opacity='1';
+  if(ok){
+    btn.style.background='#22C55E';
+    btn.style.boxShadow='0 0 18px rgba(34,197,94,0.6)';
+    row.style.borderColor='#22C55E';
+    row.style.background='rgba(34,197,94,0.12)';
+    oxScore++;
+    beep(true);
+  } else {
+    btn.style.background='#EF4444';
+    btn.style.boxShadow='0 0 18px rgba(239,68,68,0.6)';
+    row.style.borderColor='#EF4444';
+    row.style.background='rgba(239,68,68,0.1)';
+    row.querySelectorAll('button').forEach(function(b){
+      if(b.textContent===oxKey[n]){ b.style.opacity='1'; b.style.background='#22C55E'; }
+    });
+    beep(false);
+  }
+  document.getElementById('sc4').textContent = oxScore;
+}
+
+function resetOX(){
+  oxDone={}; oxScore=0;
+  document.getElementById('sc4').textContent='0';
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.style.borderColor='rgba(255,255,255,0.14)';
+    row.style.background='rgba(255,255,255,0.07)';
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=false; b.style.opacity='1'; b.style.boxShadow='none';
+      b.style.background = b.classList.contains('obtn')?'#1A8A42':'#E84040';
+    });
+  }
+}
+
+function showOX(){
+  resetOX();
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=true;
+      if(b.textContent===oxKey[i]){
+        b.style.opacity='1'; b.style.background='#22C55E';
+        b.style.boxShadow='0 0 16px rgba(34,197,94,0.5)';
+        row.style.borderColor='#22C55E';
+        row.style.background='rgba(34,197,94,0.12)';
+      } else { b.style.opacity='0.25'; }
+    });
+    oxDone[i]=true;
+  }
+  oxScore=5; document.getElementById('sc4').textContent='5';
+}
+</script>
+
+<a class="to-main" href="index.html">☰ 메인</a>
+<div id="pick-toast"></div>
+<script>
+/* ── 보완 1: 터치·클릭으로도 '낱말 끌어다 놓기' (낱말을 누르고 → 놓을 칸을 누르세요) ── */
+(function () {
+  var picked = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('pick-toast');
+    if (!t) { return; }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function fire(el, type) { el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); }
+  function clearPick() { if (picked) { picked.classList.remove('picked'); picked = null; } }
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('[draggable="true"]') : null;
+    if (chip) {
+      if (chip.classList.contains('used') || chip.style.display === 'none') { return; }
+      if (picked === chip) { clearPick(); return; }
+      clearPick(); picked = chip; chip.classList.add('picked');
+      toast('이제 놓을 칸을 눌러 주세요 👇');
+      return;
+    }
+    var dz = e.target.closest ? e.target.closest('.dz') : null;
+    if (dz && picked) {
+      var c = picked; clearPick();
+      fire(c, 'dragstart'); fire(dz, 'dragover'); fire(dz, 'drop'); fire(c, 'dragend');
+      setTimeout(function () { c.classList.remove('dragging'); }, 40);
+    }
+  });
+})();
+
+/* ── 보완 2: 화면이 작아 글이 잘리면 그 슬라이드만 자동으로 줄여서 맞춥니다 ── */
+(function () {
+  function overflowed(sl) {
+    var els = sl.querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.clientHeight > 0 && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+        var cs = window.getComputedStyle(el);
+        if (/(hidden|auto|scroll)/.test(cs.overflow + cs.overflowX + cs.overflowY)) { return true; }
+      }
+    }
+    return (sl.scrollHeight > sl.clientHeight + 2) || (sl.scrollWidth > sl.clientWidth + 2);
+  }
+  function fit(sl) {
+    if (!sl || !('zoom' in document.documentElement.style)) { return; }
+    try {
+      sl.style.zoom = ''; sl.style.width = ''; sl.style.height = '';
+      var s = 1, n = 0;
+      while (overflowed(sl) && n < 10 && s > 0.6) {
+        s = s * 0.94; n++;
+        sl.style.zoom = s; sl.style.width = (100 / s) + 'vw'; sl.style.height = (100 / s) + 'vh';
+      }
+    } catch (e) {}
+  }
+  function fitActive() { fit(document.querySelector('.slide.active')); }
+  window.__fitActive = fitActive;
+  ['go', 'showSlide'].forEach(function (name) {
+    if (typeof window[name] === 'function') {
+      var orig = window[name];
+      window[name] = function () { var r = orig.apply(this, arguments); fitActive(); return r; };
+    }
+  });
+  window.addEventListener('resize', fitActive);
+  window.addEventListener('load', function () { setTimeout(fitActive, 150); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitActive); }
+})();
+</script>
+
+</body>
+</html>

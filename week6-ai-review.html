@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6주차 복습 · AI 이미지 & 영상 만들기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+  :root {
+    --main: #C2569B; --main-light: #FCEEF6; --main-dark: #8A2A68;
+    --green: #3DAF78; --green-light: #EDFAF3;
+    --blue: #4A90D9; --blue-light: #EBF4FF;
+    --purple: #6B5ED4; --purple-light: #F0EEFF;
+    --coral: #E05A3A; --coral-light: #FFF0ED;
+    --bg: #F4F7FB; --card: #FFFFFF; --text: #18243A;
+    --text-mid: #4A5568; --text-soft: #8A9BB0; --border: #DDE6F2;
+    --radius: 22px; --shadow: 0 3px 16px rgba(138,42,104,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+  .app-header { background:linear-gradient(140deg,#5A1744 0%,#C2569B 55%,#E58BC0 100%); padding:32px 22px 70px; position:relative; overflow:hidden; }
+  .hd1 { position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.07); top:-70px; right:-50px; }
+  .hd2 { position:absolute; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,0.05); bottom:-40px; left:30px; }
+  .hplane { position:absolute; right:22px; top:22px; font-size:64px; opacity:0.22; }
+  .week-badge { display:inline-block; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:5px 14px; border-radius:20px; margin-bottom:10px; }
+  .header-title { color:#fff; font-size:27px; font-weight:900; line-height:1.3; margin-bottom:5px; }
+  .header-sub { color:rgba(255,255,255,0.82); font-size:14px; font-weight:500; }
+  .claude-badge { position:absolute; bottom:18px; right:18px; background:rgba(255,255,255,0.18); backdrop-filter:blur(8px); color:#fff; font-size:11px; font-weight:700; padding:5px 12px; border-radius:14px; }
+  .tab-nav { display:flex; background:var(--card); border-radius:var(--radius) var(--radius) 0 0; margin:-32px 10px 0; padding:6px; gap:4px; box-shadow:0 4px 20px rgba(138,42,104,0.13); position:relative; z-index:10; }
+  .tab-btn { flex:1; padding:10px 2px; border:none; background:transparent; border-radius:14px; font-family:inherit; font-size:11px; font-weight:700; color:var(--text-soft); cursor:pointer; transition:all 0.22s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tab-btn .ti { font-size:21px; }
+  .tab-btn.active { background:var(--main-light); color:var(--main-dark); }
+  .main { padding:14px 10px 110px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  .card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .card-title { font-size:18px; font-weight:900; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:9px; }
+  .ic { width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+  .explain-btn { display:flex; align-items:center; gap:10px; width:100%; padding:14px 18px; background:linear-gradient(135deg,var(--main-light),#FFE5D0); border:2px solid var(--main); border-radius:16px; cursor:pointer; font-family:inherit; margin-bottom:10px; transition:all 0.2s; text-align:left; }
+  .explain-btn:active { transform:scale(0.98); }
+  .explain-btn .btn-icon { width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 10px rgba(194,86,155,0.35); }
+  .explain-btn .btn-text { flex:1; }
+  .explain-btn .btn-title { font-size:16px; font-weight:900; color:var(--main-dark); }
+  .explain-btn .btn-sub { font-size:13px; color:var(--text-soft); margin-top:2px; }
+  .explain-btn .btn-arrow { font-size:20px; color:var(--main); }
+  .explain-btn.green { background:linear-gradient(135deg,var(--green-light),#D4F5E6); border-color:var(--green); }
+  .explain-btn.green .btn-icon { background:linear-gradient(135deg,var(--green),#2A8A5E); box-shadow:0 3px 10px rgba(61,175,120,0.35); }
+  .explain-btn.green .btn-title { color:#1E6642; }
+  .explain-btn.green .btn-arrow { color:var(--green); }
+  .explain-btn.blue { background:linear-gradient(135deg,var(--blue-light),#D6EAFF); border-color:var(--blue); }
+  .explain-btn.blue .btn-icon { background:linear-gradient(135deg,var(--blue),#1E5FA0); box-shadow:0 3px 10px rgba(74,144,217,0.35); }
+  .explain-btn.blue .btn-title { color:#1E5FA0; }
+  .explain-btn.blue .btn-arrow { color:var(--blue); }
+  .explain-btn.purple { background:linear-gradient(135deg,var(--purple-light),#E4DFFF); border-color:var(--purple); }
+  .explain-btn.purple .btn-icon { background:linear-gradient(135deg,var(--purple),#4A3DAA); box-shadow:0 3px 10px rgba(107,94,212,0.35); }
+  .explain-btn.purple .btn-title { color:#3D2E9A; }
+  .explain-btn.purple .btn-arrow { color:var(--purple); }
+  .explain-btn.coral { background:linear-gradient(135deg,var(--coral-light),#FFE0D8); border-color:var(--coral); }
+  .explain-btn.coral .btn-icon { background:linear-gradient(135deg,var(--coral),#A03020); box-shadow:0 3px 10px rgba(224,90,58,0.35); }
+  .explain-btn.coral .btn-title { color:#8A2010; }
+  .explain-btn.coral .btn-arrow { color:var(--coral); }
+  .ai-response { background:linear-gradient(135deg,#FEF7FB,#FCEEF6); border-radius:18px; padding:18px; margin-bottom:12px; border-left:4px solid var(--main); display:none; }
+  .ai-response.show { display:block; }
+  .ai-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .ai-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--main),var(--main-dark)); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .ai-name { font-size:14px; font-weight:900; color:var(--main-dark); }
+  .ai-label { font-size:12px; color:var(--text-soft); }
+  .ai-text { font-size:16px; line-height:1.85; color:var(--text); font-weight:500; white-space:pre-wrap; }
+  .speak-controls { display:none; align-items:center; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid rgba(194,86,155,0.2); }
+  .speak-play-btn { display:flex; align-items:center; gap:7px; padding:10px 18px; border-radius:12px; background:linear-gradient(135deg,var(--main),var(--main-dark)); color:#fff; border:none; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .speak-stop-btn { display:flex; align-items:center; gap:7px; padding:10px 16px; border-radius:12px; background:#fff; color:var(--coral); border:2px solid var(--coral); font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+  .point-list { list-style:none; }
+  .point-item { display:flex; align-items:flex-start; gap:12px; padding:13px 0; border-bottom:1px solid var(--border); font-size:16px; line-height:1.65; color:var(--text-mid); }
+  .point-item:last-child { border-bottom:none; }
+  .pdot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; flex-shrink:0; margin-top:1px; }
+  .tool-card { border-radius:16px; padding:16px; margin-bottom:10px; }
+  .tool-name { font-size:17px; font-weight:900; margin-bottom:5px; }
+  .tool-desc { font-size:14px; line-height:1.65; color:var(--text-mid); }
+  .warn-card { background:#FFF8EC; border-radius:16px; padding:15px 16px; margin-bottom:10px; border-left:4px solid var(--main); display:flex; gap:12px; align-items:flex-start; }
+  .wi { font-size:22px; flex-shrink:0; }
+  .wt { font-size:15px; line-height:1.65; color:var(--text-mid); }
+  .wt strong { color:var(--text); display:block; margin-bottom:3px; }
+  .prompt-card { border-radius:16px; padding:16px; margin-bottom:11px; position:relative; }
+  .plabel { font-size:11px; font-weight:700; margin-bottom:6px; letter-spacing:0.5px; }
+  .ptext { font-size:15px; line-height:1.75; font-weight:500; padding-right:52px; }
+  .copy-btn { position:absolute; top:14px; right:14px; color:#fff; border:none; border-radius:9px; padding:6px 11px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .score-bar { background:var(--main-light); border-radius:16px; padding:18px 20px; text-align:center; margin-bottom:14px; }
+  .sl { font-size:14px; color:var(--text-soft); margin-bottom:4px; }
+  .sn { font-size:38px; font-weight:900; color:var(--main-dark); }
+  .st { font-size:16px; color:var(--text-soft); }
+  .quiz-card { background:var(--card); border-radius:var(--radius); padding:20px 18px; margin-bottom:13px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .qnum { font-size:12px; font-weight:700; color:var(--main); letter-spacing:1px; margin-bottom:8px; }
+  .qtext { font-size:17px; font-weight:700; line-height:1.5; color:var(--text); margin-bottom:14px; }
+  .qopts { display:flex; flex-direction:column; gap:8px; }
+  .qopt { padding:13px 15px; border-radius:12px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:15px; color:var(--text-mid); cursor:pointer; text-align:left; transition:all 0.18s; font-weight:500; }
+  .qopt:active { transform:scale(0.98); }
+  .qopt.correct { border-color:var(--green); background:var(--green-light); color:#1E6642; font-weight:700; }
+  .qopt.wrong { border-color:var(--coral); background:var(--coral-light); color:var(--coral); }
+  .qfb { margin-top:11px; padding:12px 15px; border-radius:12px; font-size:15px; font-weight:500; line-height:1.6; display:none; }
+  .qfb.show { display:block; }
+  .qfb.cm { background:var(--green-light); color:#2A6E4E; }
+  .qfb.wm { background:var(--coral-light); color:#A03020; }
+  .reset-btn { display:block; width:100%; padding:14px; background:var(--main); color:#fff; border:none; border-radius:14px; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; margin-top:4px; }
+  .highlight-box { background:linear-gradient(135deg,var(--main),var(--main-dark)); border-radius:18px; padding:20px; margin-bottom:13px; }
+  .hl-label { color:rgba(255,255,255,0.75); font-size:13px; margin-bottom:7px; }
+  .hl-text { color:#fff; font-size:18px; font-weight:900; line-height:1.55; }
+  .chip { padding:10px 16px; border-radius:20px; border:2px solid var(--border); background:#fff; font-family:inherit; font-size:14px; font-weight:500; color:var(--text-mid); cursor:pointer; transition:all 0.18s; }
+  .chip.on { border-color:var(--main); background:var(--main-light); color:var(--main-dark); font-weight:700; }
+  .chip:active { transform:scale(0.95); }
+  .make-btn { display:block; width:100%; padding:15px; background:linear-gradient(135deg,var(--main),var(--main-dark)); color:#fff; border:none; border-radius:14px; font-family:inherit; font-size:17px; font-weight:700; cursor:pointer; margin:12px 0; box-shadow:0 4px 16px rgba(194,86,155,0.32); }
+  .result-box { background:var(--main-light); border-radius:16px; padding:18px; border-left:4px solid var(--main); font-size:15px; line-height:1.8; color:var(--text); font-weight:500; min-height:80px; }
+  .copy-result-btn { display:none; width:100%; padding:13px; background:#fff; color:var(--main-dark); border:2px solid var(--main); border-radius:14px; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; margin-top:10px; }
+  .bottom-bar { position:fixed; bottom:0; left:0; right:0; height:68px; background:#fff; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:center; padding:0 20px; z-index:100; }
+  .btip { font-size:13px; color:var(--text-soft); text-align:center; line-height:1.5; }
+  .btip strong { color:var(--main-dark); }
+  .toast { position:fixed; bottom:82px; left:50%; transform:translateX(-50%) translateY(16px); background:#18243A; color:#fff; padding:11px 24px; border-radius:28px; font-size:14px; font-weight:700; opacity:0; transition:all 0.28s; pointer-events:none; z-index:999; white-space:nowrap; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── 보완: 따라 읽기 강조 · 목록 이동 ── */
+.ai-text .sent { border-radius:6px; padding:1px 2px; -webkit-box-decoration-break:clone; box-decoration-break:clone; transition:background .2s; }
+.ai-text .sent.on { background:#FFE680; box-shadow:0 0 0 2px #FFE680; color:#18243A; }
+.app-header { padding-top:54px !important; }
+.ai-response { scroll-margin-top:84px; }
+.home-link { position:absolute; top:12px; left:14px; z-index:5; background:rgba(255,255,255,0.22); color:#fff; font-size:13px; font-weight:700; padding:7px 13px; border-radius:14px; text-decoration:none; }
+.home-link:active { background:rgba(255,255,255,0.38); }
+
+/* 읽는 문장을 화면 맨 위로: 아래 고정 바에 가려지지 않게 여백 확보 */
+.ai-text .sent { scroll-margin-top:16px; }
+body { padding-bottom:96px; }
+body.reading { padding-bottom:78vh; }
+</style>
+</head>
+<body>
+<div class="app-header">
+  <a class="home-link" href="index.html">← 메인 화면</a>
+  <div class="hd1"></div><div class="hd2"></div>
+  <div class="hplane">🎨</div>
+  <div class="week-badge">6주차 복습</div>
+  <div class="header-title">AI 이미지 &<br>영상 만들기</div>
+  <div class="header-sub">언제든 다시 들어요 🔁 몇 번이든 OK!</div>
+  <div class="claude-badge">✨ AI와 함께 만든 복습 앱</div>
+</div>
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('summary',this)"><span class="ti">📖</span>핵심정리</button>
+  <button class="tab-btn" onclick="switchTab('tools',this)"><span class="ti">🛠️</span>도구안내</button>
+  <button class="tab-btn" onclick="switchTab('quiz',this)"><span class="ti">✏️</span>퀴즈</button>
+  <button class="tab-btn" onclick="switchTab('helper',this)"><span class="ti">🎨</span>만들기</button>
+</div>
+<div class="main">
+
+  <!-- 핵심정리 -->
+  <div id="tab-summary" class="tab-panel active">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎓</div>AI 강사 설명 듣기</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:14px;">버튼을 누르면 AI 강사가 쉽고 친절하게 설명해줘요. 몇 번이든 반복해서 들을 수 있어요!</p>
+
+      <button class="explain-btn" onclick="askAI('imgai',this)">
+        <div class="btn-icon">🖼️</div>
+        <div class="btn-text"><div class="btn-title">AI 이미지 생성이 뭔가요?</div><div class="btn-sub">말로 그림 그리는 AI 설명</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-imgai"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-imgai"></div><div class="speak-controls" id="speak-btn-imgai"><button class="speak-play-btn" onclick="replay('imgai')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn green" onclick="askAI('miricanvas',this)">
+        <div class="btn-icon">🎨</div>
+        <div class="btn-text"><div class="btn-title">미리캔버스가 뭔가요?</div><div class="btn-sub">가장 쉬운 한국 AI 디자인 앱</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-miricanvas"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-miricanvas"></div><div class="speak-controls" id="speak-btn-miricanvas"><button class="speak-play-btn" onclick="replay('miricanvas')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn blue" onclick="askAI('capcut',this)">
+        <div class="btn-icon">🎬</div>
+        <div class="btn-text"><div class="btn-title">캡컷으로 영상을 만들 수 있나요?</div><div class="btn-sub">사진으로 영상 만드는 방법</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-capcut"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-capcut"></div><div class="speak-controls" id="speak-btn-capcut"><button class="speak-play-btn" onclick="replay('capcut')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn purple" onclick="askAI('imgprompt',this)">
+        <div class="btn-icon">💬</div>
+        <div class="btn-text"><div class="btn-title">이미지 만들 때 어떻게 설명하나요?</div><div class="btn-sub">이미지 생성 요청 잘 하는 방법</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-imgprompt"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-imgprompt"></div><div class="speak-controls" id="speak-btn-imgprompt"><button class="speak-play-btn" onclick="replay('imgprompt')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+
+      <button class="explain-btn coral" onclick="askAI('imgcaution',this)">
+        <div class="btn-icon">⚠️</div>
+        <div class="btn-text"><div class="btn-title">AI 이미지 쓸 때 주의할 것이 있나요?</div><div class="btn-sub">저작권·개인정보 주의사항</div></div>
+        <div class="btn-arrow">▶</div>
+      </button>
+      <div class="ai-response" id="resp-imgcaution"><div class="ai-header"><div class="ai-avatar">👩‍🏫</div><div><div class="ai-name">AI 강사</div><div class="ai-label">설명 중...</div></div></div><div class="ai-text" id="text-imgcaution"></div><div class="speak-controls" id="speak-btn-imgcaution"><button class="speak-play-btn" onclick="replay('imgcaution')">🔊 다시 듣기</button><button class="speak-stop-btn" onclick="stopSpeech()">⏹ 멈추기</button></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎯</div>오늘 핵심 4가지</div>
+      <ul class="point-list">
+        <li class="point-item"><div class="pdot" style="background:var(--main-light);color:var(--main-dark);">1</div>말로 설명하면 AI가 그림을 그려준다. 그림 못 그려도 괜찮다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--green-light);color:var(--green);">2</div>미리캔버스·캔바로 사진을 편집하고 예쁜 카드를 만들 수 있다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--blue-light);color:var(--blue);">3</div>캡컷으로 사진 몇 장만 있으면 추억 영상이 뚝딱 만들어진다</li>
+        <li class="point-item"><div class="pdot" style="background:var(--coral-light);color:var(--coral);">4</div>타인 얼굴을 무단으로 AI로 변형하거나 가짜 사진으로 속이면 안 된다</li>
+      </ul>
+    </div>
+
+    <div class="highlight-box">
+      <div class="hl-label">💡 오늘의 핵심 문장</div>
+      <div class="hl-text">"그림 못 그려도 괜찮아요. 말로 설명하면 AI가 대신 그려줘요!"</div>
+    </div>
+  </div>
+
+  <!-- 도구안내 -->
+  <div id="tab-tools" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🛠️</div>무료 AI 이미지·영상 도구</div>
+
+      <div class="tool-card" style="background:var(--main-light);border-left:4px solid var(--main);">
+        <div class="tool-name" style="color:var(--main-dark);">🎨 미리캔버스</div>
+        <div class="tool-desc">한국 서비스라 한글 지원이 완벽해요. 카드, 포스터, 초대장을 쉽게 만들 수 있어요. AI 이미지 생성 기능도 있어요. 시니어에게 가장 추천!</div>
+      </div>
+
+      <div class="tool-card" style="background:var(--blue-light);border-left:4px solid var(--blue);">
+        <div class="tool-name" style="color:#1E5FA0;">🖌️ 캔바(Canva)</div>
+        <div class="tool-desc">전 세계에서 가장 많이 쓰는 디자인 앱이에요. 다양한 템플릿이 있어서 골라 쓰기만 해도 예뻐요. 무료 버전도 충분해요.</div>
+      </div>
+
+      <div class="tool-card" style="background:var(--green-light);border-left:4px solid var(--green);">
+        <div class="tool-name" style="color:#1E6642;">🎬 캡컷(CapCut)</div>
+        <div class="tool-desc">사진 몇 장만 고르면 AI가 자동으로 영상을 만들어줘요. 음악도 자동으로 넣어줘요. 가장 쉬운 영상 편집 앱이에요.</div>
+      </div>
+
+      <div class="tool-card" style="background:var(--purple-light);border-left:4px solid var(--purple);">
+        <div class="tool-name" style="color:#3D2E9A;">🤖 빙 이미지 크리에이터</div>
+        <div class="tool-desc">마이크로소프트에서 만든 무료 AI 그림 생성 도구예요. 한글로 설명해도 그림이 나와요. 엣지 브라우저에서 바로 쓸 수 있어요.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--blue-light);">💬</div>이미지 만들기 요청 예시</div>
+
+      <div class="prompt-card" style="background:var(--main-light);border-left:4px solid var(--main);">
+        <div class="plabel" style="color:var(--main-dark);">봄 풍경 그림</div>
+        <div class="ptext">봄날 벚꽃이 흐드러지게 핀 공원 풍경, 따뜻하고 밝은 느낌으로 그려주세요</div>
+        <button class="copy-btn" style="background:var(--main);" onclick="cp(this,'봄날 벚꽃이 흐드러지게 핀 공원 풍경, 따뜻하고 밝은 느낌으로 그려주세요')">복사</button>
+      </div>
+
+      <div class="prompt-card" style="background:var(--green-light);border-left:4px solid var(--green);">
+        <div class="plabel" style="color:#1E6642;">귀여운 동물 카드</div>
+        <div class="ptext">귀여운 강아지가 생일 케이크 앞에 앉아있는 수채화 느낌의 그림</div>
+        <button class="copy-btn" style="background:var(--green);" onclick="cp(this,'귀여운 강아지가 생일 케이크 앞에 앉아있는 수채화 느낌의 그림')">복사</button>
+      </div>
+
+      <div class="prompt-card" style="background:var(--blue-light);border-left:4px solid var(--blue);">
+        <div class="plabel" style="color:#1E5FA0;">경로당 행사 포스터</div>
+        <div class="ptext">경로당 봄 나들이 행사 포스터, 4월 15일 팔공산, 밝고 따뜻한 느낌, 글자 크게</div>
+        <button class="copy-btn" style="background:var(--blue);" onclick="cp(this,'경로당 봄 나들이 행사 포스터, 4월 15일 팔공산, 밝고 따뜻한 느낌, 글자 크게')">복사</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--coral-light);">⚠️</div>꼭 기억하세요</div>
+      <div class="warn-card">
+        <div class="wi">🔒</div>
+        <div class="wt"><strong>타인 얼굴 무단 사용 금지</strong>다른 사람 얼굴 사진을 허락 없이 AI로 변형하거나 합성하면 안 돼요.</div>
+      </div>
+      <div class="warn-card">
+        <div class="wi">📰</div>
+        <div class="wt"><strong>가짜 뉴스에 주의</strong>AI가 만든 이미지를 진짜 사진처럼 속이면 안 돼요. 의심스러운 사진은 한 번 더 확인하세요.</div>
+      </div>
+      <div class="warn-card">
+        <div class="wi">💰</div>
+        <div class="wt"><strong>개인 사용은 OK</strong>AI 이미지는 개인 사용은 괜찮지만, 돈 받고 팔거나 상업적으로 쓸 때는 저작권을 확인하세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퀴즈 -->
+  <div id="tab-quiz" class="tab-panel">
+    <div class="score-bar">
+      <div class="sl">현재 점수</div>
+      <div><span class="sn" id="scoreNum">0</span><span class="st"> / 5</span></div>
+    </div>
+
+    <div class="quiz-card" id="q1">
+      <div class="qnum">문제 1 / 5</div>
+      <div class="qtext">AI 이미지 생성이란 무엇인가요?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q1',this,false)">사진을 찍어주는 로봇</button>
+        <button class="qopt" onclick="ans('q1',this,false)">인터넷에서 그림을 검색해주는 기능</button>
+        <button class="qopt" onclick="ans('q1',this,true)">말로 설명하면 AI가 그림을 그려주는 기술</button>
+        <button class="qopt" onclick="ans('q1',this,false)">스캐너로 그림을 복사하는 기계</button>
+      </div>
+      <div class="qfb" id="q1-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q2">
+      <div class="qnum">문제 2 / 5</div>
+      <div class="qtext">시니어에게 가장 추천하는 한국 AI 디자인 앱은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q2',this,false)">포토샵</button>
+        <button class="qopt" onclick="ans('q2',this,false)">일러스트레이터</button>
+        <button class="qopt" onclick="ans('q2',this,false)">페인트</button>
+        <button class="qopt" onclick="ans('q2',this,true)">미리캔버스</button>
+      </div>
+      <div class="qfb" id="q2-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q3">
+      <div class="qnum">문제 3 / 5</div>
+      <div class="qtext">캡컷으로 영상을 만들 때 꼭 필요한 것은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q3',this,true)">사진 몇 장</button>
+        <button class="qopt" onclick="ans('q3',this,false)">영상 편집 전문 지식</button>
+        <button class="qopt" onclick="ans('q3',this,false)">비싼 카메라</button>
+        <button class="qopt" onclick="ans('q3',this,false)">컴퓨터</button>
+      </div>
+      <div class="qfb" id="q3-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q4">
+      <div class="qnum">문제 4 / 5</div>
+      <div class="qtext">AI 이미지 사용 시 절대 하면 안 되는 것은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q4',this,false)">가족 사진으로 추억 영상 만들기</button>
+        <button class="qopt" onclick="ans('q4',this,true)">다른 사람 얼굴을 허락 없이 AI로 변형하기</button>
+        <button class="qopt" onclick="ans('q4',this,false)">경로당 행사 포스터 만들기</button>
+        <button class="qopt" onclick="ans('q4',this,false)">봄꽃 그림 만들어 카카오톡에 보내기</button>
+      </div>
+      <div class="qfb" id="q4-fb"></div>
+    </div>
+
+    <div class="quiz-card" id="q5">
+      <div class="qnum">문제 5 / 5</div>
+      <div class="qtext">AI 이미지 생성을 가장 잘 표현한 문장은?</div>
+      <div class="qopts">
+        <button class="qopt" onclick="ans('q5',this,false)">그림을 잘 그려야 AI 이미지를 만들 수 있다</button>
+        <button class="qopt" onclick="ans('q5',this,false)">AI 이미지는 전문가만 만들 수 있다</button>
+        <button class="qopt" onclick="ans('q5',this,true)">그림 못 그려도 괜찮아요. 말로 설명하면 AI가 대신 그려줘요</button>
+        <button class="qopt" onclick="ans('q5',this,false)">AI 이미지는 돈을 내야만 만들 수 있다</button>
+      </div>
+      <div class="qfb" id="q5-fb"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetQuiz()">🔄 퀴즈 다시 풀기</button>
+  </div>
+
+  <!-- 이미지 만들기 도우미 -->
+  <div id="tab-helper" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="ic" style="background:var(--main-light);">🎨</div>이미지 요청 도우미</div>
+      <p style="font-size:15px;color:var(--text-mid);line-height:1.6;margin-bottom:16px;">아래에서 골라주시면 AI 이미지 만들기 요청이 만들어져요!</p>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">어떤 그림인가요?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-imgtype">
+          <button class="chip" onclick="selChip('imgtype','풍경 그림',this)">풍경 그림</button>
+          <button class="chip" onclick="selChip('imgtype','동물 그림',this)">동물 그림</button>
+          <button class="chip" onclick="selChip('imgtype','꽃 그림',this)">꽃 그림</button>
+          <button class="chip" onclick="selChip('imgtype','행사 포스터',this)">행사 포스터</button>
+          <button class="chip" onclick="selChip('imgtype','축하 카드',this)">축하 카드</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">어떤 느낌으로?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-imgstyle">
+          <button class="chip" onclick="selChip('imgstyle','따뜻하고 밝게',this)">따뜻하고 밝게</button>
+          <button class="chip" onclick="selChip('imgstyle','수채화 느낌으로',this)">수채화 느낌</button>
+          <button class="chip" onclick="selChip('imgstyle','귀엽고 아기자기하게',this)">귀엽게</button>
+          <button class="chip" onclick="selChip('imgstyle','화려하고 선명하게',this)">화려하게</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-soft);margin-bottom:8px;">계절·배경은?</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="g-imgseason">
+          <button class="chip" onclick="selChip('imgseason','봄 벚꽃',this)">봄 벚꽃</button>
+          <button class="chip" onclick="selChip('imgseason','여름 바다',this)">여름 바다</button>
+          <button class="chip" onclick="selChip('imgseason','가을 단풍',this)">가을 단풍</button>
+          <button class="chip" onclick="selChip('imgseason','겨울 눈',this)">겨울 눈</button>
+        </div>
+      </div>
+
+      <button class="make-btn" onclick="makeImgPrompt()">✨ 이미지 요청 만들기</button>
+      <div class="result-box" id="result-box"><span style="color:var(--text-soft);">위에서 골라주시면 요청이 만들어져요 😊</span></div>
+      <button class="copy-result-btn" id="crb" onclick="copyResult()">📋 복사해서 미리캔버스에 붙여넣기</button>
+    </div>
+  </div>
+
+</div>
+<div class="bottom-bar">
+  <div class="btip">버튼을 눌러 <strong>AI 강사 설명</strong>을 들어보세요 · 몇 번이든 OK! 🔁</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+function switchTab(name,btn){document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
+function cp(btn,text){navigator.clipboard.writeText(text).then(function(){showToast('복사됐어요! 미리캔버스에 붙여넣기 해보세요 😊');});}
+function speak(text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=0.88;u.pitch=1.05;u.volume=1;var voices=window.speechSynthesis.getVoices();for(var i=0;i<voices.length;i++){if(voices[i].lang==='ko-KR'){u.voice=voices[i];break;}}window.speechSynthesis.speak(u);}
+function stopSpeech(){if(window.speechSynthesis)window.speechSynthesis.cancel();}
+if(window.speechSynthesis){window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};}
+function playCorrectSound(){try{var ctx=new(window.AudioContext||window.webkitAudioContext)();function chime(freq,st,dur){var mults=[1,2.756,5.404],vols=[0.6,0.25,0.1],durs=[1,0.6,0.3];for(var i=0;i<3;i++){var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*mults[i];g.gain.setValueAtTime(0,ctx.currentTime+st);g.gain.linearRampToValueAtTime(vols[i],ctx.currentTime+st+0.01);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+st+dur*durs[i]);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+st);o.stop(ctx.currentTime+st+dur*durs[i]);}}chime(1047,0.0,1.2);chime(880,0.35,1.0);chime(784,0.70,1.4);}catch(e){}}
+function playWrongSound(){try{var ctx=new(window.AudioContext||window.webkitAudioContext)();var o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=220;g.gain.setValueAtTime(0.4,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime);o.stop(ctx.currentTime+0.65);}catch(e){}}
+function speakMsg(msg,pitch){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(msg);u.lang='ko-KR';u.rate=0.92;u.pitch=pitch||1.1;u.volume=1;var voices=window.speechSynthesis.getVoices();for(var i=0;i<voices.length;i++){if(voices[i].lang==='ko-KR'){u.voice=voices[i];break;}}window.speechSynthesis.speak(u);}
+
+var answers={
+"imgai":"오늘은 AI 이미지 생성에 대해 설명해 드릴게요.\n\nAI 이미지 생성은 말로 설명하면 AI가 그림을 그려주는 기술이에요. 붓도 필요 없고, 그림 실력도 필요 없어요. 그냥 원하는 것을 말로 설명하기만 하면 돼요.\n\n예를 들어 봄날 벚꽃이 핀 공원 풍경을 따뜻하게 그려줘 라고 하면 AI가 그 그림을 만들어줘요. 귀여운 강아지가 생일 케이크 앞에 앉아있는 수채화 느낌 그림 이렇게 구체적으로 말할수록 더 좋은 그림이 나와요.\n\n이걸로 카카오톡 프로필 사진도 꾸미고, 경로당 행사 포스터도 만들고, 손주에게 보낼 예쁜 카드도 만들 수 있어요. 정말 재미있는 기능이에요.",
+"miricanvas":"미리캔버스는 한국에서 만든 AI 디자인 앱이에요. 시니어 분들께 가장 추천하는 도구예요.\n\n한글 지원이 완벽하고, 화면 구성이 직관적이에요. 처음 쓰시는 분들도 어렵지 않게 사용하실 수 있어요.\n\n미리캔버스로 할 수 있는 것들이 아주 많아요. 카드, 포스터, 초대장, 현수막, 카카오톡 이미지 등 다양한 것들을 만들 수 있어요. 예쁜 템플릿을 고르고 글자만 바꿔도 완성이에요.\n\nAI 이미지 생성 기능도 있어서 원하는 그림을 말로 설명하면 만들어줘요. 그리고 사진 배경 제거, 필터 넣기, 글자 넣기 같은 편집도 아주 쉽게 할 수 있답니다.",
+"capcut":"캡컷은 사진 몇 장만 있으면 영상을 만들어주는 AI 앱이에요. 영상 편집을 전혀 모르셔도 돼요.\n\n사용 방법이 아주 간단해요. 캡컷 앱을 열고 새 프로젝트를 만들어요. 그다음 사진을 3장에서 5장 정도 고르기만 하면 돼요. 그러면 AI가 자동으로 편집해서 영상을 만들어줘요. 음악도 자동으로 넣어줘요.\n\n여행 사진들로 추억 영상을 만들거나, 가족 행사 사진으로 감동적인 슬라이드쇼를 만들 수 있어요. 손주에게 보내면 정말 좋아해요.\n\n완성된 영상은 카카오톡으로 바로 공유할 수 있어요. 처음 해보셔도 10분 안에 영상이 완성돼요.",
+"imgprompt":"AI 이미지를 만들 때 요청을 잘 하는 방법을 알려드릴게요.\n\n세 가지를 넣어주시면 훨씬 좋은 그림이 나와요.\n\n첫 번째는 무엇을 그릴지예요. 벚꽃, 강아지, 할머니, 경로당 같은 것들이에요.\n\n두 번째는 어떤 느낌으로 그릴지예요. 수채화 느낌, 따뜻하게, 귀엽게, 밝게 이런 식으로 분위기를 알려주세요.\n\n세 번째는 배경이나 상황이에요. 봄날 공원, 생일 파티, 바닷가 이런 것들을 넣어주면 더 풍부한 그림이 나와요.\n\n예를 들어 봄날 벚꽃이 핀 공원에서 할머니와 손주가 함께 걷는 따뜻한 수채화 느낌 그림 이렇게 하시면 정말 예쁜 그림이 나온답니다.",
+"imgcaution":"AI 이미지를 쓸 때 주의할 점을 알려드릴게요.\n\n가장 중요한 것은 다른 사람 얼굴을 허락 없이 AI로 변형하거나 합성하면 안 된다는 거예요. 이건 법적으로도 문제가 될 수 있어요.\n\nAI가 만든 이미지를 진짜 사진인 것처럼 속이면 안 돼요. 요즘 가짜 뉴스에 AI 이미지가 많이 쓰이고 있어서 의심스러운 사진은 한 번 더 확인하는 습관이 필요해요.\n\n저작권도 조심하셔야 해요. AI 이미지를 개인적으로 즐기거나 가족에게 보내는 것은 괜찮아요. 하지만 돈을 받고 팔거나 상업적으로 쓸 때는 저작권 확인이 필요해요.\n\n이런 점들만 조심하시면 AI 이미지를 재미있고 유용하게 쓰실 수 있답니다."
+};
+
+function askAI(key,btn){var respDiv=document.getElementById('resp-'+key);var textDiv=document.getElementById('text-'+key);if(respDiv.classList.contains('show')){respDiv.classList.remove('show');stopSpeech();return;}stopSpeech();respDiv.classList.add('show');var reply=answers[key];textDiv.textContent=reply;document.getElementById('speak-btn-'+key).style.display='flex';speak(reply);}
+
+var scores={};
+var fb={
+"q1":{"c":"정답이에요! 말로 설명하면 AI가 그림을 그려주는 기술이에요. 그림 실력이 없어도 누구나 쓸 수 있어요!","w":"아쉬워요! AI 이미지 생성은 말로 설명하면 AI가 그림을 그려주는 기술이에요."},
+"q2":{"c":"정답이에요! 미리캔버스는 한국 서비스라 한글 지원이 완벽하고 사용하기 쉬워서 시니어에게 가장 추천해요!","w":"아쉬워요! 미리캔버스가 한글 지원이 완벽하고 가장 쉬워서 시니어에게 추천해요."},
+"q3":{"c":"정답이에요! 캡컷은 사진 몇 장만 있으면 AI가 자동으로 영상을 만들어줘요. 편집 지식이 없어도 돼요!","w":"아쉬워요! 캡컷은 사진 몇 장만 있으면 AI가 자동으로 영상을 만들어준답니다."},
+"q4":{"c":"정답이에요! 다른 사람 얼굴을 허락 없이 AI로 변형하면 절대 안 돼요. 법적으로도 문제가 될 수 있어요!","w":"아쉬워요! 다른 사람 얼굴을 허락 없이 AI로 변형하는 것은 절대 하면 안 돼요."},
+"q5":{"c":"정답이에요! 그림 못 그려도 괜찮아요. 말로 설명하면 AI가 대신 그려줘요. 누구나 할 수 있어요!","w":"아쉬워요! 그림 못 그려도 괜찮아요. 말로 설명하면 AI가 대신 그려준답니다."}
+};
+
+function ans(qid,btn,correct){if(scores[qid]!==undefined)return;scores[qid]=correct;var opts=btn.parentElement.querySelectorAll('.qopt');for(var i=0;i<opts.length;i++){opts[i].disabled=true;}btn.classList.add(correct?'correct':'wrong');if(!correct){for(var i=0;i<opts.length;i++){if(opts[i].getAttribute('onclick').indexOf('true')>-1)opts[i].classList.add('correct');}}var f=document.getElementById(qid+'-fb');f.textContent=fb[qid][correct?'c':'w'];f.className='qfb show '+(correct?'cm':'wm');var count=0,keys=Object.keys(scores);for(var i=0;i<keys.length;i++){if(scores[keys[i]]===true)count++;}document.getElementById('scoreNum').textContent=count;if(correct){playCorrectSound();setTimeout(function(){speakMsg(fb[qid].c,1.15);},1400);}else{playWrongSound();setTimeout(function(){speakMsg(fb[qid].w,0.95);},900);}}
+function resetQuiz(){scores={};document.getElementById('scoreNum').textContent='0';var qids=['q1','q2','q3','q4','q5'];for(var i=0;i<qids.length;i++){var opts=document.querySelectorAll('#'+qids[i]+' .qopt');for(var j=0;j<opts.length;j++){opts[j].disabled=false;opts[j].className='qopt';}var f=document.getElementById(qids[i]+'-fb');f.className='qfb';f.textContent='';}showToast('퀴즈가 초기화됐어요! 다시 풀어보세요 😊');}
+
+var chipSels={};
+function selChip(group,value,btn){chipSels[group]=value;var chips=document.getElementById('g-'+group).querySelectorAll('.chip');for(var i=0;i<chips.length;i++){chips[i].classList.remove('on');}btn.classList.add('on');}
+var genPrompt='';
+function makeImgPrompt(){var t=chipSels['imgtype'],s=chipSels['imgstyle'],se=chipSels['imgseason'];if(!t||!s||!se){showToast('모든 항목을 골라주세요! 😊');return;}genPrompt=se+' 배경의 '+t+', '+s+' 그려주세요';document.getElementById('result-box').textContent='📝 '+genPrompt;document.getElementById('crb').style.display='block';showToast('이미지 요청이 만들어졌어요! 복사해서 미리캔버스에 붙여넣어보세요 ✨');}
+function copyResult(){if(!genPrompt)return;navigator.clipboard.writeText(genPrompt).then(function(){showToast('복사됐어요! 미리캔버스에 붙여넣기 해보세요 😊');});}
+</script>
+
+<script>
+/* ── 문장 단위 따라 읽기(강조) · 안전장치 ── */
+(function () {
+  var session = 0;      // 읽기 번호: 멈추거나 새로 읽으면 올라가 이전 읽기를 끝냅니다
+  var curEl = null;     // 지금 강조 중인 글 영역
+
+  function hasTTS() { return !!(window.speechSynthesis && window.SpeechSynthesisUtterance); }
+  function notice(msg) { if (typeof showToast === 'function') { showToast(msg); } }
+
+  function pickVoice() {
+    var vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    for (var i = 0; i < vs.length; i++) { if (vs[i].lang === 'ko-KR') { return vs[i]; } }
+    for (var j = 0; j < vs.length; j++) { if (/^ko/i.test(vs[j].lang)) { return vs[j]; } }
+    return null;
+  }
+
+
+  // 읽는 곳을 따라 화면이 움직입니다 (손으로 화면을 넘기는 중이면 잠시 따라가지 않습니다)
+  var lastUser = 0;
+  window.addEventListener('wheel', function () { lastUser = Date.now(); }, { passive: true });
+  window.addEventListener('touchmove', function () { lastUser = Date.now(); }, { passive: true });
+  function follow(el, force) {
+    if (!el || !el.scrollIntoView) { return; }
+    if (!force && Date.now() - lastUser < 2500) { return; }
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {}
+  }
+
+  function clearMark() {
+    if (!curEl) { return; }
+    var on = curEl.querySelectorAll('.sent.on');
+    for (var i = 0; i < on.length; i++) { on[i].classList.remove('on'); }
+  }
+
+  function cancelAll() {
+    session++;
+    document.body.classList.remove('reading');
+    clearMark();
+    curEl = null;
+    if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  }
+
+  // 글을 문장 단위로 나눕니다 (줄바꿈은 그대로 둡니다)
+  function splitParts(text) {
+    var parts = [], re = /[^.!?\n]+[.!?]*|\n+/g, m;
+    while ((m = re.exec(text)) !== null) { parts.push(m[0]); }
+    return parts;
+  }
+
+  function render(el, text) {
+    var items = [], parts = splitParts(text);
+    el.textContent = '';
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (/^\s*$/.test(p)) { el.appendChild(document.createTextNode(p)); continue; }
+      var sp = document.createElement('span');
+      sp.className = 'sent';
+      sp.textContent = p;
+      el.appendChild(sp);
+      items.push({ text: p.replace(/^\s+|\s+$/g, ''), span: sp });
+    }
+    return items;
+  }
+
+  function readList(items, my, speed) {
+    var i = 0;
+    function next() {
+      if (my !== session) { return; }
+      if (i >= items.length) { clearMark(); return; }
+      var it = items[i++];
+      clearMark();
+      if (it.span) {
+        it.span.classList.add('on');
+        follow(it.span);
+      }
+      var u = new SpeechSynthesisUtterance(it.text);
+      u.lang = 'ko-KR'; u.rate = speed || 0.88; u.pitch = 1.05; u.volume = 1;
+      var v = pickVoice(); if (v) { u.voice = v; }
+      var done = false, guard = null;
+      function go() { if (done) { return; } done = true; clearTimeout(guard); next(); }
+      u.onend = go;
+      u.onerror = function () { if (my !== session) { return; } go(); };
+      // 일부 기기는 '끝남' 신호를 안 보내서, 넉넉한 시간이 지나면 다음 문장으로 넘어갑니다
+      guard = setTimeout(go, Math.max(4000, it.text.length * 450 + 3000));
+      try { window.speechSynthesis.speak(u); } catch (e) { go(); }
+    }
+    next();
+  }
+
+  // 글 영역에 문장을 나눠 보여 주며 읽기
+  function speakInto(el, text) {
+    if (!el) { return; }
+    if (!hasTTS()) {
+      el.textContent = text;
+      notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.');
+      return;
+    }
+    cancelAll();
+    var items = render(el, text);
+    curEl = el;
+    document.body.classList.add('reading');
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  // 화면에 글이 없는 짧은 안내를 읽을 때(문장 나눔만)
+  function speakPlain(text) {
+    if (!hasTTS()) { return; }
+    cancelAll();
+    var parts = splitParts(text), items = [];
+    for (var i = 0; i < parts.length; i++) {
+      if (!/^\s*$/.test(parts[i])) { items.push({ text: parts[i].replace(/^\s+|\s+$/g, ''), span: null }); }
+    }
+    var my = ++session;
+    setTimeout(function () { readList(items, my); }, 60);
+  }
+
+  window.stopSpeech = cancelAll;
+  window.speak = speakPlain;
+
+  window.replay = function (key) {
+    var el = document.getElementById('text-' + key);
+    var base = (typeof answers !== 'undefined' && answers[key]) ? answers[key] : (el ? el.textContent : '');
+    speakInto(el, base);
+  };
+
+  window.askAI = function (key, btn) {
+    var respDiv = document.getElementById('resp-' + key);
+    var textDiv = document.getElementById('text-' + key);
+    if (!respDiv || !textDiv) { return; }
+    if (respDiv.classList.contains('show')) { respDiv.classList.remove('show'); cancelAll(); return; }
+    cancelAll();
+    respDiv.classList.add('show');
+    var sb = document.getElementById('speak-btn-' + key);
+    if (sb) { sb.style.display = 'flex'; }
+    speakInto(textDiv, answers[key]);
+  };
+
+  // 퀴즈 칭찬·안내 음성이 나올 때는 강조를 끄고, 탭을 옮기면 읽기를 멈춥니다
+  if (typeof speakMsg === 'function') {
+    var _speakMsg = speakMsg;
+    window.speakMsg = function (m, p) { session++; clearMark(); curEl = null; _speakMsg(m, p); };
+  }
+  if (typeof switchTab === 'function') {
+    var _switchTab = switchTab;
+    window.switchTab = function (n, b) { cancelAll(); _switchTab(n, b); };
+  }
+  window.addEventListener('pagehide', cancelAll);
+})();
+</script>
+
+</body>
+</html>

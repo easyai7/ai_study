@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3주차 · AI로 건강 정보 & 병원 활용</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --main: #1B6CA8;
+  --accent: #F5A623;
+  --accent2: #E84040;
+  --green: #1A8A42;
+  --green-light: #E8F8EE;
+  --bg: #F0F4F8;
+  --dark: #0D1B2E;
+  --text: #1A2A3A;
+  --w3: #0F766E;
+  --w3-dark: #064E47;
+  --w3-light: #CCFBF1;
+  --w3-mid: #0D9488;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Noto Sans KR', sans-serif; }
+
+.slide { display:none; width:100vw; height:100vh; position:absolute; top:0; left:0; flex-direction:column; overflow:hidden; }
+.slide.active { display:flex !important; }
+
+.hdr { flex-shrink:0; display:flex; align-items:center; padding:14px 44px; gap:16px; }
+.hdr-week { background:rgba(255,255,255,0.25); color:#fff; font-size:22px; font-weight:700; padding:8px 20px; border-radius:30px; flex-shrink:0; }
+.hdr-title { color:#fff; font-size:36px; font-weight:900; flex:1; }
+.hdr-num { color:rgba(255,255,255,0.7); font-size:20px; font-weight:700; flex-shrink:0; }
+.body { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.slide-num { position:absolute; bottom:14px; right:24px; font-size:21px; color:rgba(255,255,255,0.4); font-weight:700; z-index:10; }
+
+.nav-btn { position:fixed; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.35); color:#fff; border:none; font-size:36px; width:60px; height:100px; cursor:pointer; z-index:1000; border-radius:8px; transition:background 0.2s; display:flex; align-items:center; justify-content:center; }
+.nav-btn:hover { background:rgba(0,0,0,0.6); }
+#btn-prev { left:0; border-radius:0 8px 8px 0; }
+#btn-next { right:0; border-radius:8px 0 0 8px; }
+.progress-bar { position:fixed; bottom:0; left:0; height:5px; background:var(--w3); transition:width 0.3s; z-index:1000; }
+
+/* ── SLIDE 1: 표지 ── */
+#s1 { background:linear-gradient(135deg,#022C27 0%,#065F55 50%,#0F766E 100%); justify-content:center; align-items:center; }
+.cover-inner { text-align:center; padding:40px; }
+.cover-week { font-size:28px; font-weight:700; color:var(--accent); letter-spacing:3px; margin-bottom:20px; }
+.cover-title { font-size:72px; font-weight:900; color:#fff; line-height:1.15; margin-bottom:16px; }
+.cover-sub { font-size:30px; color:rgba(255,255,255,0.75); margin-bottom:50px; }
+.cover-goals { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.cover-goal { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:16px; padding:12px 20px; color:#fff; font-size:20px; font-weight:600; display:flex; align-items:center; gap:10px; }
+.cover-goal .num { background:var(--accent); color:#000; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:900; flex-shrink:0; }
+.cover-deco { font-size:120px; position:absolute; top:40px; right:80px; opacity:0.08; }
+
+/* ── SLIDE 2: 마음열기 ── */
+#s2 { background:#fff; }
+#s2 .hdr { background:var(--w3); }
+.open-body { flex:1; display:flex; align-items:center; justify-content:center; padding:14px 40px; gap:30px; }
+.open-question { flex:1; background:linear-gradient(135deg,var(--w3),var(--w3-dark)); border-radius:24px; padding:36px; color:#fff; text-align:center; }
+.open-question .q-icon { font-size:70px; margin-bottom:20px; }
+.open-question .q-text { font-size:40px; font-weight:900; line-height:1.4; }
+.open-reactions { flex:1; display:flex; flex-direction:column; gap:16px; }
+.reaction-card { display:flex; align-items:center; gap:18px; background:var(--bg); border-radius:16px; padding:18px 24px; border-left:6px solid var(--w3); }
+.reaction-card .ri { font-size:44px; flex-shrink:0; }
+.reaction-card .rt { font-size:32px; font-weight:700; color:var(--text); }
+.reaction-card .rs { font-size:24px; color:#666; margin-top:4px; }
+.open-msg { text-align:center; padding:18px; background:linear-gradient(135deg,var(--w3),var(--w3-dark)); border-radius:20px; color:#fff; font-size:32px; font-weight:900; margin:0 40px 12px; }
+
+/* ── SLIDE 3: AI가 잘 하는 것 ── */
+#s3 { background:#fff; }
+#s3 .hdr { background:var(--w3); }
+.cando-body { flex:1; display:flex; padding:12px 40px 14px; gap:24px; }
+.cando-left { flex:1.2; display:flex; flex-direction:column; gap:12px; }
+.cando-section { background:var(--w3-light); border:2px solid var(--w3); border-radius:20px; padding:20px 24px; flex:1; }
+.cs-title { font-size:26px; font-weight:900; color:var(--w3-dark); margin-bottom:12px; display:flex; align-items:center; gap:10px; }
+.cs-item { display:flex; align-items:center; gap:12px; padding:8px 0; font-size:25px; font-weight:600; color:var(--text); border-bottom:1px solid rgba(0,0,0,0.07); }
+.cs-item:last-child { border-bottom:none; }
+.cs-item .ci { font-size:30px; flex-shrink:0; }
+.cando-right { flex:1; display:flex; flex-direction:column; gap:14px; justify-content:center; }
+.ex-bubble { background:linear-gradient(135deg,var(--w3),var(--w3-dark)); border-radius:20px; padding:22px 26px; color:#fff; }
+.ex-label { font-size:20px; color:rgba(255,255,255,0.7); margin-bottom:8px; }
+.ex-text { font-size:26px; font-weight:700; line-height:1.5; }
+
+/* ── SLIDE 4: 실제 예시 ── */
+#s4 { background:var(--dark); }
+#s4 .hdr { background:rgba(255,255,255,0.08); }
+.chat-demo-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.demo-pair { flex:1; display:flex; flex-direction:column; gap:8px; }
+.msg-user { background:var(--w3); color:#fff; font-size:26px; font-weight:600; border-radius:16px; padding:16px 22px; border-bottom-right-radius:4px; align-self:flex-end; max-width:85%; line-height:1.5; }
+.msg-ai { background:#1E2A3A; color:#A7F3D0; font-size:24px; border-radius:16px; padding:16px 22px; border-bottom-left-radius:4px; max-width:90%; line-height:1.6; }
+.msg-ai strong { color:#6EE7B7; }
+.demo-divider { height:2px; background:rgba(255,255,255,0.07); border-radius:2px; flex-shrink:0; }
+
+/* ── SLIDE 5: 병원 전 활용 ── */
+#s5 { background:#fff; }
+#s5 .hdr { background:var(--w3); }
+.hosp-body { flex:1; display:flex; padding:10px 40px 14px; gap:24px; align-items:stretch; }
+.hosp-col { flex:1; display:flex; flex-direction:column; gap:14px; }
+.hosp-col-hdr { border-radius:18px; padding:18px 22px; text-align:center; font-size:30px; font-weight:900; color:#fff; flex-shrink:0; }
+.hosp-item { display:flex; align-items:flex-start; gap:16px; border-radius:14px; padding:16px 20px; flex:1; }
+.hosp-item .hi-icon { font-size:38px; flex-shrink:0; margin-top:2px; }
+.hosp-item .hi-text { font-size:27px; font-weight:700; color:var(--text); line-height:1.45; }
+.hosp-item .hi-sub { font-size:21px; color:#666; margin-top:4px; }
+.hosp-divider { width:4px; background:var(--bg); border-radius:4px; flex-shrink:0; margin:10px 0; }
+
+/* ── SLIDE 6: 실습1 약 ── */
+#s6 { background:#000; }
+#s6 .hdr { background:var(--w3); }
+.practice-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.practice-header { background:rgba(15,118,110,0.25); border-radius:14px; padding:14px 22px; color:#A7F3D0; font-size:28px; font-weight:700; flex-shrink:0; text-align:center; }
+.practice-prompt { background:#1A2A1A; border:2px solid var(--w3); border-radius:18px; padding:22px 28px; flex:1; }
+.pp-label { font-size:22px; color:rgba(255,255,255,0.5); margin-bottom:10px; }
+.pp-text { font-size:28px; color:#A7F3D0; font-weight:600; line-height:1.7; }
+.pp-highlight { color:#FFD78C; font-weight:900; }
+.practice-tip { background:rgba(245,166,35,0.15); border:2px solid rgba(245,166,35,0.4); border-radius:14px; padding:14px 20px; color:#FFD78C; font-size:24px; font-weight:600; flex-shrink:0; display:flex; gap:12px; align-items:center; }
+
+/* ── SLIDE 7: 실습2 증상 ── */
+#s7 { background:#000; }
+#s7 .hdr { background:var(--w3); }
+
+/* ── SLIDE 8: 실습3 나만의 ── */
+#s8 { background:#fff; }
+#s8 .hdr { background:var(--w3); }
+.myq-body { flex:1; display:flex; padding:10px 40px 14px; gap:28px; align-items:stretch; }
+.myq-left { flex:1.2; display:flex; flex-direction:column; gap:14px; }
+.myq-template { background:linear-gradient(135deg,var(--w3-light),#F0FDFB); border:3px solid var(--w3); border-radius:20px; padding:24px 28px; font-size:27px; font-weight:600; color:var(--text); line-height:2.1; flex:1; }
+.myq-blank { background:#fff; border:2px solid var(--w3); border-radius:8px; padding:2px 14px; color:var(--w3-dark); font-weight:900; display:inline-block; }
+.myq-example { background:var(--green-light); border:2px solid var(--green); border-radius:16px; padding:16px 20px; font-size:24px; font-weight:600; color:#1A4A2A; display:flex; gap:14px; align-items:flex-start; }
+.myq-right { flex:1; display:flex; flex-direction:column; gap:12px; justify-content:center; }
+.topic-card2 { background:var(--bg); border-radius:16px; padding:16px 20px; display:flex; align-items:center; gap:14px; border:2px solid transparent; }
+.topic-card2:hover { background:var(--w3-light); border-color:var(--w3); }
+.tc-icon { font-size:36px; flex-shrink:0; }
+.tc-name { font-size:26px; font-weight:700; color:var(--text); }
+
+/* ── SLIDE 9, 10, 11: 주의사항 ── */
+#s9 { background:var(--dark); }
+#s9 .hdr { background:rgba(255,255,255,0.08); }
+#s10 { background:var(--dark); }
+#s10 .hdr { background:rgba(255,255,255,0.08); }
+#s11 { background:var(--dark); }
+#s11 .hdr { background:rgba(255,255,255,0.08); }
+.warn-body { flex:1; display:flex; padding:10px 40px 14px; gap:24px; align-items:stretch; }
+.warn-main { flex:1.4; display:flex; flex-direction:column; gap:14px; }
+.warn-box { background:rgba(232,64,64,0.12); border:2px solid rgba(232,64,64,0.4); border-radius:22px; padding:24px 28px; flex:1; }
+.wb-icon { font-size:60px; margin-bottom:10px; }
+.wb-title { font-size:36px; font-weight:900; color:#FCA5A5; margin-bottom:12px; }
+.wb-text { font-size:26px; color:rgba(255,255,255,0.85); line-height:1.65; }
+.warn-side { flex:1; display:flex; flex-direction:column; gap:14px; }
+.warn-do { background:rgba(26,138,66,0.15); border:2px solid rgba(26,138,66,0.4); border-radius:16px; padding:18px 22px; flex:1; }
+.wd-title { font-size:26px; font-weight:900; color:#6EE7B7; margin-bottom:10px; }
+.wd-item { font-size:24px; color:rgba(255,255,255,0.8); padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07); line-height:1.5; display:flex; gap:10px; align-items:flex-start; }
+.wd-item:last-child { border-bottom:none; }
+.warn-analogy { background:rgba(245,166,35,0.12); border:2px solid rgba(245,166,35,0.35); border-radius:16px; padding:18px 22px; flex-shrink:0; }
+.wa-text { font-size:24px; color:#FFD78C; font-weight:600; line-height:1.6; }
+
+/* ── SLIDE 12: 정리 ── */
+#s12 { background:#fff; }
+#s12 .hdr { background:var(--w3); }
+.review-body { flex:1; display:flex; padding:12px 40px 14px; gap:28px; align-items:center; }
+.review-checks { flex:1; display:flex; flex-direction:column; gap:16px; }
+.check-item { display:flex; align-items:center; gap:18px; background:var(--w3-light); border-radius:16px; padding:18px 24px; border-left:6px solid var(--w3); }
+.check-icon { font-size:40px; flex-shrink:0; }
+.check-text { font-size:29px; font-weight:700; color:var(--text); }
+.review-hw { flex:1; display:flex; flex-direction:column; gap:16px; }
+.hw-box { background:linear-gradient(135deg,var(--accent),#F08000); border-radius:20px; padding:18px 22px; color:#fff; }
+.hw-title { font-size:28px; font-weight:900; margin-bottom:12px; }
+.hw-text { font-size:26px; line-height:1.6; }
+.hw-example { background:rgba(0,0,0,0.15); border-radius:12px; padding:12px 16px; font-size:22px; margin-top:12px; font-style:italic; line-height:1.6; }
+.next-box { background:var(--w3-light); border:3px solid var(--w3); border-radius:20px; padding:16px 20px; color:var(--w3-dark); }
+.next-title { font-size:26px; font-weight:900; margin-bottom:10px; }
+.next-text { font-size:22px; line-height:1.6; }
+
+/* ── 퀴즈 공통 ── */
+.dz { border:2.5px dashed rgba(255,255,255,0.3); border-radius:12px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; min-height:64px; padding:6px; transition:all 0.18s; flex-direction:column; gap:4px; cursor:pointer; }
+.dz.over  { border-color:#F5A623; background:rgba(245,166,35,0.15); }
+.dz.ok    { border-color:#22C55E; background:rgba(34,197,94,0.18); }
+.dz.fail  { border-color:#EF4444; background:rgba(239,68,68,0.18); animation:shake .35s; }
+.dzlabel  { font-size:21px; color:rgba(255,255,255,0.4); }
+.dzchip   { font-size:24px; font-weight:700; color:#fff; padding:4px 12px; border-radius:20px; }
+.qbtn { background:rgba(255,255,255,0.15); color:#fff; border:2px solid rgba(255,255,255,0.3); border-radius:40px; padding:10px 24px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; margin:0 6px; }
+.qbtn:hover { background:rgba(255,255,255,0.25); }
+.word-chip { background:var(--accent); color:#000; font-size:26px; font-weight:700; padding:12px 24px; border-radius:50px; cursor:grab; user-select:none; transition:all 0.15s; border:3px solid transparent; }
+.word-chip.used { opacity:0.3 !important; text-decoration:line-through !important; cursor:not-allowed !important; filter:grayscale(1); transform:none !important; }
+.word-chip:hover { transform:scale(1.05); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.word-chip.dragging { opacity:0.4; transform:scale(0.95); }
+.oxrow { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.14); border-radius:14px; padding:12px 18px; flex:1; }
+.oxq { flex:1; font-size:28px; font-weight:700; color:#fff; line-height:1.4; }
+.obtn,.xbtn { border:none; border-radius:10px; padding:14px 28px; font-size:34px; font-weight:900; cursor:pointer; font-family:inherit; }
+.obtn { background:#1A8A42; color:#fff; }
+.xbtn { background:#E84040; color:#fff; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* ── 보완: 터치 선택 표시 · 메인 링크 · 안내 ── */
+.picked { outline:5px solid #FACC15 !important; outline-offset:3px; transform:scale(1.08); box-shadow:0 0 18px rgba(250,204,21,.7); }
+.to-main { position:fixed; left:12px; bottom:10px; z-index:1000; font-size:18px; color:#fff; background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; text-decoration:none; opacity:.55; }
+.to-main:hover { opacity:1; }
+#pick-toast { display:none; position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:2000; background:#FACC15; color:#1a1a1a; font-size:24px; font-weight:900; padding:10px 22px; border-radius:30px; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">‹</button>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">›</button>
+<div class="progress-bar" id="progress"></div>
+
+<!-- ══ SLIDE 1: 표지 ══ -->
+<div class="slide active" id="s1">
+  <div class="cover-deco">🏥</div>
+  <div class="cover-inner">
+    <div class="cover-week">📅 3주차</div>
+    <div class="cover-title">AI로 건강 정보<br>&amp; 병원 활용</div>
+    <div class="cover-sub">AI가 든든한 건강 백과사전이 되어드려요!</div>
+    <div class="cover-goals">
+      <div class="cover-goal"><div class="num">1</div>AI에게 건강 질문 잘 하기</div>
+      <div class="cover-goal"><div class="num">2</div>약 복용법·증상 활용법</div>
+      <div class="cover-goal"><div class="num">3</div>병원 방문 전후 활용</div>
+      <div class="cover-goal"><div class="num">4</div>AI의 한계와 주의사항</div>
+    </div>
+  </div>
+  <div class="slide-num">1 / 19</div>
+</div>
+
+<!-- ══ SLIDE 2: 마음열기 ══ -->
+<div class="slide" id="s2">
+  <div class="hdr">
+    <span class="hdr-week">마음 열기</span>
+    <span class="hdr-title">건강 궁금한 거, 어디서 찾으세요?</span>
+    <span class="hdr-num">2 / 19</span>
+  </div>
+  <div class="body">
+    <div class="open-body">
+      <div class="open-question">
+        <div class="q-icon">🤔</div>
+        <div class="q-text">"병원 가기 전에<br>어디서 알아보세요?"</div>
+      </div>
+      <div class="open-reactions">
+        <div class="reaction-card">
+          <div class="ri">🔍</div>
+          <div>
+            <div class="rt">네이버에서 검색해요</div>
+            <div class="rs">→ AI가 훨씬 더 내 상황에 맞게 알려줘요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent);">
+          <div class="ri">👨‍👩‍👧</div>
+          <div>
+            <div class="rt">자녀한테 물어봐요</div>
+            <div class="rs">→ AI에게 물어보면 24시간 언제든 OK!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent2);">
+          <div class="ri">😟</div>
+          <div>
+            <div class="rt">그냥 걱정만 해요</div>
+            <div class="rs">→ 오늘부터 AI에게 바로 물어봐요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="open-msg">💡 "AI가 훨씬 쉽고 빠르게, 내 상황에 딱 맞게 알려줄 수 있어요!"</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: AI가 잘 하는 것 ══ -->
+<div class="slide" id="s3">
+  <div class="hdr">
+    <span class="hdr-week">AI 건강 활용</span>
+    <span class="hdr-title">AI에게 이런 것을 물어볼 수 있어요!</span>
+    <span class="hdr-num">3 / 19</span>
+  </div>
+  <div class="body">
+    <div class="cando-body">
+      <div class="cando-left">
+        <div class="cando-section">
+          <div class="cs-title">💊 약 관련</div>
+          <div class="cs-item"><span class="ci">💊</span>약 이름, 효능, 복용 방법</div>
+          <div class="cs-item"><span class="ci">⚠️</span>함께 먹으면 안 되는 음식·약</div>
+          <div class="cs-item"><span class="ci">🍽️</span>식전·식후 언제 먹어야 하는지</div>
+        </div>
+        <div class="cando-section">
+          <div class="cs-title">🏥 병원 관련</div>
+          <div class="cs-item"><span class="ci">🏥</span>어떤 진료과를 가야 하는지</div>
+          <div class="cs-item"><span class="ci">📋</span>의사 말씀 쉽게 풀어서 설명</div>
+          <div class="cs-item"><span class="ci">🔬</span>검사 결과 용어 뜻 풀이</div>
+        </div>
+      </div>
+      <div class="cando-right">
+        <div class="ex-bubble">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"타이레놀을 하루에 몇 번까지 먹어도 되나요? 저는 위가 좀 약해요."</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#1A5A8A,#0A3A5E);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"무릎이 계단 내려올 때 아픈데, 정형외과를 가야 하나요 재활의학과를 가야 하나요?"</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#5A1A8A,#3A0A5E);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"혈압약 복용 중인데 자몽주스를 마셔도 되나요?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: 실제 활용 예시 ══ -->
+<div class="slide" id="s4">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">실제 예시</span>
+    <span class="hdr-title">이렇게 물어보면 이렇게 답해줘요!</span>
+    <span class="hdr-num">4 / 19</span>
+  </div>
+  <div class="body">
+    <div class="chat-demo-body">
+      <div class="demo-pair">
+        <div class="msg-user">혈압약인 암로디핀을 복용 중인데 자몽주스를 마셔도 되나요? 쉽게 설명해주세요.</div>
+        <div class="msg-ai"><strong>자몽주스는 주의가 필요해요! 🍊</strong><br>자몽에 든 성분이 암로디핀이 몸에서 분해되는 것을 방해해서 약 농도가 갑자기 높아질 수 있어요. 혈압이 너무 많이 떨어지거나 어지럼증이 생길 수 있으니, 혈압약 드시는 동안은 자몽주스는 피하시는 게 좋아요. 담당 의사선생님께도 꼭 확인해보세요!</div>
+      </div>
+      <div class="demo-divider"></div>
+      <div class="demo-pair">
+        <div class="msg-user">무릎이 계단 내려올 때 아픈데, 어떤 병원 과를 가면 좋을까요?</div>
+        <div class="msg-ai"><strong>정형외과를 먼저 방문해보세요! 🏥</strong><br>계단에서 무릎 통증은 연골이나 관절 문제일 가능성이 있어요. 정형외과에서 X레이 촬영 후 원인을 파악하고, 필요하면 재활의학과를 연계해 드릴 거예요. 단, 이건 일반적인 정보이고 정확한 진단은 꼭 의사선생님께 받으세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: 병원 전후 활용법 ══ -->
+<div class="slide" id="s5">
+  <div class="hdr">
+    <span class="hdr-week">활용법</span>
+    <span class="hdr-title">병원 방문 전후, AI를 이렇게 활용해요!</span>
+    <span class="hdr-num">5 / 19</span>
+  </div>
+  <div class="body">
+    <div class="hosp-body">
+      <div class="hosp-col">
+        <div class="hosp-col-hdr" style="background:var(--w3);">🏃 병원 가기 전</div>
+        <div class="hosp-item" style="background:#E8F8EF;border-left:5px solid var(--green);">
+          <div class="hi-icon">📝</div>
+          <div><div class="hi-text">증상 정리하기</div><div class="hi-sub">"요즘 이런 증상이 있는데 어떻게 설명하면 좋을까요?"</div></div>
+        </div>
+        <div class="hosp-item" style="background:#E8F8EF;border-left:5px solid var(--green);">
+          <div class="hi-icon">🏥</div>
+          <div><div class="hi-text">어떤 과를 가야 할지 확인</div><div class="hi-sub">"이 증상엔 내과를 가야 하나요 외과를 가야 하나요?"</div></div>
+        </div>
+        <div class="hosp-item" style="background:#E8F8EF;border-left:5px solid var(--green);">
+          <div class="hi-icon">❓</div>
+          <div><div class="hi-text">의사한테 물어볼 것 미리 정리</div><div class="hi-sub">"혈압 관련해서 의사에게 꼭 물어봐야 할 것 3가지"</div></div>
+        </div>
+      </div>
+      <div class="hosp-divider"></div>
+      <div class="hosp-col">
+        <div class="hosp-col-hdr" style="background:#1A5A8A;">🏠 병원 다녀온 후</div>
+        <div class="hosp-item" style="background:#E8F0FF;border-left:5px solid #1A5A8A;">
+          <div class="hi-icon">🔤</div>
+          <div><div class="hi-text">모르는 단어 물어보기</div><div class="hi-sub">"의사가 '협착'이라고 했는데 이게 뭔가요?"</div></div>
+        </div>
+        <div class="hosp-item" style="background:#E8F0FF;border-left:5px solid #1A5A8A;">
+          <div class="hi-icon">💊</div>
+          <div><div class="hi-text">처방약 역할과 주의사항 확인</div><div class="hi-sub">"이 약은 왜 먹는 건가요? 주의사항이 있나요?"</div></div>
+        </div>
+        <div class="hosp-item" style="background:#E8F0FF;border-left:5px solid #1A5A8A;">
+          <div class="hi-icon">🌿</div>
+          <div><div class="hi-text">집에서 관리법 물어보기</div><div class="hi-sub">"퇴원 후 집에서 어떻게 관리하면 좋을까요?"</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: 실습1 약 복용법 ══ -->
+<div class="slide" id="s6">
+  <div class="hdr" style="background:var(--w3);">
+    <span class="hdr-week">실습 1</span>
+    <span class="hdr-title">약 복용법 질문하기 — 직접 입력해보세요!</span>
+    <span class="hdr-num">6 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 ChatGPT에 아래 문장을 그대로 입력해보세요!</div>
+      <div class="practice-prompt" style="background:#0A1F1A;">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          저는 <span class="pp-highlight">70세 여성</span>이고 <span class="pp-highlight">고혈압과 당뇨</span>가 있어요.<br>
+          <span class="pp-highlight">아세트아미노펜(타이레놀) 500mg</span>을 처방받았는데<br>
+          <span class="pp-highlight">하루에 몇 번, 언제</span> 먹어야 하나요?<br>
+          혈압약인 <span class="pp-highlight">암로디핀</span>을 복용 중인데<br>
+          함께 먹으면 안 되는 <span class="pp-highlight">음식이나 약</span>이 있나요?<br>
+          <span class="pp-highlight">쉽게 설명</span>해주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">💡</div>
+        <div>5원칙 적용: <strong>①나 소개</strong> + <strong>②구체적</strong>(약 이름, mg) + <strong>③형식</strong>(쉽게) 모두 들어 있어요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: 실습2 증상 ══ -->
+<div class="slide" id="s7">
+  <div class="hdr" style="background:var(--w3);">
+    <span class="hdr-week">실습 2</span>
+    <span class="hdr-title">증상 질문하기 — 직접 입력해보세요!</span>
+    <span class="hdr-num">7 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 아래 질문들을 ChatGPT에 직접 입력해보세요!</div>
+      <div class="practice-prompt" style="background:#0A1F1A; flex:1;">
+        <div class="pp-label" style="margin-bottom:6px;">💬 질문 예시 ①</div>
+        <div class="pp-text" style="font-size:26px; margin-bottom:20px;">
+          아침에 일어나면 <span class="pp-highlight">손가락이 뻣뻣</span>하고 <span class="pp-highlight">1시간 정도</span> 지나야 풀려요.<br>
+          어떤 이유일 수 있나요? 어떤 병원 과를 가면 좋을지도 알려주세요.
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+        <div class="pp-label" style="margin-top:6px;margin-bottom:6px;">💬 질문 예시 ②</div>
+        <div class="pp-text" style="font-size:26px;">
+          밥을 먹고 나면 <span class="pp-highlight">속이 더부룩</span>하고 <span class="pp-highlight">가스가 많이</span> 차요.<br>
+          병원 가기 전에 집에서 해볼 수 있는 방법이 있나요?
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">✏️</div>
+        <div>이제 <strong>내가 실제로 궁금한 건강 질문</strong>을 5원칙으로 직접 만들어 입력해보세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: 실습3 나만의 ══ -->
+<div class="slide" id="s8">
+  <div class="hdr">
+    <span class="hdr-week">실습 3</span>
+    <span class="hdr-title">나만의 건강 질문 만들기!</span>
+    <span class="hdr-num">8 / 19</span>
+  </div>
+  <div class="body">
+    <div class="myq-body">
+      <div class="myq-left">
+        <div style="font-size:28px;font-weight:900;color:var(--w3-dark);padding-bottom:8px;border-bottom:3px solid var(--w3-light);">📝 건강 질문 공식</div>
+        <div class="myq-template">
+          저는 <span class="myq-blank">나이·성별·상태</span> 인데요,<br><br>
+          <span class="myq-blank">약 이름 또는 증상</span> 에 대해<br>
+          알고 싶어요.<br><br>
+          <span class="myq-blank">조건·형식</span> 으로 알려주세요.
+        </div>
+        <div class="myq-example">
+          <div style="font-size:28px;flex-shrink:0;">💡</div>
+          <div>
+            <div style="font-size:20px;font-weight:900;color:var(--green);margin-bottom:6px;">완성 예시</div>
+            <div style="font-size:23px;line-height:1.6;">"저는 <strong>72세 남성</strong>이고 당뇨가 있어요. <strong>무릎이 아침마다 뻣뻣</strong>한데 어느 병원 과를 가야 하나요? <strong>쉽게 설명</strong>해주세요."</div>
+          </div>
+        </div>
+      </div>
+      <div class="myq-right">
+        <div style="font-size:28px;font-weight:900;color:var(--main);margin-bottom:4px;">💡 건강 질문 아이디어</div>
+        <div class="topic-card2"><div class="tc-icon">💊</div><div class="tc-name">내가 먹는 약의 부작용</div></div>
+        <div class="topic-card2"><div class="tc-icon">🦴</div><div class="tc-name">관절·허리·무릎 통증</div></div>
+        <div class="topic-card2"><div class="tc-icon">🩸</div><div class="tc-name">혈압·혈당 관리법</div></div>
+        <div class="topic-card2"><div class="tc-icon">😴</div><div class="tc-name">수면 장애·피로감</div></div>
+        <div class="topic-card2"><div class="tc-icon">🍎</div><div class="tc-name">건강한 식단·영양</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: 주의사항 1 ══ -->
+<div class="slide" id="s9">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">⚠️ 주의사항 1</span>
+    <span class="hdr-title">AI는 의사가 아닙니다!</span>
+    <span class="hdr-num">9 / 19</span>
+  </div>
+  <div class="body">
+    <div class="warn-body">
+      <div class="warn-main">
+        <div class="warn-box">
+          <div class="wb-icon">🩺</div>
+          <div class="wb-title">AI는 의사가 아니에요!</div>
+          <div class="wb-text">
+            AI의 답변은 <strong style="color:#FFD78C;">일반적인 정보</strong>이지,<br>
+            나 개인에 대한 <strong style="color:#FFD78C;">진단</strong>이 아니에요.<br><br>
+            "이 증상은 위험하지 않다"는 AI 말만 믿고<br>
+            병원을 안 가면 <strong style="color:#FCA5A5;">위험할 수 있어요!</strong>
+          </div>
+        </div>
+        <div class="warn-analogy">
+          <div class="wa-text">💡 <strong style="color:#FFD78C;">비유:</strong> AI는 건강 백과사전 같은 거예요.<br>백과사전을 읽고 병을 고치지는 않죠? 참고는 하지만 치료는 의사가 해요!</div>
+        </div>
+      </div>
+      <div class="warn-side">
+        <div class="warn-do">
+          <div class="wd-title">✅ 올바른 활용법</div>
+          <div class="wd-item">✔️ AI는 <strong>참고용</strong>으로만 활용한다</div>
+          <div class="wd-item">✔️ 결정은 반드시 <strong>의사 선생님</strong>과 함께</div>
+          <div class="wd-item">✔️ 증상이 심하면 <strong>즉시 병원</strong>에 간다</div>
+          <div class="wd-item">✔️ AI가 "괜찮다"해도 <strong>걱정되면 병원</strong> 가기</div>
+        </div>
+        <div style="background:rgba(232,64,64,0.12);border:2px solid rgba(232,64,64,0.4);border-radius:16px;padding:18px 22px;text-align:center;">
+          <div style="font-size:30px;font-weight:900;color:#FCA5A5;margin-bottom:8px;">🚨 이것만 기억해요!</div>
+          <div style="font-size:26px;color:#fff;font-weight:700;line-height:1.5;">"AI는 참고용,<br>결정은 내가,<br>치료는 의사가!"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: 주의사항 2 ══ -->
+<div class="slide" id="s10">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">⚠️ 주의사항 2</span>
+    <span class="hdr-title">AI가 틀릴 수도 있어요!</span>
+    <span class="hdr-num">10 / 19</span>
+  </div>
+  <div class="body">
+    <div class="warn-body">
+      <div class="warn-main">
+        <div class="warn-box">
+          <div class="wb-icon">🤔</div>
+          <div class="wb-title">AI는 가끔 틀려요!</div>
+          <div class="wb-text">
+            AI는 가끔 <strong style="color:#FFD78C;">잘못된 정보를 자신 있게</strong> 말하기도 해요.<br><br>
+            특히 <strong style="color:#FCA5A5;">최신 약 정보</strong>, <strong style="color:#FCA5A5;">특정 병원 정보</strong>는<br>
+            실제와 다를 수 있어요.<br><br>
+            중요한 건강 정보는 반드시<br>
+            <strong style="color:#6EE7B7;">약사나 의사에게 다시 확인</strong>하세요!
+          </div>
+        </div>
+        <div class="warn-analogy">
+          <div class="wa-text">💡 AI의 정보는 신문 기사처럼 읽어요. 중요한 건 전문가한테 다시 확인하는 습관이 필요해요!</div>
+        </div>
+      </div>
+      <div class="warn-side">
+        <div class="warn-do">
+          <div class="wd-title">✅ 이럴 때는 꼭 확인하세요</div>
+          <div class="wd-item">💊 새로 처방받은 약의 정보</div>
+          <div class="wd-item">🏥 특정 병원이나 의원 정보</div>
+          <div class="wd-item">🩸 검사 수치의 정상 기준값</div>
+          <div class="wd-item">⚡ 응급 증상 판단</div>
+          <div class="wd-item">📅 최근에 바뀐 의료 정보</div>
+        </div>
+        <div style="background:rgba(245,166,35,0.12);border:2px solid rgba(245,166,35,0.35);border-radius:16px;padding:18px 22px;text-align:center;">
+          <div style="font-size:28px;font-weight:900;color:#FFD78C;margin-bottom:8px;">✔️ 이렇게 확인해요</div>
+          <div style="font-size:24px;color:#fff;font-weight:600;line-height:1.6;">약국에서 약사님께 한 번 더 물어보기<br>진료 시 의사선생님께 확인하기</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: 주의사항 3 ══ -->
+<div class="slide" id="s11">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">⚠️ 주의사항 3</span>
+    <span class="hdr-title">개인 정보는 절대 입력하지 마세요!</span>
+    <span class="hdr-num">11 / 19</span>
+  </div>
+  <div class="body">
+    <div class="warn-body">
+      <div class="warn-main">
+        <div class="warn-box" style="background:rgba(139,0,139,0.12);border-color:rgba(200,100,200,0.4);">
+          <div class="wb-icon">🔒</div>
+          <div class="wb-title" style="color:#E9A8F9;">개인 정보 보호!</div>
+          <div class="wb-text">
+            건강 정보를 물어볼 때<br>
+            <strong style="color:#FCA5A5;">주민번호, 보험번호, 이름, 주소</strong>는<br>
+            <strong style="color:#FCA5A5;">절대 입력하지 마세요!</strong><br><br>
+            이름 없이 <strong style="color:#6EE7B7;">"저는 70대 여성인데요"</strong><br>
+            정도로만 말해도 충분해요.
+          </div>
+        </div>
+      </div>
+      <div class="warn-side">
+        <div style="background:rgba(232,64,64,0.12);border:2px solid rgba(232,64,64,0.4);border-radius:16px;padding:18px 22px;flex:1;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:26px;font-weight:900;color:#FCA5A5;">❌ 절대 입력하면 안 돼요</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#FCA5A5;font-weight:700;">🚫 주민등록번호</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#FCA5A5;font-weight:700;">🚫 건강보험증 번호</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#FCA5A5;font-weight:700;">🚫 금융 정보</div>
+        </div>
+        <div style="background:rgba(26,138,66,0.15);border:2px solid rgba(26,138,66,0.4);border-radius:16px;padding:18px 22px;flex:1;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:26px;font-weight:900;color:#6EE7B7;">✅ 이 정도면 충분해요</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#A7F3D0;font-weight:700;">✔️ "70대 여성"</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#A7F3D0;font-weight:700;">✔️ "고혈압 있어요"</div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 16px;font-size:24px;color:#A7F3D0;font-weight:700;">✔️ "타이레놀 복용 중"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: 정리 ══ -->
+<div class="slide" id="s12">
+  <div class="hdr">
+    <span class="hdr-week">정리</span>
+    <span class="hdr-title">오늘 배운 것</span>
+    <span class="hdr-num">12 / 19</span>
+  </div>
+  <div class="body">
+    <div class="review-body">
+      <div class="review-checks">
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI에게 약 복용법·증상·진료과를 물어볼 수 있다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">병원 가기 전 준비하고, 다녀온 후 이해하는 데 활용한다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI는 의사가 아니므로 참고용으로만 활용한다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI가 틀릴 수 있으므로 중요한 것은 의사에게 확인한다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">주민번호 등 개인 정보는 절대 입력하지 않는다</div>
+        </div>
+      </div>
+      <div class="review-hw">
+        <div class="hw-box">
+          <div class="hw-title">📝 이번 주 숙제</div>
+          <div class="hw-text">실제로 궁금한 건강 질문 하나를<br>AI에게 물어보고 메모해오기!</div>
+          <div class="hw-example">약 이름, 증상, 음식과 약 등<br>무엇이든 OK! 메모앱에 저장해두세요 😊</div>
+        </div>
+        <div class="next-box">
+          <div class="next-title">🔜 다음 주 예고</div>
+          <div class="next-text">AI로 여행 계획 짜기, 맛집 찾기, 나들이 코스 만들기! 자녀한테 부탁하지 않아도 혼자 뚝딱 만들 수 있어요!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">12 / 19</div>
+</div>
+
+<!-- ══ SLIDE 13: 퀴즈 소개 ══ -->
+<div class="slide" id="s13" style="background:linear-gradient(135deg,#022C27,#065F55);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:30px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎯</div>
+    <div style="font-size:64px;font-weight:900;color:#fff;margin-bottom:16px;">복습 퀴즈 타임!</div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.8);margin-bottom:28px;">AI 건강 활용법과 주의사항을 퀴즈로 확인해봐요! · 총 5종류 퀴즈</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟡 퀴즈1 AI에게 물어볼 수 있다/없다</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟢 퀴즈2 병원 전후 활용 매칭</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔵 퀴즈3 활용 순서 맞추기</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔴 퀴즈4 O/X 퀴즈</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟣 퀴즈5 빈칸 채우기</div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 19</div>
+</div>
+
+<!-- ══ SLIDE 14: 퀴즈1 — AI에게 물어볼 수 있다/없다 ══ -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#022C27,#065F55);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 1</span>
+    <span class="hdr-title">AI에게 물어볼 수 있는 것과 없는 것을 분류하세요!</span>
+    <span class="hdr-num">14 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb1" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c1_1" data-ans="ask" style="background:#6EE7B7;color:#022C27;font-size:22px;">약 복용 횟수</div>
+      <div class="word-chip" draggable="true" id="c1_2" data-ans="no" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">나의 정확한 진단</div>
+      <div class="word-chip" draggable="true" id="c1_3" data-ans="ask" style="background:#6EE7B7;color:#022C27;font-size:22px;">어떤 진료과 가야 하나</div>
+      <div class="word-chip" draggable="true" id="c1_4" data-ans="no" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">치료 방법 결정</div>
+      <div class="word-chip" draggable="true" id="c1_5" data-ans="ask" style="background:#6EE7B7;color:#022C27;font-size:22px;">검사 결과 용어 설명</div>
+      <div class="word-chip" draggable="true" id="c1_6" data-ans="no" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">내 병이 위험한지 판단</div>
+    </div>
+    <div style="display:flex;gap:16px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(26,138,66,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#6EE7B7;">✅ AI에게 물어볼 수 있어요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="ask" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="ask" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="ask" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(232,64,64,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#FCA5A5;">❌ AI에게 맡기면 안 돼요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="no" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="no" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="no" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc1">0</span> / 6 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb1','1')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('1')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 15: 퀴즈2 — 병원 전후 매칭 ══ -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#022C27,#065F55);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 2</span>
+    <span class="hdr-title">병원 가기 전/후 중 언제 활용하는지 연결하세요!</span>
+    <span class="hdr-num">15 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb2" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c2_1" data-ans="before" style="background:#A7F3D0;color:#022C27;">어떤 과를 갈지 확인</div>
+      <div class="word-chip" draggable="true" id="c2_2" data-ans="after" style="background:#93C5FD;color:#0A1A3A;">처방약 역할 확인</div>
+      <div class="word-chip" draggable="true" id="c2_3" data-ans="before" style="background:#A7F3D0;color:#022C27;">의사에게 물어볼 것 정리</div>
+      <div class="word-chip" draggable="true" id="c2_4" data-ans="after" style="background:#93C5FD;color:#0A1A3A;">모르는 의학 용어 설명</div>
+      <div class="word-chip" draggable="true" id="c2_5" data-ans="after" style="background:#93C5FD;color:#0A1A3A;">집에서 관리법 물어보기</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">🏃 증상을 정리해서 어떻게 설명할지 미리 준비해요</div>
+        <div class="dz" data-col="before" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">전 / 후?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">🔤 "이상지질혈증이 뭔가요?" — 의사 말 중 모르는 단어 풀이</div>
+        <div class="dz" data-col="after" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">전 / 후?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">💊 처방받은 약의 역할과 부작용을 이해하고 싶어요</div>
+        <div class="dz" data-col="after" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">전 / 후?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">❓ 진료 시 어떤 질문을 해야 효과적인지 미리 정리해요</div>
+        <div class="dz" data-col="before" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">전 / 후?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:26px;font-weight:700;color:#fff;">🌿 "퇴원 후 식이요법을 어떻게 하면 좋을까요?" 관리법 확인</div>
+        <div class="dz" data-col="after" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">전 / 후?</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc2">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb2','2')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('2')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: 퀴즈3 — 순서 맞추기 ══ -->
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 3</span>
+    <span class="hdr-title">병원 가기 전 AI 활용 순서를 맞춰보세요!</span>
+    <span class="hdr-num">16 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb3" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c3_1" data-ans="s3" style="background:#FCD34D;color:#3A2A00;font-size:22px;">어떤 과 갈지 확인</div>
+      <div class="word-chip" draggable="true" id="c3_2" data-ans="s1" style="background:#A7F3D0;color:#022C27;font-size:22px;">증상 정리하기</div>
+      <div class="word-chip" draggable="true" id="c3_3" data-ans="s5" style="background:#F9A8D4;color:#3A0A2A;font-size:22px;">병원 방문!</div>
+      <div class="word-chip" draggable="true" id="c3_4" data-ans="s2" style="background:#93C5FD;color:#0A1A3A;font-size:22px;">AI에게 질문 작성</div>
+      <div class="word-chip" draggable="true" id="c3_5" data-ans="s4" style="background:#C4B5FD;color:#1E0A3E;font-size:22px;">의사에게 물어볼 것 정리</div>
+    </div>
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(167,243,208,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#A7F3D0;text-align:center;">① 첫 번째</div>
+        <div class="dz" data-col="s1" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(147,197,253,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#93C5FD;text-align:center;">② 두 번째</div>
+        <div class="dz" data-col="s2" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(252,211,77,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#FCD34D;text-align:center;">③ 세 번째</div>
+        <div class="dz" data-col="s3" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(196,181,253,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#C4B5FD;text-align:center;">④ 네 번째</div>
+        <div class="dz" data-col="s4" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(249,168,212,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#F9A8D4;text-align:center;">⑤ 다섯 번째</div>
+        <div class="dz" data-col="s5" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc3">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb3','3')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('3')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: 퀴즈4 — O/X ══ -->
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#022C27,#1A4A3A);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 4</span>
+    <span class="hdr-title">맞으면 O, 틀리면 X를 눌러보세요!</span>
+    <span class="hdr-num">17 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div style="text-align:center;color:#A7F3D0;font-size:22px;font-weight:700;flex-shrink:0;">점수: <span id="sc4">0</span> / 5</div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div class="oxrow" id="ox1">
+        <div class="oxq">AI에게 약 복용 횟수나 음식과의 궁합을 물어볼 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox2">
+        <div class="oxq">AI가 "괜찮다"고 하면 병원에 가지 않아도 된다</div>
+        <button class="obtn" onclick="oxAns(this,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox3">
+        <div class="oxq">AI에게 질문할 때 주민번호나 보험번호는 입력하지 않아야 한다</div>
+        <button class="obtn" onclick="oxAns(this,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox4">
+        <div class="oxq">AI는 의사처럼 나에 대한 정확한 진단을 내릴 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,4,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox5">
+        <div class="oxq">AI에게 "70대 여성인데요" 정도만 말해도 건강 질문에 충분하다</div>
+        <button class="obtn" onclick="oxAns(this,5,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,5,'X')">X</button>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <button class="qbtn" onclick="resetOX()">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX()">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 18: 퀴즈5 — 빈칸 채우기 ══ -->
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 5</span>
+    <span class="hdr-title">빈칸에 알맞은 단어를 끌어다 놓으세요!</span>
+    <span class="hdr-num">18 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb5" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c5_1" data-ans="b_ref" style="background:#A7F3D0;color:#022C27;">참고용</div>
+      <div class="word-chip" draggable="true" id="c5_2" data-ans="b_doc" style="background:#FCA5A5;color:#3A0A0A;">의사</div>
+      <div class="word-chip" draggable="true" id="c5_3" data-ans="b_id" style="background:#FCD34D;color:#3A2A00;">주민번호</div>
+      <div class="word-chip" draggable="true" id="c5_4" data-ans="b_enc" style="background:#C4B5FD;color:#1E0A3E;">백과사전</div>
+      <div class="word-chip" draggable="true" id="c5_5" data-ans="b_dept" style="background:#93C5FD;color:#0A1A3A;">진료과</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI는 <span style="color:#A7F3D0;">( &nbsp;&nbsp;&nbsp; )</span>으로만 활용해요. 결정은 내가, 치료는 의사가!</div>
+        <div class="dz" data-col="b_ref" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI의 건강 정보를 읽고 중요한 판단은 <span style="color:#FCA5A5;">( &nbsp;&nbsp;&nbsp; )</span>에게 확인받아야 해요.</div>
+        <div class="dz" data-col="b_doc" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI에게 건강 질문할 때 <span style="color:#FCD34D;">( &nbsp;&nbsp;&nbsp; )</span>와 보험번호는 절대 입력하지 마세요!</div>
+        <div class="dz" data-col="b_id" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI는 건강 <span style="color:#C4B5FD;">( &nbsp;&nbsp;&nbsp; )</span> 같은 거예요. 읽고 참고하지만 치료는 의사가 해요!</div>
+        <div class="dz" data-col="b_enc" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI에게 어떤 <span style="color:#93C5FD;">( &nbsp;&nbsp;&nbsp; )</span>를 가야 할지 미리 물어보고 병원에 가면 좋아요.</div>
+        <div class="dz" data-col="b_dept" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc5">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb5','5')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('5')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 19: 마무리 ══ -->
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#022C27,#065F55,#0F766E);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:40px;">
+    <div style="font-size:90px;margin-bottom:16px;">🎉</div>
+    <div style="font-size:58px;font-weight:900;color:#fff;margin-bottom:12px;">오늘도 수고하셨어요!</div>
+    <div style="font-size:26px;color:rgba(255,255,255,0.8);margin-bottom:32px;">AI로 건강 관리가 한결 쉬워졌어요!</div>
+    <div style="background:rgba(255,255,255,0.15);border-radius:20px;padding:24px 36px;font-size:24px;color:#fff;font-weight:600;line-height:1.8;max-width:760px;margin:0 auto;">
+      이번 주 실제로 궁금한 건강 질문 하나를 AI에게 물어보세요.<br>
+      <strong style="color:#6EE7B7;">"AI는 든든한 건강 백과사전,<br>하지만 최종 판단은 의사 선생님께!"</strong><br><br>
+      다음 주에 선생님께 결과를 알려주세요! 😊
+    </div>
+  </div>
+  <div class="slide-num">19 / 19</div>
+</div>
+
+<script>
+var cur = 0, total = 19;
+var slides = document.querySelectorAll('.slide');
+function go(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total-1));
+  slides[cur].classList.add('active');
+  document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+  document.getElementById('btn-prev').style.opacity = cur===0?'0.3':'1';
+  document.getElementById('btn-next').style.opacity = cur===total-1?'0.3':'1';
+}
+function nextSlide(){ if(cur<total-1) go(cur+1); }
+function prevSlide(){ if(cur>0) go(cur-1); }
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='f'||e.key==='F'){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+go(0);
+
+function beep(ok){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ok){
+      [1047,1319,1568].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.4,ctx.currentTime+i*0.12+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.4);
+        o.connect(g);g.connect(ctx.destination);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.5);
+      });
+    } else {
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sawtooth';o.frequency.value=180;
+      g.gain.setValueAtTime(0.35,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+0.6);
+    }
+  }catch(e){}
+}
+
+var dragId = null;
+var scores = {};
+document.addEventListener('dragstart', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(!chip||chip.classList.contains('used')){e.preventDefault();return;}
+  dragId = chip.id;
+  setTimeout(function(){ chip.classList.add('dragging'); }, 0);
+});
+document.addEventListener('dragend', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(chip) chip.classList.remove('dragging');
+});
+document.addEventListener('dragover', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz && !dz.querySelector('.dzchip')) { e.preventDefault(); dz.classList.add('over'); }
+});
+document.addEventListener('dragleave', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz) dz.classList.remove('over');
+});
+document.addEventListener('drop', function(e){
+  var dz = e.target.closest('.dz');
+  if(!dz||!dragId) return;
+  e.preventDefault();
+  dz.classList.remove('over');
+  if(dz.querySelector('.dzchip')) return;
+  var chip = document.getElementById(dragId);
+  if(!chip||chip.classList.contains('used')) { dragId=null; return; }
+  chip.classList.remove('dragging');
+  var q   = dz.getAttribute('data-q');
+  var col = dz.getAttribute('data-col');
+  var ok  = chip.getAttribute('data-ans') === col;
+  if(ok){
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+    scores[q] = (scores[q]||0) + 1;
+    var sc = document.getElementById('sc'+q);
+    if(sc) sc.textContent = scores[q];
+    beep(true);
+  } else {
+    dz.classList.add('fail');
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#EF4444';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    chip.classList.add('used');
+    beep(false);
+    setTimeout(function(){
+      dz.classList.remove('fail'); chip.classList.remove('used');
+      dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+    }, 800);
+  }
+  dragId = null;
+});
+
+function resetQ(bankId, q){
+  scores[q] = 0;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = '0';
+  document.getElementById(bankId).querySelectorAll('.word-chip').forEach(function(c){
+    c.style.display = ''; c.classList.remove('used','dragging');
+  });
+  document.querySelectorAll('.dz[data-q="'+q+'"]').forEach(function(dz){
+    dz.className = 'dz';
+    dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+  });
+}
+
+var ansMap = {
+  '1': [['c1_1','ask'],['c1_2','no'],['c1_3','ask'],['c1_4','no'],['c1_5','ask'],['c1_6','no']],
+  '2': [['c2_1','before'],['c2_2','after'],['c2_3','before'],['c2_4','after'],['c2_5','after']],
+  '3': [['c3_1','s3'],['c3_2','s1'],['c3_3','s5'],['c3_4','s2'],['c3_5','s4']],
+  '5': [['c5_1','b_ref'],['c5_2','b_doc'],['c5_3','b_id'],['c5_4','b_enc'],['c5_5','b_dept']]
+};
+var bankMap = {'1':'wb1','2':'wb2','3':'wb3','5':'wb5'};
+
+function showAns(q){
+  resetQ(bankMap[q], q);
+  var pairs = ansMap[q];
+  pairs.forEach(function(pair){
+    var chipId = pair[0], col = pair[1];
+    var chip = document.getElementById(chipId);
+    var dz = document.querySelector('.dz[data-q="'+q+'"][data-col="'+col+'"]');
+    if(!chip||!dz) return;
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+  });
+  scores[q] = pairs.length;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = pairs.length;
+}
+
+var oxKey = {1:'O', 2:'X', 3:'O', 4:'X', 5:'O'};
+var oxDone = {};
+var oxScore = 0;
+
+function oxAns(btn, n, ans){
+  if(oxDone[n]) return;
+  oxDone[n] = true;
+  var row = document.getElementById('ox'+n);
+  var ok = (ans === oxKey[n]);
+  row.querySelectorAll('button').forEach(function(b){ b.disabled=true; b.style.opacity='0.35'; });
+  btn.style.opacity='1';
+  if(ok){
+    btn.style.background='#22C55E';
+    btn.style.boxShadow='0 0 18px rgba(34,197,94,0.6)';
+    row.style.borderColor='#22C55E';
+    row.style.background='rgba(34,197,94,0.12)';
+    oxScore++;
+    beep(true);
+  } else {
+    btn.style.background='#EF4444';
+    btn.style.boxShadow='0 0 18px rgba(239,68,68,0.6)';
+    row.style.borderColor='#EF4444';
+    row.style.background='rgba(239,68,68,0.1)';
+    row.querySelectorAll('button').forEach(function(b){
+      if(b.textContent===oxKey[n]){ b.style.opacity='1'; b.style.background='#22C55E'; }
+    });
+    beep(false);
+  }
+  document.getElementById('sc4').textContent = oxScore;
+}
+
+function resetOX(){
+  oxDone={}; oxScore=0;
+  document.getElementById('sc4').textContent='0';
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.style.borderColor='rgba(255,255,255,0.14)';
+    row.style.background='rgba(255,255,255,0.07)';
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=false; b.style.opacity='1'; b.style.boxShadow='none';
+      b.style.background = b.classList.contains('obtn')?'#1A8A42':'#E84040';
+    });
+  }
+}
+
+function showOX(){
+  resetOX();
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=true;
+      if(b.textContent===oxKey[i]){
+        b.style.opacity='1'; b.style.background='#22C55E';
+        b.style.boxShadow='0 0 16px rgba(34,197,94,0.5)';
+        row.style.borderColor='#22C55E'; row.style.background='rgba(34,197,94,0.12)';
+      } else { b.style.opacity='0.25'; }
+    });
+    oxDone[i]=true;
+  }
+  oxScore=5; document.getElementById('sc4').textContent='5';
+}
+</script>
+
+<a class="to-main" href="index.html">☰ 메인</a>
+<div id="pick-toast"></div>
+<script>
+/* ── 보완 1: 터치·클릭으로도 '낱말 끌어다 놓기' (낱말을 누르고 → 놓을 칸을 누르세요) ── */
+(function () {
+  var picked = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('pick-toast');
+    if (!t) { return; }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function fire(el, type) { el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); }
+  function clearPick() { if (picked) { picked.classList.remove('picked'); picked = null; } }
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('[draggable="true"]') : null;
+    if (chip) {
+      if (chip.classList.contains('used') || chip.style.display === 'none') { return; }
+      if (picked === chip) { clearPick(); return; }
+      clearPick(); picked = chip; chip.classList.add('picked');
+      toast('이제 놓을 칸을 눌러 주세요 👇');
+      return;
+    }
+    var dz = e.target.closest ? e.target.closest('.dz') : null;
+    if (dz && picked) {
+      var c = picked; clearPick();
+      fire(c, 'dragstart'); fire(dz, 'dragover'); fire(dz, 'drop'); fire(c, 'dragend');
+      setTimeout(function () { c.classList.remove('dragging'); }, 40);
+    }
+  });
+})();
+
+/* ── 보완 2: 화면이 작아 글이 잘리면 그 슬라이드만 자동으로 줄여서 맞춥니다 ── */
+(function () {
+  function overflowed(sl) {
+    var els = sl.querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.clientHeight > 0 && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+        var cs = window.getComputedStyle(el);
+        if (/(hidden|auto|scroll)/.test(cs.overflow + cs.overflowX + cs.overflowY)) { return true; }
+      }
+    }
+    return (sl.scrollHeight > sl.clientHeight + 2) || (sl.scrollWidth > sl.clientWidth + 2);
+  }
+  function fit(sl) {
+    if (!sl || !('zoom' in document.documentElement.style)) { return; }
+    try {
+      sl.style.zoom = ''; sl.style.width = ''; sl.style.height = '';
+      var s = 1, n = 0;
+      while (overflowed(sl) && n < 10 && s > 0.6) {
+        s = s * 0.94; n++;
+        sl.style.zoom = s; sl.style.width = (100 / s) + 'vw'; sl.style.height = (100 / s) + 'vh';
+      }
+    } catch (e) {}
+  }
+  function fitActive() { fit(document.querySelector('.slide.active')); }
+  window.__fitActive = fitActive;
+  ['go', 'showSlide'].forEach(function (name) {
+    if (typeof window[name] === 'function') {
+      var orig = window[name];
+      window[name] = function () { var r = orig.apply(this, arguments); fitActive(); return r; };
+    }
+  });
+  window.addEventListener('resize', fitActive);
+  window.addEventListener('load', function () { setTimeout(fitActive, 150); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitActive); }
+})();
+</script>
+
+</body>
+</html>

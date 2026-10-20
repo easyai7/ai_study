@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 기초 8주 과정 · 수업 화면 + 복습앱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#F4F7FB; --card:#fff; --text:#18243A; --mid:#4A5568; --soft:#6B7C92; --border:#DDE6F2; --shadow:0 3px 16px rgba(24,36,58,0.09); }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  body { font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; word-break:keep-all; }
+  .top { background:linear-gradient(140deg,#123B4A 0%,#1E6C7A 55%,#35A0A8 100%); color:#fff; padding:44px 22px 60px; text-align:center; }
+  .top .badge { display:inline-block; background:rgba(255,255,255,0.2); border-radius:14px; font-size:14px; font-weight:700; padding:6px 14px; margin-bottom:14px; }
+  .top h1 { font-size:32px; font-weight:900; line-height:1.3; letter-spacing:-0.02em; }
+  .top p { margin-top:12px; font-size:17px; color:rgba(255,255,255,0.9); }
+
+  .how { margin:-30px auto 0; max-width:720px; padding:0 18px; }
+  .how .box { background:var(--card); border-radius:20px; box-shadow:var(--shadow); padding:18px 20px; font-size:16.5px; color:var(--mid); }
+  .how b { color:var(--text); }
+  .how .line + .line { margin-top:8px; }
+  .how .keys { margin-top:8px; font-size:15px; color:var(--soft); }
+  .how kbd { background:#EEF2F7; border:1px solid var(--border); border-radius:6px; padding:1px 7px; font-family:inherit; font-size:14px; font-weight:700; color:var(--text); }
+
+  .wrap { max-width:720px; margin:0 auto; padding:22px 18px 56px; }
+  .list { display:flex; flex-direction:column; gap:14px; }
+  .week { background:var(--card); border-radius:22px; box-shadow:var(--shadow); padding:18px 20px; border-left:8px solid var(--c); }
+  .head { display:flex; align-items:center; gap:16px; }
+  .ic { flex:none; width:60px; height:60px; border-radius:18px; display:grid; place-items:center; font-size:30px; background:color-mix(in srgb, var(--c) 16%, #fff); }
+  .wk { font-size:14px; font-weight:700; color:var(--c); }
+  .tt { font-size:20px; font-weight:900; line-height:1.35; margin:1px 0 3px; }
+  .ds { font-size:15.5px; color:var(--mid); }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  .btns a { flex:1 1 200px; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; font-size:17px; font-weight:900; padding:13px 10px; border-radius:14px; }
+  .btns a:active { transform:scale(0.985); }
+  .btns a:focus-visible { outline:3px solid var(--c); outline-offset:3px; }
+  .b-lesson { background:var(--c); color:#fff; }
+  .b-review { background:color-mix(in srgb, var(--c) 14%, #fff); color:color-mix(in srgb, var(--c) 70%, #000); border:2px solid var(--c); }
+
+  .flow { text-align:center; margin:2px 0 16px; font-size:15.5px; color:var(--soft); font-weight:700; }
+  .foot { margin-top:34px; text-align:center; font-size:14.5px; color:var(--soft); line-height:1.8; }
+  .foot b { color:var(--mid); }
+  @media (max-width:420px) { .top h1 { font-size:26px; } .tt { font-size:18.5px; } .ic { width:52px; height:52px; font-size:26px; } }
+  @media print { .week { box-shadow:none; border:1px solid #ccc; break-inside:avoid; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="badge">AI 기초 8주 과정</span>
+  <h1>수업은 화면으로,<br>복습은 앱으로</h1>
+  <p>전승대 · 어르신을 위한 AI 기초 강의 (수업 화면 8회 + 복습앱 8개)</p>
+</div>
+
+<div class="how">
+  <div class="box">
+    <div class="line"><b>📽️ 수업 화면</b> 수업 시간에 스크린에 띄워 함께 배웁니다.</div>
+    <div class="line"><b>📱 복습앱</b> 지금 배운 내용은 복습앱으로 만들어서 핸드폰으로 드립니다. 복습앱은 귀가 후 혼자서도 따라할 수 있도록 만들어서 그날 배운 내용을 숙지하도록 한 것입니다.</div>
+    <div class="keys">수업 화면 조작: <kbd>→</kbd> 또는 <kbd>스페이스</kbd> 다음 · <kbd>←</kbd> 이전 · <kbd>F</kbd> 전체 화면</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="flow">📽️ 수업 → 📱 복습</div>
+  <div class="list">
+
+    <div class="week" style="--c:#5B9E6E">
+      <div class="head"><div class="ic">🤖</div><div><div class="wk">1주차</div><div class="tt">AI가 뭐예요? 첫 만남</div><div class="ds">AI의 기본 개념, 일상 속 AI, 개인정보 지키기</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson01-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week1-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#E07B3A">
+      <div class="head"><div class="ic">💬</div><div><div class="wk">2주차</div><div class="tt">말 잘 하면 AI도 잘 답한다</div><div class="ds">프롬프트 5원칙, 나쁜 질문과 좋은 질문 비교</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson02-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week2-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#D94A4A">
+      <div class="head"><div class="ic">💊</div><div><div class="wk">3주차</div><div class="tt">AI로 건강 정보 · 병원 활용</div><div class="ds">약·증상·진료과 묻기, “AI는 의사가 아니에요”</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson03-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week3-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#3A8FD9">
+      <div class="head"><div class="ic">✈️</div><div><div class="wk">4주차</div><div class="tt">AI 여행·맛집 계획 짜기</div><div class="ds">조건 4가지로 묻기, 지도 앱으로 다시 확인하기</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson04-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week4-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#6B5ED4">
+      <div class="head"><div class="ic">✍️</div><div><div class="wk">5주차</div><div class="tt">AI로 문서·글쓰기</div><div class="ds">편지·문자·민원 글, 긴 글 요약과 번역</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson05-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week5-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#C2569B">
+      <div class="head"><div class="ic">🎨</div><div><div class="wk">6주차</div><div class="tt">AI 이미지 &amp; 영상 만들기</div><div class="ds">말로 그림 그리기, 카드·포스터·영상, 주의할 점</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson06-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week6-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#B58900">
+      <div class="head"><div class="ic">🏥</div><div><div class="wk">7주차</div><div class="tt">AI 복지·생활 서비스</div><div class="ds">복지 혜택 찾기, 번역·렌즈 앱, 말로 문자 보내기</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson07-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week7-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+    <div class="week" style="--c:#1E8A6E">
+      <div class="head"><div class="ic">🎓</div><div><div class="wk">8주차 · 마지막</div><div class="tt">내 삶에 AI 연결하기</div><div class="ds">8주 총정리, 발표와 수료식, 수료 후 혼자 계속하는 방법</div></div></div>
+      <div class="btns"><a class="b-lesson" href="lesson08-presentation.html">📽️ 수업 화면</a><a class="b-review" href="week8-ai-review.html">📱 복습앱</a></div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <b>AI와 함께 만든 강의 자료</b><br>
+    복습앱의 설명은 미리 준비한 원고를 기기의 한국어 음성이 읽어 줍니다.<br>
+    별도 설치 없이 웹 브라우저에서 바로 사용할 수 있어요.
+  </div>
+</div>
+
+</body>
+</html>

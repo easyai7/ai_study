@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5주차 · AI로 문서·글쓰기</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --main: #1B6CA8;
+  --accent: #F5A623;
+  --accent2: #E84040;
+  --green: #1A8A42;
+  --green-light: #E8F8EE;
+  --bg: #F0F4F8;
+  --dark: #0D1B2E;
+  --text: #1A2A3A;
+  --w5: #DB2777;
+  --w5-dark: #9D174D;
+  --w5-light: #FCE7F3;
+  --w5-mid: #BE185D;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Noto Sans KR', sans-serif; }
+
+.slide { display:none; width:100vw; height:100vh; position:absolute; top:0; left:0; flex-direction:column; overflow:hidden; }
+.slide.active { display:flex !important; }
+
+.hdr { flex-shrink:0; display:flex; align-items:center; padding:14px 44px; gap:16px; }
+.hdr-week { background:rgba(255,255,255,0.25); color:#fff; font-size:22px; font-weight:700; padding:8px 20px; border-radius:30px; flex-shrink:0; }
+.hdr-title { color:#fff; font-size:36px; font-weight:900; flex:1; }
+.hdr-num { color:rgba(255,255,255,0.7); font-size:20px; font-weight:700; flex-shrink:0; }
+.body { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.slide-num { position:absolute; bottom:14px; right:24px; font-size:21px; color:rgba(255,255,255,0.4); font-weight:700; z-index:10; }
+
+.nav-btn { position:fixed; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.35); color:#fff; border:none; font-size:36px; width:60px; height:100px; cursor:pointer; z-index:1000; border-radius:8px; transition:background 0.2s; display:flex; align-items:center; justify-content:center; }
+.nav-btn:hover { background:rgba(0,0,0,0.6); }
+#btn-prev { left:0; border-radius:0 8px 8px 0; }
+#btn-next { right:0; border-radius:8px 0 0 8px; }
+.progress-bar { position:fixed; bottom:0; left:0; height:5px; background:var(--w5); transition:width 0.3s; z-index:1000; }
+
+/* ── SLIDE 1: 표지 ── */
+#s1 { background:linear-gradient(135deg,#500724 0%,#9D174D 50%,#DB2777 100%); justify-content:center; align-items:center; }
+.cover-inner { text-align:center; padding:40px; }
+.cover-week { font-size:28px; font-weight:700; color:var(--accent); letter-spacing:3px; margin-bottom:20px; }
+.cover-title { font-size:72px; font-weight:900; color:#fff; line-height:1.15; margin-bottom:16px; }
+.cover-sub { font-size:30px; color:rgba(255,255,255,0.8); margin-bottom:50px; }
+.cover-goals { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.cover-goal { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:16px; padding:12px 20px; color:#fff; font-size:20px; font-weight:600; display:flex; align-items:center; gap:10px; }
+.cover-goal .num { background:var(--accent); color:#000; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:900; flex-shrink:0; }
+.cover-deco { font-size:120px; position:absolute; top:40px; right:80px; opacity:0.08; }
+
+/* ── SLIDE 2: 마음열기 ── */
+#s2 { background:#fff; }
+#s2 .hdr { background:var(--w5); }
+.open-body { flex:1; display:flex; align-items:center; justify-content:center; padding:14px 40px; gap:30px; }
+.open-question { flex:1; background:linear-gradient(135deg,var(--w5),var(--w5-dark)); border-radius:24px; padding:36px; color:#fff; text-align:center; }
+.open-question .q-icon { font-size:70px; margin-bottom:20px; }
+.open-question .q-text { font-size:38px; font-weight:900; line-height:1.4; }
+.open-reactions { flex:1; display:flex; flex-direction:column; gap:16px; }
+.reaction-card { display:flex; align-items:center; gap:18px; background:var(--bg); border-radius:16px; padding:18px 24px; border-left:6px solid var(--w5); }
+.reaction-card .ri { font-size:44px; flex-shrink:0; }
+.reaction-card .rt { font-size:30px; font-weight:700; color:var(--text); }
+.reaction-card .rs { font-size:23px; color:#666; margin-top:4px; }
+.open-msg { text-align:center; padding:18px; background:linear-gradient(135deg,var(--w5),var(--w5-dark)); border-radius:20px; color:#fff; font-size:32px; font-weight:900; margin:0 40px 12px; }
+
+/* ── SLIDE 3: AI가 잘 하는 것 ── */
+#s3 { background:#fff; }
+#s3 .hdr { background:var(--w5); }
+.cando-body { flex:1; display:flex; padding:10px 36px 12px; gap:20px; overflow:hidden; }
+.cando-left { flex:1.2; display:flex; flex-direction:column; gap:8px; overflow:hidden; }
+.cando-section { background:var(--w5-light); border:2px solid var(--w5); border-radius:18px; padding:12px 18px; flex:1; overflow:hidden; }
+.cs-title { font-size:23px; font-weight:900; color:var(--w5-dark); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.cs-item { display:flex; align-items:center; gap:10px; padding:5px 0; font-size:21px; font-weight:600; color:var(--text); border-bottom:1px solid rgba(0,0,0,0.07); }
+.cs-item:last-child { border-bottom:none; }
+.cs-item .ci { font-size:24px; flex-shrink:0; }
+.cando-right { flex:1; display:flex; flex-direction:column; gap:10px; justify-content:center; }
+.ex-bubble { background:linear-gradient(135deg,var(--w5),var(--w5-dark)); border-radius:18px; padding:16px 20px; color:#fff; flex:1; display:flex; flex-direction:column; justify-content:center; }
+.ex-label { font-size:21px; color:rgba(255,255,255,0.7); margin-bottom:6px; }
+.ex-text { font-size:22px; font-weight:700; line-height:1.55; }
+
+/* ── SLIDE 4: 질문 잘 하는 법 ── */
+#s4 { background:#1A0010; }
+#s4 .hdr { background:var(--w5); }
+.tip3-body { flex:1; display:flex; padding:12px 40px 14px; gap:28px; align-items:stretch; }
+.tip3-cards { flex:1; display:flex; flex-direction:column; gap:14px; }
+.tip3-card { background:rgba(219,39,119,0.18); border:2px solid rgba(219,39,119,0.5); border-radius:20px; padding:18px 24px; display:flex; align-items:center; gap:22px; flex:1; }
+.t3-icon { font-size:52px; flex-shrink:0; }
+.t3-label { font-size:21px; font-weight:700; color:#F9A8D4; margin-bottom:5px; }
+.t3-title { font-size:28px; font-weight:900; color:#fff; margin-bottom:5px; }
+.t3-ex { font-size:20px; color:#FBCFE8; line-height:1.5; }
+.tip3-right { flex:1; display:flex; flex-direction:column; gap:12px; }
+.compare-box { border-radius:18px; padding:20px 24px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+.cb-label { font-size:22px; font-weight:900; margin-bottom:10px; }
+.cb-text { font-size:24px; font-weight:700; line-height:1.6; }
+
+/* ── SLIDE 5: 실제 예시 채팅 ── */
+#s5 { background:var(--dark); }
+#s5 .hdr { background:rgba(255,255,255,0.08); }
+.chat-demo-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.demo-pair { flex:1; display:flex; flex-direction:column; gap:8px; }
+.msg-user { background:var(--w5); color:#fff; font-size:24px; font-weight:600; border-radius:16px; padding:14px 22px; border-bottom-right-radius:4px; align-self:flex-end; max-width:85%; line-height:1.5; }
+.msg-ai { background:#2A1A20; color:#FBCFE8; font-size:22px; border-radius:16px; padding:14px 22px; border-bottom-left-radius:4px; max-width:92%; line-height:1.65; }
+.msg-ai strong { color:#F9A8D4; }
+.demo-divider { height:2px; background:rgba(255,255,255,0.07); border-radius:2px; flex-shrink:0; }
+
+/* ── SLIDE 6,7,8: 실습 ── */
+#s6 { background:#14000A; }
+#s6 .hdr { background:var(--w5); }
+#s7 { background:#14000A; }
+#s7 .hdr { background:var(--w5); }
+#s8 { background:#14000A; }
+#s8 .hdr { background:var(--w5); }
+.practice-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.practice-header { background:rgba(219,39,119,0.25); border-radius:14px; padding:14px 22px; color:#FBCFE8; font-size:26px; font-weight:700; flex-shrink:0; text-align:center; }
+.practice-prompt { background:#2A0A1A; border:2px solid var(--w5); border-radius:18px; padding:20px 26px; flex:1; }
+.pp-label { font-size:22px; color:rgba(255,255,255,0.5); margin-bottom:8px; }
+.pp-text { font-size:26px; color:#FBCFE8; font-weight:600; line-height:1.7; }
+.pp-highlight { color:#FFD78C; font-weight:900; }
+.practice-tip { background:rgba(245,166,35,0.15); border:2px solid rgba(245,166,35,0.4); border-radius:14px; padding:14px 20px; color:#FFD78C; font-size:22px; font-weight:600; flex-shrink:0; display:flex; gap:12px; align-items:center; }
+
+/* ── SLIDE 9: 나만의 글쓰기 ── */
+#s9 { background:#fff; }
+#s9 .hdr { background:var(--w5); }
+.myq-body { flex:1; display:flex; padding:14px 40px 16px; gap:28px; align-items:stretch; overflow:hidden; }
+.myq-left { flex:1.2; display:flex; flex-direction:column; gap:14px; overflow:hidden; }
+.myq-template { background:linear-gradient(135deg,var(--w5-light),#FFF0F6); border:3px solid var(--w5); border-radius:24px; padding:28px 34px; font-size:32px; font-weight:600; color:var(--text); line-height:2.2; flex:1; }
+.myq-blank { background:#fff; border:2.5px solid var(--w5); border-radius:10px; padding:4px 18px; color:var(--w5-dark); font-weight:900; display:inline-block; }
+.myq-example { background:var(--green-light); border:2px solid var(--green); border-radius:18px; padding:18px 22px; font-size:25px; font-weight:600; color:#1A4A2A; display:flex; gap:14px; align-items:flex-start; }
+.myq-right { flex:1; display:flex; flex-direction:column; gap:12px; justify-content:center; }
+.topic-card2 { background:var(--bg); border-radius:16px; padding:16px 20px; display:flex; align-items:center; gap:16px; border:2px solid transparent; }
+.topic-card2:hover { background:var(--w5-light); border-color:var(--w5); }
+.tc-icon { font-size:38px; flex-shrink:0; }
+.tc-name { font-size:28px; font-weight:700; color:var(--text); }
+
+/* ── SLIDE 10: 요약 실습 ── */
+#s10 { background:#14000A; }
+#s10 .hdr { background:var(--w5); }
+
+/* ── SLIDE 11: 번역 실습 ── */
+#s11 { background:#14000A; }
+#s11 .hdr { background:var(--w5); }
+
+/* ── SLIDE 12: 민원 공문서 ── */
+#s12 { background:#14000A; }
+#s12 .hdr { background:var(--w5); }
+
+/* ── SLIDE 13: 정리 ── */
+#s13 { background:#fff; }
+#s13 .hdr { background:var(--w5); }
+.review-body { flex:1; display:flex; padding:14px 40px 16px; gap:28px; align-items:stretch; overflow:hidden; }
+.review-checks { flex:1; display:flex; flex-direction:column; gap:12px; }
+.check-item { display:flex; align-items:center; gap:18px; background:var(--w5-light); border-radius:16px; padding:18px 26px; border-left:8px solid var(--w5); flex:1; }
+.check-icon { font-size:40px; flex-shrink:0; }
+.check-text { font-size:28px; font-weight:700; color:var(--text); line-height:1.4; }
+.review-hw { flex:1; display:flex; flex-direction:column; gap:16px; }
+.hw-box { background:linear-gradient(135deg,var(--accent),#F08000); border-radius:22px; padding:24px 28px; color:#fff; flex:1; display:flex; flex-direction:column; justify-content:center; }
+.hw-title { font-size:30px; font-weight:900; margin-bottom:14px; }
+.hw-text { font-size:28px; line-height:1.6; }
+.hw-example { background:rgba(0,0,0,0.15); border-radius:14px; padding:14px 18px; font-size:23px; margin-top:14px; font-style:italic; line-height:1.6; }
+.next-box { background:var(--w5-light); border:3px solid var(--w5); border-radius:22px; padding:20px 26px; color:var(--w5-dark); flex:1; display:flex; flex-direction:column; justify-content:center; }
+.next-title { font-size:28px; font-weight:900; margin-bottom:10px; }
+.next-text { font-size:24px; line-height:1.6; }
+
+/* ── 퀴즈 공통 ── */
+.dz { border:2.5px dashed rgba(255,255,255,0.3); border-radius:12px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; min-height:64px; padding:6px; transition:all 0.18s; flex-direction:column; gap:4px; cursor:pointer; }
+.dz.over  { border-color:#F5A623; background:rgba(245,166,35,0.15); }
+.dz.ok    { border-color:#22C55E; background:rgba(34,197,94,0.18); }
+.dz.fail  { border-color:#EF4444; background:rgba(239,68,68,0.18); animation:shake .35s; }
+.dzlabel  { font-size:21px; color:rgba(255,255,255,0.4); }
+.dzchip   { font-size:24px; font-weight:700; color:#fff; padding:4px 12px; border-radius:20px; }
+.qbtn { background:rgba(255,255,255,0.15); color:#fff; border:2px solid rgba(255,255,255,0.3); border-radius:40px; padding:10px 24px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; margin:0 6px; }
+.qbtn:hover { background:rgba(255,255,255,0.25); }
+.word-chip { background:var(--accent); color:#000; font-size:26px; font-weight:700; padding:12px 24px; border-radius:50px; cursor:grab; user-select:none; transition:all 0.15s; border:3px solid transparent; }
+.word-chip.used { opacity:0.3 !important; text-decoration:line-through !important; cursor:not-allowed !important; filter:grayscale(1); transform:none !important; }
+.word-chip:hover { transform:scale(1.05); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.word-chip.dragging { opacity:0.4; transform:scale(0.95); }
+.oxrow { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.14); border-radius:14px; padding:12px 18px; flex:1; }
+.oxq { flex:1; font-size:27px; font-weight:700; color:#fff; line-height:1.4; }
+.obtn,.xbtn { border:none; border-radius:10px; padding:14px 28px; font-size:34px; font-weight:900; cursor:pointer; font-family:inherit; }
+.obtn { background:#1A8A42; color:#fff; }
+.xbtn { background:#E84040; color:#fff; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* ── 보완: 터치 선택 표시 · 메인 링크 · 안내 ── */
+.picked { outline:5px solid #FACC15 !important; outline-offset:3px; transform:scale(1.08); box-shadow:0 0 18px rgba(250,204,21,.7); }
+.to-main { position:fixed; left:12px; bottom:10px; z-index:1000; font-size:18px; color:#fff; background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; text-decoration:none; opacity:.55; }
+.to-main:hover { opacity:1; }
+#pick-toast { display:none; position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:2000; background:#FACC15; color:#1a1a1a; font-size:24px; font-weight:900; padding:10px 22px; border-radius:30px; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">‹</button>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">›</button>
+<div class="progress-bar" id="progress"></div>
+
+<!-- ══ SLIDE 1: 표지 ══ -->
+<div class="slide active" id="s1">
+  <div class="cover-deco">✍️</div>
+  <div class="cover-inner">
+    <div class="cover-week">📅 5주차</div>
+    <div class="cover-title">AI로 문서·글쓰기</div>
+    <div class="cover-sub">마음은 내가, 글은 AI가 써줘요!</div>
+    <div class="cover-goals">
+      <div class="cover-goal"><div class="num">1</div>편지·문자·축하 메시지 쓰기</div>
+      <div class="cover-goal"><div class="num">2</div>긴 글 요약하고 번역하기</div>
+      <div class="cover-goal"><div class="num">3</div>민원 글·공문서 초안 만들기</div>
+      <div class="cover-goal"><div class="num">4</div>글쓰기에 AI 자신 있게 활용하기</div>
+    </div>
+  </div>
+  <div class="slide-num">1 / 19</div>
+</div>
+
+<!-- ══ SLIDE 2: 마음열기 ══ -->
+<div class="slide" id="s2">
+  <div class="hdr">
+    <span class="hdr-week">마음 열기</span>
+    <span class="hdr-title">글 쓰다가 막막하셨던 적 있으세요?</span>
+    <span class="hdr-num">2 / 19</span>
+  </div>
+  <div class="body">
+    <div class="open-body">
+      <div class="open-question">
+        <div class="q-icon">✉️</div>
+        <div class="q-text">"편지 쓰고 싶은데<br>뭐라고 써야 할지<br>막막하셨나요?"</div>
+      </div>
+      <div class="open-reactions">
+        <div class="reaction-card">
+          <div class="ri">😓</div>
+          <div>
+            <div class="rt">쓰고 싶은데 말이 안 떠올라요</div>
+            <div class="rs">→ AI에게 상황만 말하면 대신 써줘요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent);">
+          <div class="ri">📱</div>
+          <div>
+            <div class="rt">문자 쓰는 게 어색해요</div>
+            <div class="rs">→ AI가 따뜻하고 자연스럽게 써줘요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent2);">
+          <div class="ri">📄</div>
+          <div>
+            <div class="rt">민원 글은 어떻게 써야 할지 몰라요</div>
+            <div class="rs">→ 상황만 설명하면 AI가 정중하게 써줘요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="open-msg">💡 "오늘부터는 AI가 대신 써줘요. 마음만 전달하면 돼요!"</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: AI가 글쓰기에서 잘 하는 것 ══ -->
+<div class="slide" id="s3">
+  <div class="hdr">
+    <span class="hdr-week">AI 글쓰기</span>
+    <span class="hdr-title">AI에게 이런 것들을 부탁할 수 있어요!</span>
+    <span class="hdr-num">3 / 19</span>
+  </div>
+  <div class="body">
+    <div class="cando-body">
+      <div class="cando-left">
+        <div class="cando-section">
+          <div class="cs-title">💌 편지·문자</div>
+          <div class="cs-item"><span class="ci">👨‍👩‍👧</span>자녀·손주에게 보내는 따뜻한 문자</div>
+          <div class="cs-item"><span class="ci">👵</span>오랫동안 못 만난 친구에게 안부 편지</div>
+          <div class="cs-item"><span class="ci">🎉</span>생일·결혼·졸업 축하 메시지</div>
+          <div class="cs-item"><span class="ci">🙏</span>감사 편지·위로 편지</div>
+          <div class="cs-item"><span class="ci">📞</span>병원·기관 문의 문자</div>
+        </div>
+        <div class="cando-section">
+          <div class="cs-title">📋 문서·민원</div>
+          <div class="cs-item"><span class="ci">📰</span>긴 뉴스·안내문 쉽게 요약</div>
+          <div class="cs-item"><span class="ci">🌐</span>영어 문자·이메일 번역</div>
+          <div class="cs-item"><span class="ci">🏢</span>아파트·구청 민원 글쓰기</div>
+          <div class="cs-item"><span class="ci">📝</span>공문서·건의문 초안</div>
+        </div>
+      </div>
+      <div class="cando-right">
+        <div class="ex-bubble">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"대학 입학한 손주에게 할머니가 보내는 축하 문자를 따뜻하고 짧게 3줄로 써주세요."</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#1A5A8A,#0A3A5E);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"아래 뉴스 기사를 3줄로 요약하고 쉬운 말로 설명해주세요."</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#5A3A00,#3A2000);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"엘리베이터 수리를 요청하는 정중한 민원 문자를 써주세요."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: 좋은 글쓰기 요청법 ══ -->
+<div class="slide" id="s4">
+  <div class="hdr">
+    <span class="hdr-week">요청 잘 하기</span>
+    <span class="hdr-title">이 3가지를 넣으면 딱 맞는 글이 나와요!</span>
+    <span class="hdr-num">4 / 19</span>
+  </div>
+  <div class="body">
+    <div class="tip3-body">
+      <div class="tip3-cards">
+        <div class="tip3-card">
+          <div class="t3-icon">👤</div>
+          <div>
+            <div class="t3-label">조건 ①</div>
+            <div class="t3-title">누구에게?</div>
+            <div class="t3-ex">딸에게 / 손주에게 / 오랜 친구에게 / 관리사무소에</div>
+          </div>
+        </div>
+        <div class="tip3-card">
+          <div class="t3-icon">💬</div>
+          <div>
+            <div class="t3-label">조건 ②</div>
+            <div class="t3-title">어떤 상황?</div>
+            <div class="t3-ex">생일 / 오랜만에 연락 / 감사한 마음 / 입학 축하 / 민원</div>
+          </div>
+        </div>
+        <div class="tip3-card">
+          <div class="t3-icon">🎨</div>
+          <div>
+            <div class="t3-label">조건 ③</div>
+            <div class="t3-title">어떤 느낌?</div>
+            <div class="t3-ex">따뜻하게 / 짧게(3줄) / 격식 있게 / 재미있게 / 정중하게</div>
+          </div>
+        </div>
+      </div>
+      <div class="tip3-right">
+        <div class="compare-box" style="background:#2A0A0A;border:2px solid rgba(232,64,64,0.6);">
+          <div class="cb-label" style="color:#FCA5A5;">❌ 나쁜 요청</div>
+          <div class="cb-text" style="color:#fff;font-size:30px;">"문자 써줘"</div>
+          <div style="font-size:20px;color:#F9A8D4;margin-top:8px;">→ 너무 막연해서 엉뚱한 글이 나와요</div>
+        </div>
+        <div class="compare-box" style="background:#0A2A10;border:2px solid rgba(34,197,94,0.6);">
+          <div class="cb-label" style="color:#6EE7B7;">✅ 좋은 요청</div>
+          <div class="cb-text" style="color:#fff; font-size:22px;">"<strong style="color:#FFD78C;">대학 입학한 손주</strong>에게 <strong style="color:#FFD78C;">할머니가</strong> 보내는 축하 문자를 써주세요. <strong style="color:#FFD78C;">따뜻하고 짧게, 3줄</strong>로 해주세요."</div>
+        </div>
+        <div style="background:#1A0A18;border:2px solid rgba(219,39,119,0.6);border-radius:16px;padding:16px 20px;">
+          <div style="font-size:22px;font-weight:900;color:#F9A8D4;margin-bottom:8px;">💡 마음에 안 들면 이렇게!</div>
+          <div style="font-size:21px;color:#fff;line-height:1.7;">"더 따뜻하게 해줘" / "더 짧게 해줘"<br>"좀 더 재미있게 바꿔줘"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: 실제 예시 ══ -->
+<div class="slide" id="s5">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">실제 예시</span>
+    <span class="hdr-title">이렇게 부탁하면 이렇게 써줘요!</span>
+    <span class="hdr-num">5 / 19</span>
+  </div>
+  <div class="body">
+    <div class="chat-demo-body">
+      <div class="demo-pair">
+        <div class="msg-user">딸이 요즘 직장 일로 힘들어하는 것 같아요. 엄마로서 응원하는 따뜻한 문자를 써주세요. 짧고 진심이 느껴지게, 3줄로 해주세요.</div>
+        <div class="msg-ai">
+          <strong>💌 이렇게 써드릴게요!</strong><br><br>
+          우리 딸, 요즘 많이 힘들지? 엄마는 항상 네 편이야.<br>
+          어떤 상황에서도 넌 잘 해낼 거야, 믿어. 😊<br>
+          힘들 때 언제든 엄마한테 연락해. 사랑해 ❤️
+        </div>
+      </div>
+      <div class="demo-divider"></div>
+      <div class="demo-pair">
+        <div class="msg-user">아파트 엘리베이터가 3일째 고장났어요. 관리사무소에 빠른 수리를 요청하는 정중한 민원 문자를 써주세요. 너무 공격적이지 않게요.</div>
+        <div class="msg-ai">
+          <strong>📋 민원 문자 초안이에요!</strong><br><br>
+          안녕하세요. ○○동 ○○○호 입주민입니다.<br>
+          엘리베이터가 3일째 운행이 중단되어 어르신과 어린이 이용에 큰 불편이 생기고 있습니다.<br>
+          <strong>빠른 시일 내에 수리해 주시면 감사하겠습니다.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: 실습1 가족 문자 ══ -->
+<div class="slide" id="s6">
+  <div class="hdr">
+    <span class="hdr-week">실습 1</span>
+    <span class="hdr-title">가족에게 보내는 문자 — 직접 입력해보세요!</span>
+    <span class="hdr-num">6 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 ChatGPT에 아래 문장을 그대로 입력해보세요!</div>
+      <div class="practice-prompt">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          <span class="pp-highlight">딸</span>이 요즘 <span class="pp-highlight">직장 일로 힘들어하는 것 같아요.</span><br>
+          <span class="pp-highlight">엄마</span>로서 응원하는 <span class="pp-highlight">따뜻한 문자</span>를 써주세요.<br>
+          <span class="pp-highlight">짧고 진심이 느껴지게, 3줄</span>로 해주세요.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#1A001A;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">손주</span>가 이번에 <span class="pp-highlight">중학교에 입학</span>했어요.<br>
+          <span class="pp-highlight">할머니</span>가 보내는 <span class="pp-highlight">축하와 격려 문자</span>를 써주세요.<br>
+          <span class="pp-highlight">사랑스럽고 따뜻하게</span> 써주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">💡</div>
+        <div>3조건 적용: <strong>①누구에게</strong>(딸/손주) + <strong>②어떤 상황</strong>(힘든 일/입학) + <strong>③어떤 느낌</strong>(따뜻하게/3줄) 모두 들어 있어요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: 실습2 친구·지인 편지 ══ -->
+<div class="slide" id="s7">
+  <div class="hdr">
+    <span class="hdr-week">실습 2</span>
+    <span class="hdr-title">친구·지인에게 편지 — 직접 입력해보세요!</span>
+    <span class="hdr-num">7 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 아래 질문들을 ChatGPT에 직접 입력해보세요!</div>
+      <div class="practice-prompt" style="flex:1;">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          <span class="pp-highlight">30년 만에 연락이 닿은 친구</span>에게<br>
+          <span class="pp-highlight">반가움과 안부</span>를 전하는 <span class="pp-highlight">짧은 편지</span>를 써주세요.<br>
+          <span class="pp-highlight">옛날 추억도 살짝 넣어서 따뜻하게</span> 써주세요.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#1A001A;flex:1;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">오랫동안 신세를 진 이웃 어르신</span>께<br>
+          <span class="pp-highlight">감사한 마음</span>을 전하는 <span class="pp-highlight">정중한 편지</span>를 써주세요.<br>
+          <span class="pp-highlight">너무 길지 않게, 진심이 담기게</span> 써주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">✏️</div>
+        <div>답변이 마음에 안 들면 <strong>"더 따뜻하게 해줘"</strong>, <strong>"더 짧게 해줘"</strong>라고 다시 요청해보세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: 실습3 민원·공문서 ══ -->
+<div class="slide" id="s8">
+  <div class="hdr">
+    <span class="hdr-week">실습 3</span>
+    <span class="hdr-title">민원 글·공문서 초안 — 직접 입력해보세요!</span>
+    <span class="hdr-num">8 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 ChatGPT에 아래 문장을 그대로 입력해보세요!</div>
+      <div class="practice-prompt">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          우리 아파트 <span class="pp-highlight">엘리베이터가 3일째 고장</span>났어요.<br>
+          <span class="pp-highlight">관리사무소</span>에 빠른 수리를 요청하는<br>
+          <span class="pp-highlight">정중한 민원 문자</span>를 써주세요.<br>
+          <span class="pp-highlight">너무 공격적이지 않게, 부탁하는 말투</span>로요.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#1A001A;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">경로당 회장</span>인데요, <span class="pp-highlight">구청</span>에 경로당<br>
+          <span class="pp-highlight">냉난방기 교체</span>를 요청하는<br>
+          <span class="pp-highlight">공문 초안</span>을 써주세요.<br>
+          <span class="pp-highlight">정중하고 격식 있게</span> 써주세요.
+        </div>
+      </div>
+      <div class="practice-tip" style="background:rgba(232,64,64,0.15);border-color:rgba(232,64,64,0.5);color:#FCA5A5;">
+        <div style="font-size:32px;flex-shrink:0;">⚠️</div>
+        <div><strong>주의!</strong> AI가 써준 글은 꼭 한 번 읽어보고 내 상황에 맞게 <strong>수정한 후</strong> 보내세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: 나만의 글쓰기 ══ -->
+<div class="slide" id="s9">
+  <div class="hdr">
+    <span class="hdr-week">실습 4</span>
+    <span class="hdr-title">나만의 문자·편지 만들기!</span>
+    <span class="hdr-num">9 / 19</span>
+  </div>
+  <div class="body">
+    <div class="myq-body">
+      <div class="myq-left">
+        <div style="font-size:28px;font-weight:900;color:var(--w5-dark);padding-bottom:10px;border-bottom:3px solid var(--w5-light);">📝 글쓰기 요청 공식</div>
+        <div class="myq-template">
+          <span class="myq-blank">누구에게</span> 보내는<br><br>
+          <span class="myq-blank">어떤 상황</span> 의<br><br>
+          <span class="myq-blank">느낌·길이</span> 로 써주세요.
+        </div>
+        <div class="myq-example">
+          <div style="font-size:28px;flex-shrink:0;">💡</div>
+          <div>
+            <div style="font-size:22px;font-weight:900;color:var(--green);margin-bottom:6px;">완성 예시</div>
+            <div style="font-size:22px;line-height:1.65;">"<strong>오랜 친구</strong>에게 보내는 <strong>30년 만의 안부 편지</strong>를 <strong>따뜻하고 짧게</strong> 써주세요."</div>
+          </div>
+        </div>
+      </div>
+      <div class="myq-right">
+        <div style="font-size:26px;font-weight:900;color:var(--main);margin-bottom:6px;">💡 글쓰기 아이디어</div>
+        <div class="topic-card2"><div class="tc-icon">👨‍👩‍👧</div><div class="tc-name">자녀·손주 응원 문자</div></div>
+        <div class="topic-card2"><div class="tc-icon">🎂</div><div class="tc-name">생일·졸업 축하 메시지</div></div>
+        <div class="topic-card2"><div class="tc-icon">👵</div><div class="tc-name">오랜 친구 안부 편지</div></div>
+        <div class="topic-card2"><div class="tc-icon">🙏</div><div class="tc-name">감사·위로 편지</div></div>
+        <div class="topic-card2"><div class="tc-icon">🏢</div><div class="tc-name">기관·이웃 민원 문자</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: 요약 실습 ══ -->
+<div class="slide" id="s10">
+  <div class="hdr">
+    <span class="hdr-week">실습 5</span>
+    <span class="hdr-title">긴 글 요약하기 — 이럴 때 정말 유용해요!</span>
+    <span class="hdr-num">10 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header" style="display:flex;gap:24px;justify-content:center;align-items:center;">
+        <span>📰 긴 뉴스 기사</span>
+        <span>|</span>
+        <span>📋 병원 안내문</span>
+        <span>|</span>
+        <span>📜 계약서·약관</span>
+        <span>|</span>
+        <span>📱 자녀가 보낸 긴 문자</span>
+      </div>
+      <div class="practice-prompt" style="flex:1;">
+        <div class="pp-label">💬 요약 요청법</div>
+        <div class="pp-text">
+          아래 글을 <span class="pp-highlight">3줄로 요약</span>해주세요.<br>
+          <span class="pp-highlight">쉬운 말로 핵심만</span> 알려주세요.<br><br>
+          <span style="color:rgba(255,255,255,0.5);font-size:22px;">[긴 글을 여기에 붙여넣기]</span>
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#1A001A;flex:1;">
+        <div class="pp-label">💬 어려운 내용 풀어달라고 할 때</div>
+        <div class="pp-text">
+          이 <span class="pp-highlight">계약서 내용</span>이 무슨 말인지 모르겠어요.<br>
+          <span class="pp-highlight">쉽게 풀어서</span> 설명해주세요.<br>
+          특히 <span class="pp-highlight">주의해야 할 부분</span>이 있으면 알려주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">📌</div>
+        <div>복사하고 싶은 글을 길게 누르면 <strong>복사</strong> 버튼이 떠요. 그걸 ChatGPT에 <strong>붙여넣기</strong>하면 돼요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: 번역 실습 ══ -->
+<div class="slide" id="s11">
+  <div class="hdr">
+    <span class="hdr-week">실습 6</span>
+    <span class="hdr-title">영어 번역하기 — 어려운 영어도 척척!</span>
+    <span class="hdr-num">11 / 19</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header" style="display:flex;gap:24px;justify-content:center;align-items:center;">
+        <span>📦 외국 제품 설명서</span>
+        <span>|</span>
+        <span>📧 해외 이메일</span>
+        <span>|</span>
+        <span>🛒 해외 직구 안내</span>
+        <span>|</span>
+        <span>💊 영문 약 설명서</span>
+      </div>
+      <div class="practice-prompt" style="flex:1;">
+        <div class="pp-label">💬 번역 요청법</div>
+        <div class="pp-text">
+          아래 <span class="pp-highlight">영어 문장</span>을 <span class="pp-highlight">한국어로 번역</span>해주세요.<br>
+          <span class="pp-highlight">쉽게 풀어서 설명</span>해주세요.<br><br>
+          <span style="color:rgba(255,255,255,0.5);font-size:22px;">[영어 내용을 여기에 붙여넣기]</span>
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#1A001A;">
+        <div class="pp-label">💬 이해 안 되는 문자가 왔을 때</div>
+        <div class="pp-text">
+          이 <span class="pp-highlight">문자가 무슨 뜻인지</span> 모르겠어요.<br>
+          <span class="pp-highlight">쉽게 설명</span>해주세요.<br>
+          <span class="pp-highlight">혹시 주의할 점</span>이 있으면 알려주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">💡</div>
+        <div>외국어로 된 내용은 무엇이든 AI에게 붙여넣고 물어보면 돼요! <strong>사진 속 글자</strong>도 찍어서 보내면 번역해줘요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: 민원·공문서 추가 안내 ══ -->
+<div class="slide" id="s12">
+  <div class="hdr">
+    <span class="hdr-week">실습 7</span>
+    <span class="hdr-title">이런 민원·건의문도 AI가 써줘요!</span>
+    <span class="hdr-num">12 / 19</span>
+  </div>
+  <div class="body">
+    <div style="flex:1;display:flex;padding:12px 40px 14px;gap:22px;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div style="background:rgba(219,39,119,0.2);border:2px solid rgba(219,39,119,0.5);border-radius:18px;padding:18px 22px;flex:1;">
+          <div style="font-size:24px;font-weight:900;color:#F9A8D4;margin-bottom:12px;">📋 이런 민원·건의문을 써줘요</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;font-size:23px;color:#fff;font-weight:600;"><span style="font-size:28px;">🏢</span> 아파트 관리사무소 민원 넣기</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:23px;color:#fff;font-weight:600;"><span style="font-size:28px;">🏛️</span> 구청·주민센터 건의 글 쓰기</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:23px;color:#fff;font-weight:600;"><span style="font-size:28px;">🏥</span> 병원에 불편사항 전달하기</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:23px;color:#fff;font-weight:600;"><span style="font-size:28px;">📦</span> 온라인 쇼핑 반품·환불 요청</div>
+            <div style="display:flex;align-items:center;gap:12px;font-size:23px;color:#fff;font-weight:600;"><span style="font-size:28px;">🚗</span> 주차 문제 해결 요청 건의문</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+        <div style="background:#2A0A1A;border:2px solid var(--w5);border-radius:18px;padding:18px 22px;flex:1;">
+          <div class="pp-label" style="margin-bottom:10px;">💬 공문서 요청 예시</div>
+          <div class="pp-text" style="font-size:24px;">
+            <span class="pp-highlight">아파트 입주민 대표</span>인데요,<br>
+            <span class="pp-highlight">주차 문제 해결</span>을 요청하는<br>
+            건의문을 <span class="pp-highlight">관리단에 제출</span>하려고 해요.<br>
+            <span class="pp-highlight">설득력 있게</span> 써주세요.
+          </div>
+        </div>
+        <div style="background:rgba(245,166,35,0.15);border:2px solid rgba(245,166,35,0.4);border-radius:16px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;">
+          <span style="font-size:32px;flex-shrink:0;">⚠️</span>
+          <div style="font-size:22px;font-weight:700;color:#FFD78C;line-height:1.6;">AI가 써준 글은 꼭 내용을 확인하고<br>내 상황에 맞게 <strong>수정 후</strong> 사용하세요!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 13: 정리 ══ -->
+<div class="slide" id="s13">
+  <div class="hdr">
+    <span class="hdr-week">정리</span>
+    <span class="hdr-title">오늘 배운 것</span>
+    <span class="hdr-num">13 / 19</span>
+  </div>
+  <div class="body">
+    <div class="review-body">
+      <div class="review-checks">
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">편지·문자·축하 메시지를 AI에게 써달라고 할 수 있다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">누구에게·어떤 상황·어떤 느낌 3가지를 넣으면 딱 맞는 글이 나온다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">긴 글을 요약하고 영어를 번역하는 데 AI를 쓸 수 있다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">민원 글과 공문서 초안도 AI가 도와준다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI 글은 꼭 읽어보고 내 상황에 맞게 수정 후 사용한다</div>
+        </div>
+      </div>
+      <div class="review-hw">
+        <div class="hw-box">
+          <div class="hw-title">📝 이번 주 숙제</div>
+          <div class="hw-text">실제로 보내고 싶은 사람에게 AI로 문자 한 통 써서 보내보기!</div>
+          <div class="hw-example">누구에게, 어떤 상황, 어떤 느낌<br>3가지를 넣어서 요청해보세요 😊</div>
+        </div>
+        <div class="next-box">
+          <div class="next-title">🔜 다음 주 예고</div>
+          <div class="next-text">AI로 이미지 만들기! 내 사진으로 멋진 그림을 만들고, AI가 그려주는 그림을 직접 체험해봐요!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 19</div>
+</div>
+
+<!-- ══ SLIDE 14: 퀴즈 소개 ══ -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#500724,#9D174D);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:30px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎯</div>
+    <div style="font-size:64px;font-weight:900;color:#fff;margin-bottom:16px;">복습 퀴즈 타임!</div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.8);margin-bottom:28px;">AI 글쓰기 활용법을 퀴즈로 확인해봐요! · 총 5종류 퀴즈</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟡 퀴즈1 글쓰기 종류 분류하기</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟢 퀴즈2 요청 조건 3가지 매칭</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔵 퀴즈3 글쓰기 순서 맞추기</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔴 퀴즈4 O/X 퀴즈</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟣 퀴즈5 빈칸 채우기</div>
+    </div>
+  </div>
+  <div class="slide-num">14 / 19</div>
+</div>
+
+<!-- ══ SLIDE 15: 퀴즈1 — 글쓰기 종류 분류 ══ -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#500724,#9D174D);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 1</span>
+    <span class="hdr-title">AI에게 부탁할 수 있는 글과 없는 것을 분류하세요!</span>
+    <span class="hdr-num">15 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb1" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c1_1" data-ans="can" style="background:#FBCFE8;color:#500724;font-size:22px;">축하 메시지 쓰기</div>
+      <div class="word-chip" draggable="true" id="c1_2" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">내 서명 대신하기</div>
+      <div class="word-chip" draggable="true" id="c1_3" data-ans="can" style="background:#FBCFE8;color:#500724;font-size:22px;">민원 문자 초안</div>
+      <div class="word-chip" draggable="true" id="c1_4" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">법적 효력 문서 작성</div>
+      <div class="word-chip" draggable="true" id="c1_5" data-ans="can" style="background:#FBCFE8;color:#500724;font-size:22px;">긴 글 요약</div>
+      <div class="word-chip" draggable="true" id="c1_6" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">공식 계약 대리</div>
+    </div>
+    <div style="display:flex;gap:16px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(219,39,119,0.3);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#FBCFE8;">✅ AI에게 부탁할 수 있어요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="can" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="can" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="can" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(232,64,64,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#FCA5A5;">❌ AI가 대신할 수 없어요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="cant" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="cant" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="cant" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc1">0</span> / 6 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb1','1')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('1')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: 퀴즈2 — 요청 조건 매칭 ══ -->
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#500724,#9D174D);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 2</span>
+    <span class="hdr-title">좋은 글쓰기 요청의 3가지 조건에 해당하는 것은?</span>
+    <span class="hdr-num">16 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb2" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c2_1" data-ans="who" style="background:#FBCFE8;color:#500724;">딸에게</div>
+      <div class="word-chip" draggable="true" id="c2_2" data-ans="mood" style="background:#FCD34D;color:#3A2A00;">따뜻하게</div>
+      <div class="word-chip" draggable="true" id="c2_3" data-ans="sit" style="background:#A7F3D0;color:#022C27;">생일 축하</div>
+      <div class="word-chip" draggable="true" id="c2_4" data-ans="who" style="background:#FBCFE8;color:#500724;">이웃 어르신께</div>
+      <div class="word-chip" draggable="true" id="c2_5" data-ans="mood" style="background:#FCD34D;color:#3A2A00;">3줄로 짧게</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:25px;font-weight:700;color:#fff;">👤 조건 ① — 누구에게? 받는 사람을 알려주세요</div>
+        <div class="dz" data-col="who" data-q="2" style="width:200px;flex-shrink:0;"><span class="dzlabel">예시 단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:25px;font-weight:700;color:#fff;">💬 조건 ② — 어떤 상황? 이유나 계기를 알려주세요</div>
+        <div class="dz" data-col="sit" data-q="2" style="width:200px;flex-shrink:0;"><span class="dzlabel">예시 단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:25px;font-weight:700;color:#fff;">🎨 조건 ③ — 어떤 느낌? 톤·길이·형식을 알려주세요</div>
+        <div class="dz" data-col="mood" data-q="2" style="width:200px;flex-shrink:0;"><span class="dzlabel">예시 단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:25px;font-weight:700;color:#fff;">👤 조건 ① 추가 — 또 다른 받는 사람의 예시는?</div>
+        <div class="dz" data-col="who" data-q="2" style="width:200px;flex-shrink:0;"><span class="dzlabel">예시 단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:25px;font-weight:700;color:#fff;">🎨 조건 ③ 추가 — 길이를 지정하는 예시는?</div>
+        <div class="dz" data-col="mood" data-q="2" style="width:200px;flex-shrink:0;"><span class="dzlabel">예시 단어</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc2">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb2','2')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('2')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: 퀴즈3 — 순서 맞추기 ══ -->
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 3</span>
+    <span class="hdr-title">AI로 편지 쓰는 순서를 맞춰보세요!</span>
+    <span class="hdr-num">17 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb3" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c3_1" data-ans="s3" style="background:#FCD34D;color:#3A2A00;font-size:22px;">AI에게 요청 입력</div>
+      <div class="word-chip" draggable="true" id="c3_2" data-ans="s1" style="background:#FBCFE8;color:#500724;font-size:22px;">보낼 사람 떠올리기</div>
+      <div class="word-chip" draggable="true" id="c3_3" data-ans="s5" style="background:#F9A8D4;color:#3A0A2A;font-size:22px;">실제로 전송!</div>
+      <div class="word-chip" draggable="true" id="c3_4" data-ans="s2" style="background:#A7F3D0;color:#022C27;font-size:22px;">상황·느낌 정리</div>
+      <div class="word-chip" draggable="true" id="c3_5" data-ans="s4" style="background:#93C5FD;color:#0A1A3A;font-size:22px;">내용 읽고 수정</div>
+    </div>
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(251,207,232,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#FBCFE8;text-align:center;">① 첫 번째</div>
+        <div class="dz" data-col="s1" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(167,243,208,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#A7F3D0;text-align:center;">② 두 번째</div>
+        <div class="dz" data-col="s2" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(252,211,77,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#FCD34D;text-align:center;">③ 세 번째</div>
+        <div class="dz" data-col="s3" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(147,197,253,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#93C5FD;text-align:center;">④ 네 번째</div>
+        <div class="dz" data-col="s4" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(249,168,212,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#F9A8D4;text-align:center;">⑤ 다섯 번째</div>
+        <div class="dz" data-col="s5" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc3">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb3','3')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('3')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 18: 퀴즈4 — O/X ══ -->
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#500724,#7A1A3A);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 4</span>
+    <span class="hdr-title">맞으면 O, 틀리면 X를 눌러보세요!</span>
+    <span class="hdr-num">18 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div style="text-align:center;color:#FBCFE8;font-size:22px;font-weight:700;flex-shrink:0;">점수: <span id="sc4">0</span> / 5</div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div class="oxrow" id="ox1">
+        <div class="oxq">AI에게 글쓰기를 부탁할 때 누구에게·어떤 상황·어떤 느낌을 알려주면 더 잘 써준다</div>
+        <button class="obtn" onclick="oxAns(this,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox2">
+        <div class="oxq">AI가 써준 편지는 읽어보지 않고 그대로 보내도 된다</div>
+        <button class="obtn" onclick="oxAns(this,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox3">
+        <div class="oxq">AI에게 "더 따뜻하게 해줘"라고 다시 요청하면 글을 바꿔줄 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox4">
+        <div class="oxq">AI는 영어 번역을 할 수 없기 때문에 영어는 사전을 써야 한다</div>
+        <button class="obtn" onclick="oxAns(this,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,4,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox5">
+        <div class="oxq">AI는 민원 글·공문서 초안도 도와줄 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,5,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,5,'X')">X</button>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <button class="qbtn" onclick="resetOX()">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX()">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 19: 퀴즈5 — 빈칸 채우기 & 마무리 ══ -->
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 5</span>
+    <span class="hdr-title">빈칸에 알맞은 단어를 끌어다 놓으세요!</span>
+    <span class="hdr-num">19 / 19</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb5" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c5_1" data-ans="b_3" style="background:#FBCFE8;color:#500724;">3가지</div>
+      <div class="word-chip" draggable="true" id="c5_2" data-ans="b_fix" style="background:#FCA5A5;color:#3A0A0A;">수정</div>
+      <div class="word-chip" draggable="true" id="c5_3" data-ans="b_sum" style="background:#A7F3D0;color:#022C27;">요약</div>
+      <div class="word-chip" draggable="true" id="c5_4" data-ans="b_heart" style="background:#FCD34D;color:#3A2A00;">마음</div>
+      <div class="word-chip" draggable="true" id="c5_5" data-ans="b_tran" style="background:#93C5FD;color:#0A1A3A;">번역</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">좋은 글쓰기 요청에는 <span style="color:#FBCFE8;">( &nbsp;&nbsp;&nbsp; )</span> 조건 — 누구에게·어떤 상황·어떤 느낌을 넣어요.</div>
+        <div class="dz" data-col="b_3" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI가 써준 글은 꼭 읽어보고 내 상황에 맞게 <span style="color:#FCA5A5;">( &nbsp;&nbsp;&nbsp; )</span>한 후 보내세요.</div>
+        <div class="dz" data-col="b_fix" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">긴 뉴스나 안내문은 AI에게 <span style="color:#A7F3D0;">( &nbsp;&nbsp;&nbsp; )</span>해달라고 부탁할 수 있어요.</div>
+        <div class="dz" data-col="b_sum" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;"><span style="color:#FCD34D;">( &nbsp;&nbsp;&nbsp; )</span>은 내가, 글은 AI가 써줘요. 진심은 변하지 않아요!</div>
+        <div class="dz" data-col="b_heart" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">영어 이메일이나 외국어 설명서는 AI에게 <span style="color:#93C5FD;">( &nbsp;&nbsp;&nbsp; )</span>해달라고 하면 돼요.</div>
+        <div class="dz" data-col="b_tran" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc5">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb5','5')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('5')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var cur = 0, total = 19;
+var slides = document.querySelectorAll('.slide');
+function go(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total-1));
+  slides[cur].classList.add('active');
+  document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+  document.getElementById('btn-prev').style.opacity = cur===0?'0.3':'1';
+  document.getElementById('btn-next').style.opacity = cur===total-1?'0.3':'1';
+}
+function nextSlide(){ if(cur<total-1) go(cur+1); }
+function prevSlide(){ if(cur>0) go(cur-1); }
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='f'||e.key==='F'){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+go(0);
+
+function beep(ok){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ok){
+      [1047,1319,1568].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.4,ctx.currentTime+i*0.12+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.4);
+        o.connect(g);g.connect(ctx.destination);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.5);
+      });
+    } else {
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sawtooth';o.frequency.value=180;
+      g.gain.setValueAtTime(0.35,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+0.6);
+    }
+  }catch(e){}
+}
+
+var dragId = null;
+var scores = {};
+document.addEventListener('dragstart', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(!chip||chip.classList.contains('used')){e.preventDefault();return;}
+  dragId = chip.id;
+  setTimeout(function(){ chip.classList.add('dragging'); }, 0);
+});
+document.addEventListener('dragend', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(chip) chip.classList.remove('dragging');
+});
+document.addEventListener('dragover', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz && !dz.querySelector('.dzchip')) { e.preventDefault(); dz.classList.add('over'); }
+});
+document.addEventListener('dragleave', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz) dz.classList.remove('over');
+});
+document.addEventListener('drop', function(e){
+  var dz = e.target.closest('.dz');
+  if(!dz||!dragId) return;
+  e.preventDefault();
+  dz.classList.remove('over');
+  if(dz.querySelector('.dzchip')) return;
+  var chip = document.getElementById(dragId);
+  if(!chip||chip.classList.contains('used')) { dragId=null; return; }
+  chip.classList.remove('dragging');
+  var q   = dz.getAttribute('data-q');
+  var col = dz.getAttribute('data-col');
+  var ok  = chip.getAttribute('data-ans') === col;
+  if(ok){
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+    scores[q] = (scores[q]||0) + 1;
+    var sc = document.getElementById('sc'+q);
+    if(sc) sc.textContent = scores[q];
+    beep(true);
+  } else {
+    dz.classList.add('fail');
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#EF4444';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    chip.classList.add('used');
+    beep(false);
+    setTimeout(function(){
+      dz.classList.remove('fail'); chip.classList.remove('used');
+      dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+    }, 800);
+  }
+  dragId = null;
+});
+
+function resetQ(bankId, q){
+  scores[q] = 0;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = '0';
+  document.getElementById(bankId).querySelectorAll('.word-chip').forEach(function(c){
+    c.style.display = ''; c.classList.remove('used','dragging');
+  });
+  document.querySelectorAll('.dz[data-q="'+q+'"]').forEach(function(dz){
+    dz.className = 'dz';
+    dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+  });
+}
+
+var ansMap = {
+  '1': [['c1_1','can'],['c1_2','cant'],['c1_3','can'],['c1_4','cant'],['c1_5','can'],['c1_6','cant']],
+  '2': [['c2_1','who'],['c2_2','mood'],['c2_3','sit'],['c2_4','who'],['c2_5','mood']],
+  '3': [['c3_1','s3'],['c3_2','s1'],['c3_3','s5'],['c3_4','s2'],['c3_5','s4']],
+  '5': [['c5_1','b_3'],['c5_2','b_fix'],['c5_3','b_sum'],['c5_4','b_heart'],['c5_5','b_tran']]
+};
+var bankMap = {'1':'wb1','2':'wb2','3':'wb3','5':'wb5'};
+
+function showAns(q){
+  resetQ(bankMap[q], q);
+  var pairs = ansMap[q];
+  pairs.forEach(function(pair){
+    var chipId = pair[0], col = pair[1];
+    var chip = document.getElementById(chipId);
+    var dz = document.querySelector('.dz[data-q="'+q+'"][data-col="'+col+'"]');
+    if(!chip||!dz) return;
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+  });
+  scores[q] = pairs.length;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = pairs.length;
+}
+
+var oxKey = {1:'O', 2:'X', 3:'O', 4:'X', 5:'O'};
+var oxDone = {};
+var oxScore = 0;
+
+function oxAns(btn, n, ans){
+  if(oxDone[n]) return;
+  oxDone[n] = true;
+  var row = document.getElementById('ox'+n);
+  var ok = (ans === oxKey[n]);
+  row.querySelectorAll('button').forEach(function(b){ b.disabled=true; b.style.opacity='0.35'; });
+  btn.style.opacity='1';
+  if(ok){
+    btn.style.background='#22C55E';
+    btn.style.boxShadow='0 0 18px rgba(34,197,94,0.6)';
+    row.style.borderColor='#22C55E';
+    row.style.background='rgba(34,197,94,0.12)';
+    oxScore++;
+    beep(true);
+  } else {
+    btn.style.background='#EF4444';
+    btn.style.boxShadow='0 0 18px rgba(239,68,68,0.6)';
+    row.style.borderColor='#EF4444';
+    row.style.background='rgba(239,68,68,0.1)';
+    row.querySelectorAll('button').forEach(function(b){
+      if(b.textContent===oxKey[n]){ b.style.opacity='1'; b.style.background='#22C55E'; }
+    });
+    beep(false);
+  }
+  document.getElementById('sc4').textContent = oxScore;
+}
+
+function resetOX(){
+  oxDone={}; oxScore=0;
+  document.getElementById('sc4').textContent='0';
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.style.borderColor='rgba(255,255,255,0.14)';
+    row.style.background='rgba(255,255,255,0.07)';
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=false; b.style.opacity='1'; b.style.boxShadow='none';
+      b.style.background = b.classList.contains('obtn')?'#1A8A42':'#E84040';
+    });
+  }
+}
+
+function showOX(){
+  resetOX();
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=true;
+      if(b.textContent===oxKey[i]){
+        b.style.opacity='1'; b.style.background='#22C55E';
+        b.style.boxShadow='0 0 16px rgba(34,197,94,0.5)';
+        row.style.borderColor='#22C55E'; row.style.background='rgba(34,197,94,0.12)';
+      } else { b.style.opacity='0.25'; }
+    });
+    oxDone[i]=true;
+  }
+  oxScore=5; document.getElementById('sc4').textContent='5';
+}
+</script>
+
+<a class="to-main" href="index.html">☰ 메인</a>
+<div id="pick-toast"></div>
+<script>
+/* ── 보완 1: 터치·클릭으로도 '낱말 끌어다 놓기' (낱말을 누르고 → 놓을 칸을 누르세요) ── */
+(function () {
+  var picked = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('pick-toast');
+    if (!t) { return; }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function fire(el, type) { el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); }
+  function clearPick() { if (picked) { picked.classList.remove('picked'); picked = null; } }
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('[draggable="true"]') : null;
+    if (chip) {
+      if (chip.classList.contains('used') || chip.style.display === 'none') { return; }
+      if (picked === chip) { clearPick(); return; }
+      clearPick(); picked = chip; chip.classList.add('picked');
+      toast('이제 놓을 칸을 눌러 주세요 👇');
+      return;
+    }
+    var dz = e.target.closest ? e.target.closest('.dz') : null;
+    if (dz && picked) {
+      var c = picked; clearPick();
+      fire(c, 'dragstart'); fire(dz, 'dragover'); fire(dz, 'drop'); fire(c, 'dragend');
+      setTimeout(function () { c.classList.remove('dragging'); }, 40);
+    }
+  });
+})();
+
+/* ── 보완 2: 화면이 작아 글이 잘리면 그 슬라이드만 자동으로 줄여서 맞춥니다 ── */
+(function () {
+  function overflowed(sl) {
+    var els = sl.querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.clientHeight > 0 && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+        var cs = window.getComputedStyle(el);
+        if (/(hidden|auto|scroll)/.test(cs.overflow + cs.overflowX + cs.overflowY)) { return true; }
+      }
+    }
+    return (sl.scrollHeight > sl.clientHeight + 2) || (sl.scrollWidth > sl.clientWidth + 2);
+  }
+  function fit(sl) {
+    if (!sl || !('zoom' in document.documentElement.style)) { return; }
+    try {
+      sl.style.zoom = ''; sl.style.width = ''; sl.style.height = '';
+      var s = 1, n = 0;
+      while (overflowed(sl) && n < 10 && s > 0.6) {
+        s = s * 0.94; n++;
+        sl.style.zoom = s; sl.style.width = (100 / s) + 'vw'; sl.style.height = (100 / s) + 'vh';
+      }
+    } catch (e) {}
+  }
+  function fitActive() { fit(document.querySelector('.slide.active')); }
+  window.__fitActive = fitActive;
+  ['go', 'showSlide'].forEach(function (name) {
+    if (typeof window[name] === 'function') {
+      var orig = window[name];
+      window[name] = function () { var r = orig.apply(this, arguments); fitActive(); return r; };
+    }
+  });
+  window.addEventListener('resize', fitActive);
+  window.addEventListener('load', function () { setTimeout(fitActive, 150); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitActive); }
+})();
+</script>
+
+</body>
+</html>

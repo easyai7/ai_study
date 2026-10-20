@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4주차 · AI로 여행·맛집 계획</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+:root {
+  --main: #1B6CA8;
+  --accent: #F5A623;
+  --accent2: #E84040;
+  --green: #1A8A42;
+  --green-light: #E8F8EE;
+  --bg: #F0F4F8;
+  --dark: #0D1B2E;
+  --text: #1A2A3A;
+  --w4: #7C3AED;
+  --w4-dark: #4C1D95;
+  --w4-light: #EDE9FE;
+  --w4-mid: #6D28D9;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Noto Sans KR', sans-serif; }
+
+.slide { display:none; width:100vw; height:100vh; position:absolute; top:0; left:0; flex-direction:column; overflow:hidden; }
+.slide.active { display:flex !important; }
+
+.hdr { flex-shrink:0; display:flex; align-items:center; padding:14px 44px; gap:16px; }
+.hdr-week { background:rgba(255,255,255,0.25); color:#fff; font-size:22px; font-weight:700; padding:8px 20px; border-radius:30px; flex-shrink:0; }
+.hdr-title { color:#fff; font-size:36px; font-weight:900; flex:1; }
+.hdr-num { color:rgba(255,255,255,0.7); font-size:20px; font-weight:700; flex-shrink:0; }
+.body { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.slide-num { position:absolute; bottom:14px; right:24px; font-size:21px; color:rgba(255,255,255,0.4); font-weight:700; z-index:10; }
+
+.nav-btn { position:fixed; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.35); color:#fff; border:none; font-size:36px; width:60px; height:100px; cursor:pointer; z-index:1000; border-radius:8px; transition:background 0.2s; display:flex; align-items:center; justify-content:center; }
+.nav-btn:hover { background:rgba(0,0,0,0.6); }
+#btn-prev { left:0; border-radius:0 8px 8px 0; }
+#btn-next { right:0; border-radius:8px 0 0 8px; }
+.progress-bar { position:fixed; bottom:0; left:0; height:5px; background:var(--w4); transition:width 0.3s; z-index:1000; }
+
+/* ── SLIDE 1: 표지 ── */
+#s1 { background:linear-gradient(135deg,#1E0B4A 0%,#4C1D95 50%,#7C3AED 100%); justify-content:center; align-items:center; }
+.cover-inner { text-align:center; padding:40px; }
+.cover-week { font-size:28px; font-weight:700; color:var(--accent); letter-spacing:3px; margin-bottom:20px; }
+.cover-title { font-size:72px; font-weight:900; color:#fff; line-height:1.15; margin-bottom:16px; }
+.cover-sub { font-size:30px; color:rgba(255,255,255,0.75); margin-bottom:50px; }
+.cover-goals { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.cover-goal { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:16px; padding:12px 20px; color:#fff; font-size:20px; font-weight:600; display:flex; align-items:center; gap:10px; }
+.cover-goal .num { background:var(--accent); color:#000; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:900; flex-shrink:0; }
+.cover-deco { font-size:120px; position:absolute; top:40px; right:80px; opacity:0.08; }
+
+/* ── SLIDE 2: 마음열기 ── */
+#s2 { background:#fff; }
+#s2 .hdr { background:var(--w4); }
+.open-body { flex:1; display:flex; align-items:center; justify-content:center; padding:14px 40px; gap:30px; }
+.open-question { flex:1; background:linear-gradient(135deg,var(--w4),var(--w4-dark)); border-radius:24px; padding:36px; color:#fff; text-align:center; }
+.open-question .q-icon { font-size:70px; margin-bottom:20px; }
+.open-question .q-text { font-size:40px; font-weight:900; line-height:1.4; }
+.open-reactions { flex:1; display:flex; flex-direction:column; gap:16px; }
+.reaction-card { display:flex; align-items:center; gap:18px; background:var(--bg); border-radius:16px; padding:18px 24px; border-left:6px solid var(--w4); }
+.reaction-card .ri { font-size:44px; flex-shrink:0; }
+.reaction-card .rt { font-size:32px; font-weight:700; color:var(--text); }
+.reaction-card .rs { font-size:24px; color:#666; margin-top:4px; }
+.open-msg { text-align:center; padding:18px; background:linear-gradient(135deg,var(--w4),var(--w4-dark)); border-radius:20px; color:#fff; font-size:32px; font-weight:900; margin:0 40px 12px; }
+
+/* ── SLIDE 3: AI가 잘 하는 것 ── */
+#s3 { background:#fff; }
+#s3 .hdr { background:var(--w4); }
+.cando-body { flex:1; display:flex; padding:12px 40px 14px; gap:24px; }
+.cando-left { flex:1.2; display:flex; flex-direction:column; gap:12px; }
+.cando-section { background:var(--w4-light); border:2px solid var(--w4); border-radius:20px; padding:18px 22px; flex:1; }
+.cs-title { font-size:26px; font-weight:900; color:var(--w4-dark); margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+.cs-item { display:flex; align-items:center; gap:12px; padding:7px 0; font-size:23px; font-weight:600; color:var(--text); border-bottom:1px solid rgba(0,0,0,0.07); }
+.cs-item:last-child { border-bottom:none; }
+.cs-item .ci { font-size:28px; flex-shrink:0; }
+.cando-right { flex:1; display:flex; flex-direction:column; gap:14px; justify-content:center; }
+.ex-bubble { background:linear-gradient(135deg,var(--w4),var(--w4-dark)); border-radius:20px; padding:20px 24px; color:#fff; }
+.ex-label { font-size:20px; color:rgba(255,255,255,0.7); margin-bottom:8px; }
+.ex-text { font-size:24px; font-weight:700; line-height:1.5; }
+
+/* ── SLIDE 4: 질문 잘 하는 법 ── */
+#s4 { background:#fff; }
+#s4 .hdr { background:var(--w4); }
+.tip4-body { flex:1; display:flex; padding:10px 40px 14px; gap:24px; align-items:stretch; }
+.tip4-cards { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:16px; align-content:center; }
+.tip4-card { background:var(--w4-light); border:2px solid var(--w4); border-radius:20px; padding:20px 24px; display:flex; flex-direction:column; gap:10px; }
+.tip4-icon { font-size:48px; }
+.tip4-label { font-size:20px; font-weight:700; color:var(--w4-dark); }
+.tip4-title { font-size:28px; font-weight:900; color:var(--text); }
+.tip4-ex { font-size:20px; color:#555; line-height:1.5; }
+.tip4-right { flex:1; display:flex; flex-direction:column; gap:14px; justify-content:center; }
+.tip4-formula { background:linear-gradient(135deg,var(--w4),var(--w4-dark)); border-radius:20px; padding:24px 28px; color:#fff; }
+.tf-title { font-size:22px; color:rgba(255,255,255,0.7); margin-bottom:12px; }
+.tf-text { font-size:24px; font-weight:700; line-height:1.8; }
+.tf-hl { color:#DDD6FE; font-weight:900; }
+.tip4-result { background:var(--green-light); border:2px solid var(--green); border-radius:16px; padding:18px 22px; font-size:22px; font-weight:700; color:#1A4A2A; line-height:1.6; }
+
+/* ── SLIDE 5: 실제 예시 ── */
+#s5 { background:var(--dark); }
+#s5 .hdr { background:rgba(255,255,255,0.08); }
+.chat-demo-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.demo-pair { flex:1; display:flex; flex-direction:column; gap:8px; }
+.msg-user { background:var(--w4); color:#fff; font-size:24px; font-weight:600; border-radius:16px; padding:14px 20px; border-bottom-right-radius:4px; align-self:flex-end; max-width:85%; line-height:1.5; }
+.msg-ai { background:#1E1A2E; color:#DDD6FE; font-size:22px; border-radius:16px; padding:14px 20px; border-bottom-left-radius:4px; max-width:90%; line-height:1.6; }
+.msg-ai strong { color:#C4B5FD; }
+.demo-divider { height:2px; background:rgba(255,255,255,0.07); border-radius:2px; flex-shrink:0; }
+
+/* ── SLIDE 6,7: 실습 ── */
+#s6 { background:#0A0014; }
+#s6 .hdr { background:var(--w4); }
+#s7 { background:#0A0014; }
+#s7 .hdr { background:var(--w4); }
+.practice-body { flex:1; display:flex; flex-direction:column; padding:10px 40px 14px; gap:10px; }
+.practice-header { background:rgba(124,58,237,0.25); border-radius:14px; padding:14px 22px; color:#DDD6FE; font-size:26px; font-weight:700; flex-shrink:0; text-align:center; }
+.practice-prompt { background:#1A0A2E; border:2px solid var(--w4); border-radius:18px; padding:20px 26px; flex:1; }
+.pp-label { font-size:22px; color:rgba(255,255,255,0.5); margin-bottom:8px; }
+.pp-text { font-size:26px; color:#DDD6FE; font-weight:600; line-height:1.7; }
+.pp-highlight { color:#FFD78C; font-weight:900; }
+.practice-tip { background:rgba(245,166,35,0.15); border:2px solid rgba(245,166,35,0.4); border-radius:14px; padding:14px 20px; color:#FFD78C; font-size:22px; font-weight:600; flex-shrink:0; display:flex; gap:12px; align-items:center; }
+
+/* ── SLIDE 8: 실습3 나만의 ── */
+#s8 { background:#fff; }
+#s8 .hdr { background:var(--w4); }
+.myq-body { flex:1; display:flex; padding:14px 40px 16px; gap:28px; align-items:stretch; overflow:hidden; }
+.myq-left { flex:1.2; display:flex; flex-direction:column; gap:14px; overflow:hidden; }
+.myq-template { background:linear-gradient(135deg,var(--w4-light),#F5F3FF); border:3px solid var(--w4); border-radius:24px; padding:28px 34px; font-size:32px; font-weight:600; color:var(--text); line-height:2.2; flex:1; }
+.myq-blank { background:#fff; border:2.5px solid var(--w4); border-radius:10px; padding:4px 18px; color:var(--w4-dark); font-weight:900; display:inline-block; }
+.myq-example { background:var(--green-light); border:2px solid var(--green); border-radius:18px; padding:18px 22px; font-size:26px; font-weight:600; color:#1A4A2A; display:flex; gap:14px; align-items:flex-start; }
+.myq-right { flex:1; display:flex; flex-direction:column; gap:12px; justify-content:center; }
+.topic-card2 { background:var(--bg); border-radius:16px; padding:16px 20px; display:flex; align-items:center; gap:16px; border:2px solid transparent; }
+.topic-card2:hover { background:var(--w4-light); border-color:var(--w4); }
+.tc-icon { font-size:38px; flex-shrink:0; }
+.tc-name { font-size:28px; font-weight:700; color:var(--text); }
+
+/* ── SLIDE 9: 실습4 맛집 ── */
+#s9 { background:#0A0014; }
+#s9 .hdr { background:var(--w4); }
+#s9 .practice-body { gap:8px; }
+#s9 .practice-prompt { padding:16px 22px; }
+#s9 .pp-text { font-size:24px; line-height:1.65; }
+#s9 .practice-tip { padding:12px 18px; font-size:21px; }
+
+/* ── SLIDE 10: 실습5 이동 경로 ── */
+#s10 { background:#0A0014; }
+#s10 .hdr { background:var(--w4); }
+
+/* ── SLIDE 11: AI+지도앱 팁 ── */
+#s11 { background:#fff; }
+#s11 .hdr { background:var(--w4); }
+.combo-body { flex:1; display:flex; padding:10px 40px 14px; gap:24px; align-items:stretch; }
+.combo-col { flex:1; display:flex; flex-direction:column; gap:14px; }
+.combo-hdr { border-radius:18px; padding:18px 22px; text-align:center; font-size:28px; font-weight:900; color:#fff; flex-shrink:0; }
+.combo-item { display:flex; align-items:flex-start; gap:14px; border-radius:14px; padding:14px 18px; flex:1; }
+.combo-item .ci-icon { font-size:34px; flex-shrink:0; margin-top:2px; }
+.combo-item .ci-text { font-size:24px; font-weight:700; color:var(--text); line-height:1.4; }
+.combo-item .ci-sub { font-size:21px; color:#666; margin-top:4px; }
+.combo-divider { width:4px; background:var(--bg); border-radius:4px; flex-shrink:0; margin:10px 0; }
+.warn-strip { background:rgba(232,64,64,0.08); border:2px solid rgba(232,64,64,0.35); border-radius:16px; padding:14px 20px; display:flex; gap:14px; align-items:center; font-size:22px; font-weight:700; color:#C84040; flex-shrink:0; margin:0 40px 10px; }
+
+/* ── SLIDE 12: 정리 ── */
+#s12 { background:#fff; }
+#s12 .hdr { background:var(--w4); }
+.review-body { flex:1; display:flex; padding:14px 40px 16px; gap:28px; align-items:stretch; overflow:hidden; }
+.review-checks { flex:1; display:flex; flex-direction:column; gap:12px; }
+.check-item { display:flex; align-items:center; gap:18px; background:var(--w4-light); border-radius:16px; padding:18px 26px; border-left:8px solid var(--w4); flex:1; }
+.check-icon { font-size:40px; flex-shrink:0; }
+.check-text { font-size:28px; font-weight:700; color:var(--text); line-height:1.4; }
+.review-hw { flex:1; display:flex; flex-direction:column; gap:16px; }
+.hw-box { background:linear-gradient(135deg,var(--accent),#F08000); border-radius:22px; padding:24px 28px; color:#fff; flex:1; display:flex; flex-direction:column; justify-content:center; }
+.hw-title { font-size:30px; font-weight:900; margin-bottom:14px; }
+.hw-text { font-size:28px; line-height:1.6; }
+.hw-example { background:rgba(0,0,0,0.15); border-radius:14px; padding:14px 18px; font-size:24px; margin-top:14px; font-style:italic; line-height:1.6; }
+.next-box { background:var(--w4-light); border:3px solid var(--w4); border-radius:22px; padding:20px 26px; color:var(--w4-dark); flex:1; display:flex; flex-direction:column; justify-content:center; }
+.next-title { font-size:28px; font-weight:900; margin-bottom:10px; }
+.next-text { font-size:24px; line-height:1.6; }
+
+/* ── 퀴즈 공통 ── */
+.dz { border:2.5px dashed rgba(255,255,255,0.3); border-radius:12px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; min-height:64px; padding:6px; transition:all 0.18s; flex-direction:column; gap:4px; cursor:pointer; }
+.dz.over  { border-color:#F5A623; background:rgba(245,166,35,0.15); }
+.dz.ok    { border-color:#22C55E; background:rgba(34,197,94,0.18); }
+.dz.fail  { border-color:#EF4444; background:rgba(239,68,68,0.18); animation:shake .35s; }
+.dzlabel  { font-size:21px; color:rgba(255,255,255,0.4); }
+.dzchip   { font-size:24px; font-weight:700; color:#fff; padding:4px 12px; border-radius:20px; }
+.qbtn { background:rgba(255,255,255,0.15); color:#fff; border:2px solid rgba(255,255,255,0.3); border-radius:40px; padding:10px 24px; font-size:22px; font-weight:700; cursor:pointer; font-family:inherit; margin:0 6px; }
+.qbtn:hover { background:rgba(255,255,255,0.25); }
+.word-chip { background:var(--accent); color:#000; font-size:26px; font-weight:700; padding:12px 24px; border-radius:50px; cursor:grab; user-select:none; transition:all 0.15s; border:3px solid transparent; }
+.word-chip.used { opacity:0.3 !important; text-decoration:line-through !important; cursor:not-allowed !important; filter:grayscale(1); transform:none !important; }
+.word-chip:hover { transform:scale(1.05); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.word-chip.dragging { opacity:0.4; transform:scale(0.95); }
+.oxrow { display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.14); border-radius:14px; padding:12px 18px; flex:1; }
+.oxq { flex:1; font-size:28px; font-weight:700; color:#fff; line-height:1.4; }
+.obtn,.xbtn { border:none; border-radius:10px; padding:14px 28px; font-size:34px; font-weight:900; cursor:pointer; font-family:inherit; }
+.obtn { background:#1A8A42; color:#fff; }
+.xbtn { background:#E84040; color:#fff; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* ── 보완: 터치 선택 표시 · 메인 링크 · 안내 ── */
+.picked { outline:5px solid #FACC15 !important; outline-offset:3px; transform:scale(1.08); box-shadow:0 0 18px rgba(250,204,21,.7); }
+.to-main { position:fixed; left:12px; bottom:10px; z-index:1000; font-size:18px; color:#fff; background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; text-decoration:none; opacity:.55; }
+.to-main:hover { opacity:1; }
+#pick-toast { display:none; position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:2000; background:#FACC15; color:#1a1a1a; font-size:24px; font-weight:900; padding:10px 22px; border-radius:30px; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+</style>
+</head>
+<body>
+
+<button class="nav-btn" id="btn-prev" onclick="prevSlide()">‹</button>
+<button class="nav-btn" id="btn-next" onclick="nextSlide()">›</button>
+<div class="progress-bar" id="progress"></div>
+
+<!-- ══ SLIDE 1: 표지 ══ -->
+<div class="slide active" id="s1">
+  <div class="cover-deco">✈️</div>
+  <div class="cover-inner">
+    <div class="cover-week">📅 4주차</div>
+    <div class="cover-title">AI로 여행·맛집<br>계획하기</div>
+    <div class="cover-sub">자녀 도움 없이 혼자서도 뚝딱 여행 계획!</div>
+    <div class="cover-goals">
+      <div class="cover-goal"><div class="num">1</div>AI로 여행 일정 직접 짜기</div>
+      <div class="cover-goal"><div class="num">2</div>맛집·먹거리 추천받기</div>
+      <div class="cover-goal"><div class="num">3</div>이동 경로 쉽게 정리하기</div>
+      <div class="cover-goal"><div class="num">4</div>혼자서도 여행 계획 자신감 갖기</div>
+    </div>
+  </div>
+  <div class="slide-num">1 / 20</div>
+</div>
+
+<!-- ══ SLIDE 2: 마음열기 ══ -->
+<div class="slide" id="s2">
+  <div class="hdr">
+    <span class="hdr-week">마음 열기</span>
+    <span class="hdr-title">여행 계획 세울 때 어떻게 하세요?</span>
+    <span class="hdr-num">2 / 20</span>
+  </div>
+  <div class="body">
+    <div class="open-body">
+      <div class="open-question">
+        <div class="q-icon">🧳</div>
+        <div class="q-text">"여행 가고 싶을 때<br>누구한테 부탁하세요?"</div>
+      </div>
+      <div class="open-reactions">
+        <div class="reaction-card">
+          <div class="ri">👨‍👩‍👧</div>
+          <div>
+            <div class="rt">자녀한테 맡겨요</div>
+            <div class="rs">→ AI가 24시간 언제든 대신 짜줄 수 있어요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent);">
+          <div class="ri">🔍</div>
+          <div>
+            <div class="rt">인터넷 검색해도 복잡해요</div>
+            <div class="rs">→ AI에게 조건 말하면 딱 맞게 정리해줘요!</div>
+          </div>
+        </div>
+        <div class="reaction-card" style="border-color:var(--accent2);">
+          <div class="ri">😔</div>
+          <div>
+            <div class="rt">그냥 포기하고 집에 있어요</div>
+            <div class="rs">→ 오늘 수업 후엔 혼자서도 뚝딱 계획 세워요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="open-msg">💡 "오늘 수업 후엔 혼자서도 뚝딱 여행 계획 세울 수 있어요!"</div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: AI가 여행에서 잘 하는 것 ══ -->
+<div class="slide" id="s3">
+  <div class="hdr">
+    <span class="hdr-week">AI 여행 활용</span>
+    <span class="hdr-title">AI에게 이런 것들을 부탁할 수 있어요!</span>
+    <span class="hdr-num">3 / 20</span>
+  </div>
+  <div class="body">
+    <div class="cando-body">
+      <div class="cando-left">
+        <div class="cando-section">
+          <div class="cs-title">✈️ 여행 계획</div>
+          <div class="cs-item"><span class="ci">🗺️</span>계절·동행·예산에 맞는 여행지 추천</div>
+          <div class="cs-item"><span class="ci">📅</span>당일치기·1박2일 일정 짜기</div>
+          <div class="cs-item"><span class="ci">🎒</span>짐 챙기기 체크리스트</div>
+          <div class="cs-item"><span class="ci">👘</span>여행지 날씨·옷차림 조언</div>
+        </div>
+        <div class="cando-section">
+          <div class="cs-title">🍽️ 맛집·이동</div>
+          <div class="cs-item"><span class="ci">🍜</span>맛집·카페·관광지 추천</div>
+          <div class="cs-item"><span class="ci">🚌</span>대중교통 이용 방법 안내</div>
+          <div class="cs-item"><span class="ci">🦵</span>어르신·거동 불편한 분 코스 조정</div>
+        </div>
+      </div>
+      <div class="cando-right">
+        <div class="ex-bubble">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"65세 부부인데 가을에 경치 좋고 걷기 편한 서울 근교 당일치기 코스 추천해주세요."</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#1A5A8A,#0A3A5E);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"전주 한옥마을 1박2일 여행, 60대 여성 3명, 알뜰한 일정으로 짜주세요."</div>
+        </div>
+        <div class="ex-bubble" style="background:linear-gradient(135deg,#5A1A5A,#3A0A3E);">
+          <div class="ex-label">💬 질문 예시</div>
+          <div class="ex-text">"해운대 근처 해산물 맛집, 어르신도 편한 곳 2~3곳 추천해주세요."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: 질문 잘 하는 법 ══ -->
+<div class="slide" id="s4">
+  <div class="hdr">
+    <span class="hdr-week">질문 잘 하기</span>
+    <span class="hdr-title">이 4가지를 넣으면 훨씬 좋은 답이 나와요!</span>
+    <span class="hdr-num">4 / 20</span>
+  </div>
+  <div class="body">
+    <div class="tip4-body">
+      <div class="tip4-cards">
+        <div class="tip4-card">
+          <div class="tip4-icon">👤</div>
+          <div class="tip4-label">조건 ①</div>
+          <div class="tip4-title">누구랑?</div>
+          <div class="tip4-ex">혼자 / 부부 / 친구들 / 자녀·손주와 함께</div>
+        </div>
+        <div class="tip4-card">
+          <div class="tip4-icon">📅</div>
+          <div class="tip4-label">조건 ②</div>
+          <div class="tip4-title">언제?</div>
+          <div class="tip4-ex">봄·여름·가을·겨울 / 이번 주말 / 10월 중순</div>
+        </div>
+        <div class="tip4-card">
+          <div class="tip4-icon">💰</div>
+          <div class="tip4-label">조건 ③</div>
+          <div class="tip4-title">예산?</div>
+          <div class="tip4-ex">넉넉하게 / 알뜰하게 / 1인당 5만원 이내</div>
+        </div>
+        <div class="tip4-card">
+          <div class="tip4-icon">🦵</div>
+          <div class="tip4-label">조건 ④</div>
+          <div class="tip4-title">체력·조건?</div>
+          <div class="tip4-ex">많이 걷기 힘듦 / 대중교통 선호 / 환승 최소화</div>
+        </div>
+      </div>
+      <div class="tip4-right">
+        <div class="tip4-formula">
+          <div class="tf-title">💡 4가지 조건 공식</div>
+          <div class="tf-text">
+            <span class="tf-hl">누구랑</span> + <span class="tf-hl">언제</span> +<br>
+            <span class="tf-hl">예산</span> + <span class="tf-hl">체력·조건</span><br><br>
+            = AI가 딱 맞는 계획을 세워줘요!
+          </div>
+        </div>
+        <div class="tip4-result">
+          ✅ 조건이 구체적일수록<br>내 상황에 딱 맞는 여행 계획이 나와요!<br><br>
+          🔑 핵심: 조건 4가지 + 원하는 것 한 가지
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: 실제 예시 ══ -->
+<div class="slide" id="s5">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">실제 예시</span>
+    <span class="hdr-title">이렇게 물어보면 이렇게 답해줘요! ①</span>
+    <span class="hdr-num">5 / 20</span>
+  </div>
+  <div class="body">
+    <div class="chat-demo-body">
+      <div class="demo-pair">
+        <div class="msg-user">65세 부부인데요, 이번 주말에 서울 근교로 당일치기 나들이 가려고 해요. 많이 걷기는 힘들고 경치 좋고 밥도 맛있는 곳, 대중교통으로 갈 수 있는 곳 추천해주세요.</div>
+        <div class="msg-ai"><strong>양평 두물머리를 추천해요! 🌊</strong><br>경의중앙선 양수역에서 도보 10분이라 교통이 편해요. 강과 산이 만나는 경치가 아름답고 걷는 코스도 평탄해요. 근처 두물머리 한정식 식당들이 맛도 좋고 어르신들께 인기 많아요. 왕복 교통비 포함 2만원 내외로 다녀오실 수 있어요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s5b">
+  <div class="hdr" style="background:rgba(255,255,255,0.08);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">실제 예시</span>
+    <span class="hdr-title">이렇게 물어보면 이렇게 답해줘요! ②</span>
+    <span class="hdr-num">6 / 20</span>
+  </div>
+  <div class="body">
+    <div class="chat-demo-body">
+      <div class="demo-pair">
+        <div class="msg-user">친구 3명이랑 가을에 전주로 1박2일 여행 가려고요. 모두 60대 여성이고 한옥마을, 맛있는 음식에 관심 많아요. 알뜰하게 다닐 수 있는 일정으로 짜주세요.</div>
+        <div class="msg-ai"><strong>전주 1박2일 알뜰 코스예요! 🏯</strong><br>
+        <strong>[1일차]</strong> 한옥마을 구경→경기전→전주비빔밥 점심→남부시장 야시장(저녁)<br>
+        <strong>[2일차]</strong> 전동성당→풍남문→막걸리 골목→귀가<br>
+        숙소는 한옥 게스트하우스 1인 4~5만원대로 이용하시면 분위기도 좋아요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s6">
+  <div class="hdr">
+    <span class="hdr-week">실습 1</span>
+    <span class="hdr-title">당일치기 나들이 계획 — 직접 입력해보세요!</span>
+    <span class="hdr-num">7 / 20</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 ChatGPT에 아래 문장을 그대로 입력해보세요!</div>
+      <div class="practice-prompt">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          저는 <span class="pp-highlight">65세 부부</span>인데요, <span class="pp-highlight">이번 주말</span>에<br>
+          서울 근교로 <span class="pp-highlight">당일치기 나들이</span>를 가려고 해요.<br>
+          <span class="pp-highlight">많이 걷기는 힘들고</span>, 경치 좋고 밥도 맛있는 곳이면 좋겠어요.<br>
+          <span class="pp-highlight">대중교통</span>으로 갈 수 있는 곳으로 추천해주세요.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#0F0A1E;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">경복궁 근처</span>를 오전 10시부터 오후 3시까지 구경하려고 해요.<br>
+          <span class="pp-highlight">70대 어머니</span>와 함께 가는데 <span class="pp-highlight">무리하지 않는 코스</span>로 짜주세요.<br>
+          <span class="pp-highlight">점심 먹을 곳</span>도 포함해서요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">💡</div>
+        <div>4조건 적용: <strong>①누구랑</strong>(65세 부부) + <strong>②언제</strong>(이번 주말) + <strong>③체력</strong>(걷기 힘듦) + <strong>④교통</strong>(대중교통) 모두 들어 있어요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: 실습2 1박2일 ══ -->
+<div class="slide" id="s7">
+  <div class="hdr">
+    <span class="hdr-week">실습 2</span>
+    <span class="hdr-title">1박2일 여행 계획 — 직접 입력해보세요!</span>
+    <span class="hdr-num">8 / 20</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 아래 질문들을 ChatGPT에 직접 입력해보세요!</div>
+      <div class="practice-prompt" style="flex:1;">
+        <div class="pp-label">💬 질문 예시</div>
+        <div class="pp-text">
+          <span class="pp-highlight">친구 3명</span>이랑 <span class="pp-highlight">가을</span>에 <span class="pp-highlight">전주</span>로<br>
+          <span class="pp-highlight">1박2일</span> 여행을 가려고 해요.<br>
+          모두 <span class="pp-highlight">60대 여성</span>이고 <span class="pp-highlight">한옥마을</span>, <span class="pp-highlight">맛있는 음식</span>에 관심 많아요.<br>
+          <span class="pp-highlight">알뜰하게</span> 다닐 수 있는 일정으로 짜주세요.<br>
+          <span class="pp-highlight">아침, 점심, 저녁 식사 장소</span>도 추천해주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">✏️</div>
+        <div>이제 <strong>내가 실제로 가고 싶은 여행지</strong>를 4조건으로 직접 만들어 입력해보세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: 실습3 나만의 여행 ══ -->
+<div class="slide" id="s8">
+  <div class="hdr">
+    <span class="hdr-week">실습 3</span>
+    <span class="hdr-title">나만의 여행 계획 만들기!</span>
+    <span class="hdr-num">9 / 20</span>
+  </div>
+  <div class="body">
+    <div class="myq-body">
+      <div class="myq-left">
+        <div style="font-size:28px;font-weight:900;color:var(--w4-dark);padding-bottom:10px;border-bottom:3px solid var(--w4-light);">📝 여행 계획 질문 공식</div>
+        <div class="myq-template">
+          저는 <span class="myq-blank">누구랑</span> 인데요,<br><br>
+          <span class="myq-blank">언제·어디</span>로 여행을 가려고 해요.<br><br>
+          <span class="myq-blank">체력·예산 조건</span> 으로 일정 짜주세요.
+        </div>
+        <div class="myq-example">
+          <div style="font-size:28px;flex-shrink:0;">💡</div>
+          <div>
+            <div style="font-size:22px;font-weight:900;color:var(--green);margin-bottom:6px;">완성 예시</div>
+            <div style="font-size:23px;line-height:1.7;">"<strong>부부 둘이</strong> 봄에 <strong>경주</strong>로 1박2일 가려고요. <strong>걷기 힘들어</strong> 이동이 편한 곳, <strong>알뜰한</strong> 일정으로 짜주세요."</div>
+          </div>
+        </div>
+      </div>
+      <div class="myq-right">
+        <div style="font-size:26px;font-weight:900;color:var(--main);margin-bottom:6px;">💡 여행지 아이디어</div>
+        <div class="topic-card2"><div class="tc-icon">🏯</div><div class="tc-name">경주·전주 역사 여행</div></div>
+        <div class="topic-card2"><div class="tc-icon">🌊</div><div class="tc-name">부산·속초 바다 여행</div></div>
+        <div class="topic-card2"><div class="tc-icon">🌿</div><div class="tc-name">설악산·지리산 단풍</div></div>
+        <div class="topic-card2"><div class="tc-icon">🛺</div><div class="tc-name">서울 근교 당일치기</div></div>
+        <div class="topic-card2"><div class="tc-icon">🍊</div><div class="tc-name">제주도 느긋한 여행</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: 실습4 맛집 추천 ══ -->
+<div class="slide" id="s9">
+  <div class="hdr">
+    <span class="hdr-week">실습 4</span>
+    <span class="hdr-title">맛집 추천받기 — 직접 입력해보세요!</span>
+    <span class="hdr-num">10 / 20</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 ChatGPT에 아래 문장을 그대로 입력해보세요!</div>
+      <div class="practice-prompt">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          <span class="pp-highlight">부산 해운대 근처</span>에서 점심을 먹으려고 해요.<br>
+          <span class="pp-highlight">해산물</span> 좋아하고 <span class="pp-highlight">어르신들도 먹기 편한</span> 곳이면 좋겠어요.<br>
+          <span class="pp-highlight">너무 비싸지 않은</span> 곳으로 <span class="pp-highlight">2~3곳</span> 추천해주세요.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#0F0A1E;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">서울 인사동</span>에 가는데 점심으로 뭘 먹으면 좋을까요?<br>
+          <span class="pp-highlight">전통 음식</span> 맛보고 싶고,<br>
+          <span class="pp-highlight">1인당 1만5천원 이하</span>면 좋겠어요.
+        </div>
+      </div>
+      <div class="practice-tip" style="background:rgba(232,64,64,0.15);border-color:rgba(232,64,64,0.5);color:#FCA5A5;">
+        <div style="font-size:32px;flex-shrink:0;">⚠️</div>
+        <div><strong>주의!</strong> AI 맛집 추천은 실제로 없어지거나 바뀔 수 있어요.<br>꼭 <strong>네이버 지도나 카카오맵</strong>에서 한 번 더 확인하세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: 실습5 이동 경로 ══ -->
+<div class="slide" id="s10">
+  <div class="hdr">
+    <span class="hdr-week">실습 5</span>
+    <span class="hdr-title">이동 경로 정리하기 — 직접 입력해보세요!</span>
+    <span class="hdr-num">11 / 20</span>
+  </div>
+  <div class="body">
+    <div class="practice-body">
+      <div class="practice-header">📱 아래 질문들을 ChatGPT에 직접 입력해보세요!</div>
+      <div class="practice-prompt">
+        <div class="pp-label">💬 질문 예시 ①</div>
+        <div class="pp-text">
+          <span class="pp-highlight">서울 종로구 집</span>에서 <span class="pp-highlight">수원 화성</span>까지<br>
+          <span class="pp-highlight">대중교통</span>으로 가려고 해요.<br>
+          지하철과 버스 중 어떻게 가는 게 더 편한지 알려주세요.<br>
+          <span class="pp-highlight">70대</span>라 <span class="pp-highlight">환승이 너무 많으면 힘들어요</span>.
+        </div>
+      </div>
+      <div class="practice-prompt" style="background:#0F0A1E;">
+        <div class="pp-label">💬 질문 예시 ②</div>
+        <div class="pp-text">
+          <span class="pp-highlight">경주 여행</span> 중에 <span class="pp-highlight">불국사</span>에서<br>
+          <span class="pp-highlight">첨성대</span>, <span class="pp-highlight">동궁과 월지</span>를 순서대로 보고 싶어요.<br>
+          <span class="pp-highlight">이동하기 편한 순서</span>와 각 장소 사이<br>
+          이동 방법을 알려주세요.
+        </div>
+      </div>
+      <div class="practice-tip">
+        <div style="font-size:32px;flex-shrink:0;">🗺️</div>
+        <div>AI가 큰 그림을 잡아주면, <strong>실시간 버스·지하철 시간</strong>은 네이버 지도·카카오맵으로 확인하세요!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: AI + 지도앱 함께 쓰기 ══ -->
+<div class="slide" id="s11">
+  <div class="hdr">
+    <span class="hdr-week">활용 팁</span>
+    <span class="hdr-title">AI와 지도 앱, 함께 쓰면 최강 조합!</span>
+    <span class="hdr-num">12 / 20</span>
+  </div>
+  <div class="body">
+    <div class="combo-body">
+      <div class="combo-col">
+        <div class="combo-hdr" style="background:var(--w4);">🤖 AI (ChatGPT)</div>
+        <div class="combo-item" style="background:#F3F0FF;border-left:5px solid var(--w4);">
+          <div class="ci-icon">🗺️</div>
+          <div><div class="ci-text">전체 여행 계획 짜기</div><div class="ci-sub">"1박2일 여행 일정 만들어줘"</div></div>
+        </div>
+        <div class="combo-item" style="background:#F3F0FF;border-left:5px solid var(--w4);">
+          <div class="ci-icon">🍽️</div>
+          <div><div class="ci-text">맛집·관광지 추천</div><div class="ci-sub">"경주 가면 뭘 먹어야 해?"</div></div>
+        </div>
+        <div class="combo-item" style="background:#F3F0FF;border-left:5px solid var(--w4);">
+          <div class="ci-icon">🎒</div>
+          <div><div class="ci-text">짐 챙기기, 날씨·옷차림</div><div class="ci-sub">"가을 제주 여행 뭘 챙겨야 해?"</div></div>
+        </div>
+        <div class="combo-item" style="background:#F3F0FF;border-left:5px solid var(--w4);">
+          <div class="ci-icon">🦵</div>
+          <div><div class="ci-text">체력 조건 맞춤 코스</div><div class="ci-sub">"걷기 힘든 어르신 코스로 짜줘"</div></div>
+        </div>
+      </div>
+      <div class="combo-divider"></div>
+      <div class="combo-col">
+        <div class="combo-hdr" style="background:#1A5A8A;">📱 네이버지도·카카오맵</div>
+        <div class="combo-item" style="background:#EFF6FF;border-left:5px solid #1A5A8A;">
+          <div class="ci-icon">🚌</div>
+          <div><div class="ci-text">실시간 버스·지하철 시간</div><div class="ci-sub">지금 출발하면 언제 도착?</div></div>
+        </div>
+        <div class="combo-item" style="background:#EFF6FF;border-left:5px solid #1A5A8A;">
+          <div class="ci-icon">📍</div>
+          <div><div class="ci-text">맛집 영업 여부 확인</div><div class="ci-sub">AI 추천 맛집이 아직 있는지 확인</div></div>
+        </div>
+        <div class="combo-item" style="background:#EFF6FF;border-left:5px solid #1A5A8A;">
+          <div class="ci-icon">⭐</div>
+          <div><div class="ci-text">리뷰·별점 확인</div><div class="ci-sub">실제 방문자 후기 확인</div></div>
+        </div>
+        <div class="combo-item" style="background:#EFF6FF;border-left:5px solid #1A5A8A;">
+          <div class="ci-icon">🅿️</div>
+          <div><div class="ci-text">주차장·편의시설 확인</div><div class="ci-sub">화장실, 엘리베이터 위치 등</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="warn-strip">
+      <span style="font-size:28px;">⚠️</span>
+      AI로 큰 그림 잡고, 지도앱으로 실시간 정보 확인 — 두 가지 함께 쓰면 완벽해요!
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 12: 정리 ══ -->
+<div class="slide" id="s12">
+  <div class="hdr">
+    <span class="hdr-week">정리</span>
+    <span class="hdr-title">오늘 배운 것</span>
+    <span class="hdr-num">13 / 20</span>
+  </div>
+  <div class="body">
+    <div class="review-body">
+      <div class="review-checks">
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI에게 여행지 추천과 일정 짜기를 부탁할 수 있다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">누구랑·언제·예산·체력 조건을 넣으면 더 잘 맞는 답이 나온다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">맛집은 AI 추천 후 지도 앱에서 한 번 더 확인한다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">이동 경로도 AI에게 정리 부탁할 수 있다</div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✅</div>
+          <div class="check-text">AI + 지도 앱을 함께 쓰면 훨씬 편리하다</div>
+        </div>
+      </div>
+      <div class="review-hw">
+        <div class="hw-box">
+          <div class="hw-title">📝 이번 주 숙제</div>
+          <div class="hw-text">실제로 가고 싶은 여행지 한 곳을 정해서 AI로 일정 짜보기!</div>
+          <div class="hw-example">짠 일정을 메모하거나 캡처해서<br>다음 시간에 가져오세요 😊</div>
+        </div>
+        <div class="next-box">
+          <div class="next-title">🔜 다음 주 예고</div>
+          <div class="next-text">AI로 문자·편지·축하 메시지 쓰기! 자녀 생일 문자, 손주 격려 편지, 오랜 친구 안부 문자까지 AI와 함께 써봐요!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">13 / 20</div>
+</div>
+
+<!-- ══ SLIDE 13: 퀴즈 소개 ══ -->
+<div class="slide" id="s13" style="background:linear-gradient(135deg,#1E0B4A,#4C1D95);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:30px;">
+    <div style="font-size:100px;margin-bottom:16px;">🎯</div>
+    <div style="font-size:64px;font-weight:900;color:#fff;margin-bottom:16px;">복습 퀴즈 타임!</div>
+    <div style="font-size:28px;color:rgba(255,255,255,0.8);margin-bottom:28px;">AI 여행 활용법을 퀴즈로 확인해봐요! · 총 5종류 퀴즈</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟡 퀴즈1 AI로 할 수 있다/없다</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟢 퀴즈2 AI·지도앱 역할 매칭</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔵 퀴즈3 여행 계획 순서 맞추기</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🔴 퀴즈4 O/X 퀴즈</div>
+      <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:12px 20px;color:#fff;font-size:20px;font-weight:600;">🟣 퀴즈5 빈칸 채우기</div>
+    </div>
+  </div>
+  <div class="slide-num">14 / 20</div>
+</div>
+
+<!-- ══ SLIDE 14: 퀴즈1 — AI로 할 수 있다/없다 ══ -->
+<div class="slide" id="s14" style="background:linear-gradient(135deg,#1E0B4A,#4C1D95);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 1</span>
+    <span class="hdr-title">AI로 여행에서 할 수 있는 것과 없는 것을 분류하세요!</span>
+    <span class="hdr-num">15 / 20</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb1" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c1_1" data-ans="can" style="background:#DDD6FE;color:#1E0B4A;font-size:22px;">여행지 추천</div>
+      <div class="word-chip" draggable="true" id="c1_2" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">실시간 버스 시간</div>
+      <div class="word-chip" draggable="true" id="c1_3" data-ans="can" style="background:#DDD6FE;color:#1E0B4A;font-size:22px;">1박2일 일정 짜기</div>
+      <div class="word-chip" draggable="true" id="c1_4" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">맛집 영업 여부 확인</div>
+      <div class="word-chip" draggable="true" id="c1_5" data-ans="can" style="background:#DDD6FE;color:#1E0B4A;font-size:22px;">짐 챙기기 목록</div>
+      <div class="word-chip" draggable="true" id="c1_6" data-ans="cant" style="background:#FCA5A5;color:#3A0A0A;font-size:22px;">실시간 교통 정체</div>
+    </div>
+    <div style="display:flex;gap:16px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(124,58,237,0.3);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#DDD6FE;">✅ AI로 할 수 있어요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="can" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="can" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="can" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(232,64,64,0.25);border-radius:12px;padding:10px;text-align:center;font-size:24px;font-weight:900;color:#FCA5A5;">❌ 지도앱에서 확인해야 해요</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div class="dz" data-col="cant" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="cant" data-q="1"><span class="dzlabel">여기에 놓으세요</span></div>
+          <div class="dz" data-col="cant" data-q="1" style="grid-column:span 2;"><span class="dzlabel">여기에 놓으세요</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc1">0</span> / 6 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb1','1')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('1')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 15: 퀴즈2 — AI·지도앱 매칭 ══ -->
+<div class="slide" id="s15" style="background:linear-gradient(135deg,#1E0B4A,#4C1D95);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 2</span>
+    <span class="hdr-title">AI와 지도앱 중 어디서 해야 하는지 연결하세요!</span>
+    <span class="hdr-num">16 / 20</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb2" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c2_1" data-ans="ai" style="background:#DDD6FE;color:#1E0B4A;">여행 일정 짜기</div>
+      <div class="word-chip" draggable="true" id="c2_2" data-ans="map" style="background:#93C5FD;color:#0A1A3A;">실시간 길찾기</div>
+      <div class="word-chip" draggable="true" id="c2_3" data-ans="ai" style="background:#DDD6FE;color:#1E0B4A;">맛집 추천받기</div>
+      <div class="word-chip" draggable="true" id="c2_4" data-ans="map" style="background:#93C5FD;color:#0A1A3A;">가게 영업 확인</div>
+      <div class="word-chip" draggable="true" id="c2_5" data-ans="map" style="background:#93C5FD;color:#0A1A3A;">버스 도착 시간</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:24px;font-weight:700;color:#fff;">🗺️ 65세 부부 가을 여행, 당일치기 코스 짜주세요!</div>
+        <div class="dz" data-col="ai" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">AI / 지도앱?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:24px;font-weight:700;color:#fff;">🚌 지금 명동에서 경복궁까지 버스로 어떻게 가요?</div>
+        <div class="dz" data-col="map" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">AI / 지도앱?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:24px;font-weight:700;color:#fff;">🍜 AI가 추천한 해운대 해산물 식당, 지금도 영업하나요?</div>
+        <div class="dz" data-col="map" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">AI / 지도앱?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:24px;font-weight:700;color:#fff;">🧳 경주 여행 짐 챙기기 체크리스트 만들어주세요</div>
+        <div class="dz" data-col="ai" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">AI / 지도앱?</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;font-size:24px;font-weight:700;color:#fff;">⭐ 전주비빔밥 식당 리뷰·별점 확인하고 싶어요</div>
+        <div class="dz" data-col="map" data-q="2" style="width:180px;flex-shrink:0;"><span class="dzlabel">AI / 지도앱?</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc2">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb2','2')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('2')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 16: 퀴즈3 — 여행 계획 순서 ══ -->
+<div class="slide" id="s16" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 3</span>
+    <span class="hdr-title">AI로 여행 계획 세우는 순서를 맞춰보세요!</span>
+    <span class="hdr-num">17 / 20</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:10px;">
+    <div id="wb3" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c3_1" data-ans="s3" style="background:#FCD34D;color:#3A2A00;font-size:22px;">AI에게 일정 요청</div>
+      <div class="word-chip" draggable="true" id="c3_2" data-ans="s1" style="background:#DDD6FE;color:#1E0B4A;font-size:22px;">여행지·조건 정하기</div>
+      <div class="word-chip" draggable="true" id="c3_3" data-ans="s5" style="background:#F9A8D4;color:#3A0A2A;font-size:22px;">여행 출발!</div>
+      <div class="word-chip" draggable="true" id="c3_4" data-ans="s2" style="background:#A7F3D0;color:#022C27;font-size:22px;">4조건 (누구·언제·예산·체력)</div>
+      <div class="word-chip" draggable="true" id="c3_5" data-ans="s4" style="background:#93C5FD;color:#0A1A3A;font-size:22px;">지도앱으로 재확인</div>
+    </div>
+    <div style="display:flex;gap:12px;flex:1;">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(221,214,254,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#DDD6FE;text-align:center;">① 첫 번째</div>
+        <div class="dz" data-col="s1" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(167,243,208,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#A7F3D0;text-align:center;">② 두 번째</div>
+        <div class="dz" data-col="s2" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(252,211,77,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#FCD34D;text-align:center;">③ 세 번째</div>
+        <div class="dz" data-col="s3" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(147,197,253,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#93C5FD;text-align:center;">④ 네 번째</div>
+        <div class="dz" data-col="s4" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="background:rgba(249,168,212,0.3);border-radius:10px;padding:8px 16px;font-size:20px;font-weight:900;color:#F9A8D4;text-align:center;">⑤ 다섯 번째</div>
+        <div class="dz" data-col="s5" data-q="3" style="width:100%;flex:1;min-height:80px;"><span class="dzlabel">여기에</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc3">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb3','3')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('3')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 17: 퀴즈4 — O/X ══ -->
+<div class="slide" id="s17" style="background:linear-gradient(135deg,#1E0B4A,#3A1A70);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 4</span>
+    <span class="hdr-title">맞으면 O, 틀리면 X를 눌러보세요!</span>
+    <span class="hdr-num">18 / 20</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div style="text-align:center;color:#DDD6FE;font-size:22px;font-weight:700;flex-shrink:0;">점수: <span id="sc4">0</span> / 5</div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div class="oxrow" id="ox1">
+        <div class="oxq">AI에게 누구랑, 언제, 예산, 체력 조건을 알려주면 더 좋은 여행 계획이 나온다</div>
+        <button class="obtn" onclick="oxAns(this,1,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,1,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox2">
+        <div class="oxq">AI가 추천한 맛집은 항상 최신 정보이므로 바로 믿어도 된다</div>
+        <button class="obtn" onclick="oxAns(this,2,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,2,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox3">
+        <div class="oxq">실시간 버스·지하철 시간은 네이버 지도나 카카오맵에서 확인해야 한다</div>
+        <button class="obtn" onclick="oxAns(this,3,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,3,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox4">
+        <div class="oxq">AI는 거동이 불편한 어르신에게 맞는 여행 코스로 조정해줄 수 없다</div>
+        <button class="obtn" onclick="oxAns(this,4,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,4,'X')">X</button>
+      </div>
+      <div class="oxrow" id="ox5">
+        <div class="oxq">AI와 지도앱을 함께 쓰면 더 편리하게 여행을 준비할 수 있다</div>
+        <button class="obtn" onclick="oxAns(this,5,'O')">O</button>
+        <button class="xbtn" onclick="oxAns(this,5,'X')">X</button>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0;">
+      <button class="qbtn" onclick="resetOX()">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showOX()">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 18: 퀴즈5 — 빈칸 채우기 ══ -->
+<div class="slide" id="s18" style="background:linear-gradient(135deg,#0A1A3E,#142060);flex-direction:column;">
+  <div class="hdr" style="background:rgba(255,255,255,0.1);">
+    <span class="hdr-week" style="background:rgba(255,255,255,0.2);">퀴즈 5</span>
+    <span class="hdr-title">빈칸에 알맞은 단어를 끌어다 놓으세요!</span>
+    <span class="hdr-num">19 / 20</span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;padding:10px 36px 10px;gap:8px;">
+    <div id="wb5" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,255,255,0.2);min-height:58px;align-items:center;">
+      <div class="word-chip" draggable="true" id="c5_1" data-ans="b_cond" style="background:#DDD6FE;color:#1E0B4A;">4가지 조건</div>
+      <div class="word-chip" draggable="true" id="c5_2" data-ans="b_map" style="background:#93C5FD;color:#0A1A3A;">지도앱</div>
+      <div class="word-chip" draggable="true" id="c5_3" data-ans="b_who" style="background:#A7F3D0;color:#022C27;">누구랑</div>
+      <div class="word-chip" draggable="true" id="c5_4" data-ans="b_plan" style="background:#FCD34D;color:#3A2A00;">계획</div>
+      <div class="word-chip" draggable="true" id="c5_5" data-ans="b_body" style="background:#F9A8D4;color:#3A0A2A;">체력·조건</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI에게 여행을 부탁할 때는 <span style="color:#DDD6FE;">( &nbsp;&nbsp;&nbsp; )</span>을 알려주면 훨씬 좋은 답이 나와요!</div>
+        <div class="dz" data-col="b_cond" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">AI 맛집 추천은 <span style="color:#93C5FD;">( &nbsp;&nbsp;&nbsp; )</span>에서 영업 여부를 한 번 더 확인해야 해요.</div>
+        <div class="dz" data-col="b_map" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">여행 조건 4가지는 <span style="color:#A7F3D0;">( &nbsp;&nbsp;&nbsp; )</span> · 언제 · 예산 · 체력조건이에요.</div>
+        <div class="dz" data-col="b_who" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">자녀한테 맡기지 않아도 AI가 여행 <span style="color:#FCD34D;">( &nbsp;&nbsp;&nbsp; )</span>을 뚝딱 세워줄 수 있어요!</div>
+        <div class="dz" data-col="b_plan" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:12px;padding:12px 18px;font-size:24px;color:#fff;font-weight:600;line-height:1.5;">걷기 힘들거나 환승이 어려우면 AI에게 <span style="color:#F9A8D4;">( &nbsp;&nbsp;&nbsp; )</span>을 미리 말해줘요.</div>
+        <div class="dz" data-col="b_body" data-q="5" style="width:160px;flex-shrink:0;min-height:58px;"><span class="dzlabel">단어</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff;font-size:20px;font-weight:700;flex-shrink:0;">
+      점수: <span id="sc5">0</span> / 5 &nbsp;
+      <button class="qbtn" onclick="resetQ('wb5','5')">🔄 다시 하기</button>
+      <button class="qbtn" onclick="showAns('5')">💡 정답 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 19: 마무리 ══ -->
+<div class="slide" id="s19" style="background:linear-gradient(135deg,#1E0B4A,#4C1D95,#7C3AED);align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:40px;">
+    <div style="font-size:90px;margin-bottom:16px;">🎉</div>
+    <div style="font-size:58px;font-weight:900;color:#fff;margin-bottom:12px;">오늘도 수고하셨어요!</div>
+    <div style="font-size:26px;color:rgba(255,255,255,0.8);margin-bottom:32px;">이제 여행 계획은 혼자서도 뚝딱 세울 수 있어요!</div>
+    <div style="background:rgba(255,255,255,0.15);border-radius:20px;padding:24px 36px;font-size:24px;color:#fff;font-weight:600;line-height:1.8;max-width:760px;margin:0 auto;">
+      이번 주 실제로 가고 싶은 여행지를 정해서<br>AI로 일정을 짜보세요.<br>
+      <strong style="color:#DDD6FE;">"이제 여행 계획은 자녀한테 맡기지 않아도 돼요.<br>AI가 도와줄게요!"</strong><br><br>
+      다음 주에 선생님께 결과를 알려주세요! ✈️
+    </div>
+  </div>
+  <div class="slide-num">20 / 20</div>
+</div>
+
+<script>
+var cur = 0, total = 20;
+var slides = document.querySelectorAll('.slide');
+function go(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total-1));
+  slides[cur].classList.add('active');
+  document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+  document.getElementById('btn-prev').style.opacity = cur===0?'0.3':'1';
+  document.getElementById('btn-next').style.opacity = cur===total-1?'0.3':'1';
+}
+function nextSlide(){ if(cur<total-1) go(cur+1); }
+function prevSlide(){ if(cur>0) go(cur-1); }
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextSlide();}
+  if(e.key==='ArrowLeft'){e.preventDefault();prevSlide();}
+  if(e.key==='f'||e.key==='F'){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+});
+go(0);
+
+function beep(ok){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ok){
+      [1047,1319,1568].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.4,ctx.currentTime+i*0.12+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.4);
+        o.connect(g);g.connect(ctx.destination);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.5);
+      });
+    } else {
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sawtooth';o.frequency.value=180;
+      g.gain.setValueAtTime(0.35,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+0.6);
+    }
+  }catch(e){}
+}
+
+var dragId = null;
+var scores = {};
+document.addEventListener('dragstart', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(!chip||chip.classList.contains('used')){e.preventDefault();return;}
+  dragId = chip.id;
+  setTimeout(function(){ chip.classList.add('dragging'); }, 0);
+});
+document.addEventListener('dragend', function(e){
+  var chip = e.target.closest('.word-chip');
+  if(chip) chip.classList.remove('dragging');
+});
+document.addEventListener('dragover', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz && !dz.querySelector('.dzchip')) { e.preventDefault(); dz.classList.add('over'); }
+});
+document.addEventListener('dragleave', function(e){
+  var dz = e.target.closest('.dz');
+  if(dz) dz.classList.remove('over');
+});
+document.addEventListener('drop', function(e){
+  var dz = e.target.closest('.dz');
+  if(!dz||!dragId) return;
+  e.preventDefault();
+  dz.classList.remove('over');
+  if(dz.querySelector('.dzchip')) return;
+  var chip = document.getElementById(dragId);
+  if(!chip||chip.classList.contains('used')) { dragId=null; return; }
+  chip.classList.remove('dragging');
+  var q   = dz.getAttribute('data-q');
+  var col = dz.getAttribute('data-col');
+  var ok  = chip.getAttribute('data-ans') === col;
+  if(ok){
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+    scores[q] = (scores[q]||0) + 1;
+    var sc = document.getElementById('sc'+q);
+    if(sc) sc.textContent = scores[q];
+    beep(true);
+  } else {
+    dz.classList.add('fail');
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#EF4444';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    chip.classList.add('used');
+    beep(false);
+    setTimeout(function(){
+      dz.classList.remove('fail'); chip.classList.remove('used');
+      dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+    }, 800);
+  }
+  dragId = null;
+});
+
+function resetQ(bankId, q){
+  scores[q] = 0;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = '0';
+  document.getElementById(bankId).querySelectorAll('.word-chip').forEach(function(c){
+    c.style.display = ''; c.classList.remove('used','dragging');
+  });
+  document.querySelectorAll('.dz[data-q="'+q+'"]').forEach(function(dz){
+    dz.className = 'dz';
+    dz.innerHTML = '<span class="dzlabel">여기에 놓으세요</span>';
+  });
+}
+
+var ansMap = {
+  '1': [['c1_1','can'],['c1_2','cant'],['c1_3','can'],['c1_4','cant'],['c1_5','can'],['c1_6','cant']],
+  '2': [['c2_1','ai'],['c2_2','map'],['c2_3','ai'],['c2_4','map'],['c2_5','map']],
+  '3': [['c3_1','s3'],['c3_2','s1'],['c3_3','s5'],['c3_4','s2'],['c3_5','s4']],
+  '5': [['c5_1','b_cond'],['c5_2','b_map'],['c5_3','b_who'],['c5_4','b_plan'],['c5_5','b_body']]
+};
+var bankMap = {'1':'wb1','2':'wb2','3':'wb3','5':'wb5'};
+
+function showAns(q){
+  resetQ(bankMap[q], q);
+  var pairs = ansMap[q];
+  pairs.forEach(function(pair){
+    var chipId = pair[0], col = pair[1];
+    var chip = document.getElementById(chipId);
+    var dz = document.querySelector('.dz[data-q="'+q+'"][data-col="'+col+'"]');
+    if(!chip||!dz) return;
+    var span = document.createElement('span');
+    span.className = 'dzchip';
+    span.style.background = '#22C55E';
+    span.textContent = chip.textContent;
+    dz.innerHTML = ''; dz.appendChild(span);
+    dz.classList.add('ok');
+    chip.style.display = 'none';
+  });
+  scores[q] = pairs.length;
+  var sc = document.getElementById('sc'+q);
+  if(sc) sc.textContent = pairs.length;
+}
+
+var oxKey = {1:'O', 2:'X', 3:'O', 4:'X', 5:'O'};
+var oxDone = {};
+var oxScore = 0;
+
+function oxAns(btn, n, ans){
+  if(oxDone[n]) return;
+  oxDone[n] = true;
+  var row = document.getElementById('ox'+n);
+  var ok = (ans === oxKey[n]);
+  row.querySelectorAll('button').forEach(function(b){ b.disabled=true; b.style.opacity='0.35'; });
+  btn.style.opacity='1';
+  if(ok){
+    btn.style.background='#22C55E';
+    btn.style.boxShadow='0 0 18px rgba(34,197,94,0.6)';
+    row.style.borderColor='#22C55E';
+    row.style.background='rgba(34,197,94,0.12)';
+    oxScore++;
+    beep(true);
+  } else {
+    btn.style.background='#EF4444';
+    btn.style.boxShadow='0 0 18px rgba(239,68,68,0.6)';
+    row.style.borderColor='#EF4444';
+    row.style.background='rgba(239,68,68,0.1)';
+    row.querySelectorAll('button').forEach(function(b){
+      if(b.textContent===oxKey[n]){ b.style.opacity='1'; b.style.background='#22C55E'; }
+    });
+    beep(false);
+  }
+  document.getElementById('sc4').textContent = oxScore;
+}
+
+function resetOX(){
+  oxDone={}; oxScore=0;
+  document.getElementById('sc4').textContent='0';
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.style.borderColor='rgba(255,255,255,0.14)';
+    row.style.background='rgba(255,255,255,0.07)';
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=false; b.style.opacity='1'; b.style.boxShadow='none';
+      b.style.background = b.classList.contains('obtn')?'#1A8A42':'#E84040';
+    });
+  }
+}
+
+function showOX(){
+  resetOX();
+  for(var i=1;i<=5;i++){
+    var row=document.getElementById('ox'+i);
+    if(!row) continue;
+    row.querySelectorAll('button').forEach(function(b){
+      b.disabled=true;
+      if(b.textContent===oxKey[i]){
+        b.style.opacity='1'; b.style.background='#22C55E';
+        b.style.boxShadow='0 0 16px rgba(34,197,94,0.5)';
+        row.style.borderColor='#22C55E'; row.style.background='rgba(34,197,94,0.12)';
+      } else { b.style.opacity='0.25'; }
+    });
+    oxDone[i]=true;
+  }
+  oxScore=5; document.getElementById('sc4').textContent='5';
+}
+</script>
+
+<a class="to-main" href="index.html">☰ 메인</a>
+<div id="pick-toast"></div>
+<script>
+/* ── 보완 1: 터치·클릭으로도 '낱말 끌어다 놓기' (낱말을 누르고 → 놓을 칸을 누르세요) ── */
+(function () {
+  var picked = null, toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('pick-toast');
+    if (!t) { return; }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.style.display = 'none'; }, 2200);
+  }
+  function fire(el, type) { el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true })); }
+  function clearPick() { if (picked) { picked.classList.remove('picked'); picked = null; } }
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest ? e.target.closest('[draggable="true"]') : null;
+    if (chip) {
+      if (chip.classList.contains('used') || chip.style.display === 'none') { return; }
+      if (picked === chip) { clearPick(); return; }
+      clearPick(); picked = chip; chip.classList.add('picked');
+      toast('이제 놓을 칸을 눌러 주세요 👇');
+      return;
+    }
+    var dz = e.target.closest ? e.target.closest('.dz') : null;
+    if (dz && picked) {
+      var c = picked; clearPick();
+      fire(c, 'dragstart'); fire(dz, 'dragover'); fire(dz, 'drop'); fire(c, 'dragend');
+      setTimeout(function () { c.classList.remove('dragging'); }, 40);
+    }
+  });
+})();
+
+/* ── 보완 2: 화면이 작아 글이 잘리면 그 슬라이드만 자동으로 줄여서 맞춥니다 ── */
+(function () {
+  function overflowed(sl) {
+    var els = sl.querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.clientHeight > 0 && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) {
+        var cs = window.getComputedStyle(el);
+        if (/(hidden|auto|scroll)/.test(cs.overflow + cs.overflowX + cs.overflowY)) { return true; }
+      }
+    }
+    return (sl.scrollHeight > sl.clientHeight + 2) || (sl.scrollWidth > sl.clientWidth + 2);
+  }
+  function fit(sl) {
+    if (!sl || !('zoom' in document.documentElement.style)) { return; }
+    try {
+      sl.style.zoom = ''; sl.style.width = ''; sl.style.height = '';
+      var s = 1, n = 0;
+      while (overflowed(sl) && n < 10 && s > 0.6) {
+        s = s * 0.94; n++;
+        sl.style.zoom = s; sl.style.width = (100 / s) + 'vw'; sl.style.height = (100 / s) + 'vh';
+      }
+    } catch (e) {}
+  }
+  function fitActive() { fit(document.querySelector('.slide.active')); }
+  window.__fitActive = fitActive;
+  ['go', 'showSlide'].forEach(function (name) {
+    if (typeof window[name] === 'function') {
+      var orig = window[name];
+      window[name] = function () { var r = orig.apply(this, arguments); fitActive(); return r; };
+    }
+  });
+  window.addEventListener('resize', fitActive);
+  window.addEventListener('load', function () { setTimeout(fitActive, 150); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitActive); }
+})();
+</script>
+
+</body>
+</html>
