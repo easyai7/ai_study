@@ -429,56 +429,83 @@ function copyResult(){if(!genPrompt)return;navigator.clipboard.writeText(genProm
 </script>
 
 <script>
-/* ── 문장 단위 따라 읽기(강조) · 안전장치 ── */
+/* ── 읽기 엔진: 좋은 음성(mp3) 우선 → 없으면 기기 음성 · 읽는 문장 강조 · 화면 따라가기 ── */
 (function () {
-  var session = 0;      // 읽기 번호: 멈추거나 새로 읽으면 올라가 이전 읽기를 끝냅니다
-  var curEl = null;     // 지금 강조 중인 글 영역
+  var AUDIO_DIR = 'audio/';
+  var session = 0;       // 읽기 번호: 멈추거나 새로 읽으면 올라가 이전 읽기를 끝냅니다
+  var curEl = null;      // 지금 강조 중인 글 영역
+  var lastUser = 0;      // 손으로 화면을 넘긴 시각
+  var manifest = null;   // 음성 파일 목록(audio/manifest.json). 없으면 기기 음성으로 읽습니다
+  var speedIdx = 1, SPEEDS = [0.85, 1, 1.15], SPEECH = [0.76, 0.88, 1.0];
+  var audio = new Audio();      // 설명 읽기용
+  var msgAudio = new Audio();   // 퀴즈 칭찬·안내 멘트용
+  var tickId = 0;
+  var SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
 
+  /* ── 작은 도구들 ── */
+  function h53(str) {   // 글이 바뀌었는지 알아보는 짧은 지문(음성 만들기 도구와 같은 계산)
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57, ch;
+    for (var i = 0; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+  }
+  function weekNo() {
+    var m = location.pathname.match(/week(\d+)/);
+    if (m) { return m[1]; }
+    var t = document.title.match(/(\d+)\s*주차/);
+    return t ? t[1] : '';
+  }
   function hasTTS() { return !!(window.speechSynthesis && window.SpeechSynthesisUtterance); }
   function notice(msg) { if (typeof showToast === 'function') { showToast(msg); } }
-
   function pickVoice() {
     var vs = [];
     try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
-    for (var i = 0; i < vs.length; i++) { if (vs[i].lang === 'ko-KR') { return vs[i]; } }
-    for (var j = 0; j < vs.length; j++) { if (/^ko/i.test(vs[j].lang)) { return vs[j]; } }
+    var best = null, i;
+    for (i = 0; i < vs.length; i++) {   // 고품질 음성 이름이 보이면 우선 사용
+      if (/^ko/i.test(vs[i].lang) && /(natural|online|google|premium|enhanced|sunhi|injoon)/i.test(vs[i].name)) { return vs[i]; }
+    }
+    for (i = 0; i < vs.length; i++) { if (vs[i].lang === 'ko-KR') { best = vs[i]; break; } }
+    if (best) { return best; }
+    for (i = 0; i < vs.length; i++) { if (/^ko/i.test(vs[i].lang)) { return vs[i]; } }
     return null;
   }
 
-
-  // 읽는 곳을 따라 화면이 움직입니다 (손으로 화면을 넘기는 중이면 잠시 따라가지 않습니다)
-  var lastUser = 0;
+  /* ── 읽는 곳을 따라 화면이 움직입니다(손으로 넘기는 중에는 잠시 멈춤) ── */
   window.addEventListener('wheel', function () { lastUser = Date.now(); }, { passive: true });
   window.addEventListener('touchmove', function () { lastUser = Date.now(); }, { passive: true });
-  function follow(el, force) {
+  function follow(el) {
     if (!el || !el.scrollIntoView) { return; }
-    if (!force && Date.now() - lastUser < 2500) { return; }
-    try {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } catch (e) {}
+    if (Date.now() - lastUser < 2500) { return; }
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
   }
-
   function clearMark() {
     if (!curEl) { return; }
     var on = curEl.querySelectorAll('.sent.on');
     for (var i = 0; i < on.length; i++) { on[i].classList.remove('on'); }
   }
-
+  function stopTick() { if (tickId) { cancelAnimationFrame(tickId); tickId = 0; } }
   function cancelAll() {
     session++;
+    stopTick();
     document.body.classList.remove('reading');
     clearMark();
     curEl = null;
+    try { audio.pause(); } catch (e) {}
+    try { msgAudio.pause(); } catch (e) {}
     if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
   }
 
-  // 글을 문장 단위로 나눕니다 (줄바꿈은 그대로 둡니다)
+  /* ── 글을 문장 단위로 나눠 화면에 칠할 준비 ── */
   function splitParts(text) {
     var parts = [], re = /[^.!?\n]+[.!?]*|\n+/g, m;
     while ((m = re.exec(text)) !== null) { parts.push(m[0]); }
     return parts;
   }
-
   function render(el, text) {
     var items = [], parts = splitParts(text);
     el.textContent = '';
@@ -494,49 +521,113 @@ function copyResult(){if(!genPrompt)return;navigator.clipboard.writeText(genProm
     return items;
   }
 
-  function readList(items, my, speed) {
+  /* ── 기기 음성으로 읽기(대체 수단) ── */
+  function readList(items, my) {
     var i = 0;
     function next() {
       if (my !== session) { return; }
       if (i >= items.length) { clearMark(); return; }
       var it = items[i++];
       clearMark();
-      if (it.span) {
-        it.span.classList.add('on');
-        follow(it.span);
-      }
+      if (it.span) { it.span.classList.add('on'); follow(it.span); }
       var u = new SpeechSynthesisUtterance(it.text);
-      u.lang = 'ko-KR'; u.rate = speed || 0.88; u.pitch = 1.05; u.volume = 1;
+      u.lang = 'ko-KR'; u.rate = SPEECH[speedIdx]; u.pitch = 1.05; u.volume = 1;
       var v = pickVoice(); if (v) { u.voice = v; }
       var done = false, guard = null;
       function go() { if (done) { return; } done = true; clearTimeout(guard); next(); }
       u.onend = go;
       u.onerror = function () { if (my !== session) { return; } go(); };
-      // 일부 기기는 '끝남' 신호를 안 보내서, 넉넉한 시간이 지나면 다음 문장으로 넘어갑니다
       guard = setTimeout(go, Math.max(4000, it.text.length * 450 + 3000));
       try { window.speechSynthesis.speak(u); } catch (e) { go(); }
     }
     next();
   }
+  function fallbackSpeech(items, my) {
+    if (my !== session) { return; }
+    if (!hasTTS()) { notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.'); return; }
+    setTimeout(function () { readList(items, my); }, 60);
+  }
 
-  // 글 영역에 문장을 나눠 보여 주며 읽기
-  function speakInto(el, text) {
-    if (!el) { return; }
-    if (!hasTTS()) {
-      el.textContent = text;
-      notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.');
-      return;
+  /* ── 좋은 음성(mp3)으로 읽기 ── */
+  function pickEntry(key, text, n) {
+    if (!manifest || !manifest.explanations) { return null; }
+    var ent = manifest.explanations[weekNo() + '/' + key];
+    if (!ent || ent.hash !== h53(text)) { return null; }     // 글이 바뀌었으면 옛 음성을 쓰지 않음
+    if (!ent.cues || ent.cues.length !== n) { return null; }
+    return ent;
+  }
+  function playAudio(items, ent, my) {
+    var cues = ent.cues, last = -1;
+    function mark(i) {
+      if (i === last) { return; }
+      last = i; clearMark();
+      if (i >= 0 && items[i]) { items[i].span.classList.add('on'); follow(items[i].span); }
     }
+    function tick() {
+      if (my !== session) { return; }
+      var t = audio.currentTime, idx = -1;
+      for (var i = 0; i < cues.length; i++) { if (cues[i][0] <= t + 0.03) { idx = i; } else { break; } }
+      mark(idx);
+      if (!audio.paused && !audio.ended) { tickId = requestAnimationFrame(tick); }
+    }
+    audio.onplay = function () { if (my !== session) { return; } stopTick(); tick(); };
+    audio.onended = function () { if (my !== session) { return; } stopTick(); clearMark(); };
+    audio.onerror = function () { if (my !== session) { return; } stopTick(); audio.onerror = null; fallbackSpeech(items, my); };
+    audio.src = AUDIO_DIR + ent.file;
+    audio.defaultPlaybackRate = SPEEDS[speedIdx];
+    audio.playbackRate = SPEEDS[speedIdx];
+    var p = audio.play();
+    if (p && p.catch) { p.catch(function () { if (my !== session) { return; } stopTick(); fallbackSpeech(items, my); }); }
+    stopTick(); tick();   // 재생 시작 신호를 기다리지 않고 바로 강조를 켭니다
+  }
+
+  function speakInto(el, text, key) {
+    if (!el) { return; }
     cancelAll();
     var items = render(el, text);
     curEl = el;
     document.body.classList.add('reading');
     var my = ++session;
+    var ent = pickEntry(key, text, items.length);
+    if (ent) { playAudio(items, ent, my); return; }   // 누른 순간 바로 시작해야 아이폰에서도 소리가 납니다
+    if (!hasTTS()) {
+      el.textContent = text;
+      notice('이 기기에서는 소리가 지원되지 않아요. 글로 읽어 주세요.');
+      return;
+    }
     setTimeout(function () { readList(items, my); }, 60);
   }
 
-  // 화면에 글이 없는 짧은 안내를 읽을 때(문장 나눔만)
-  function speakPlain(text) {
+  /* 퀴즈 칭찬·안내 멘트 */
+  function playMsg(ent, onFail) {
+    var done = false;
+    function fail() { if (done) { return; } done = true; onFail(); }
+    var url = AUDIO_DIR + ent.file;
+    function go() {
+      try { msgAudio.currentTime = ent.s; } catch (e) {}
+      msgAudio.defaultPlaybackRate = SPEEDS[speedIdx];
+      msgAudio.playbackRate = SPEEDS[speedIdx];
+      var p = msgAudio.play();
+      if (p && p.catch) { p.catch(fail); }
+      (function watch() {
+        if (done) { return; }
+        if (msgAudio.ended || msgAudio.currentTime >= ent.e - 0.02) { done = true; msgAudio.pause(); return; }
+        if (msgAudio.paused) { return; }
+        requestAnimationFrame(watch);
+      })();
+    }
+    if (msgAudio.getAttribute('data-src') === url && msgAudio.readyState >= 1) { go(); }
+    else {
+      msgAudio.setAttribute('data-src', url);
+      msgAudio.onloadedmetadata = go;
+      msgAudio.onerror = fail;
+      msgAudio.src = url;
+    }
+  }
+
+  /* ── 밖으로 내놓는 함수들(버튼이 부릅니다) ── */
+  window.stopSpeech = cancelAll;
+  window.speak = function (text) {          // 화면에 글이 없는 짧은 안내
     if (!hasTTS()) { return; }
     cancelAll();
     var parts = splitParts(text), items = [];
@@ -545,17 +636,12 @@ function copyResult(){if(!genPrompt)return;navigator.clipboard.writeText(genProm
     }
     var my = ++session;
     setTimeout(function () { readList(items, my); }, 60);
-  }
-
-  window.stopSpeech = cancelAll;
-  window.speak = speakPlain;
-
+  };
   window.replay = function (key) {
     var el = document.getElementById('text-' + key);
     var base = (typeof answers !== 'undefined' && answers[key]) ? answers[key] : (el ? el.textContent : '');
-    speakInto(el, base);
+    speakInto(el, base, key);
   };
-
   window.askAI = function (key, btn) {
     var respDiv = document.getElementById('resp-' + key);
     var textDiv = document.getElementById('text-' + key);
@@ -565,19 +651,81 @@ function copyResult(){if(!genPrompt)return;navigator.clipboard.writeText(genProm
     respDiv.classList.add('show');
     var sb = document.getElementById('speak-btn-' + key);
     if (sb) { sb.style.display = 'flex'; }
-    speakInto(textDiv, answers[key]);
+    speakInto(textDiv, answers[key], key);
   };
 
-  // 퀴즈 칭찬·안내 음성이 나올 때는 강조를 끄고, 탭을 옮기면 읽기를 멈춥니다
-  if (typeof speakMsg === 'function') {
-    var _speakMsg = speakMsg;
-    window.speakMsg = function (m, p) { session++; clearMark(); curEl = null; _speakMsg(m, p); };
-  }
+  var _speakMsg = (typeof speakMsg === 'function') ? speakMsg : null;
+  window.speakMsg = function (m, p) {
+    session++; stopTick(); clearMark(); curEl = null;
+    document.body.classList.remove('reading');
+    try { audio.pause(); } catch (e) {}
+    if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+    var ent = manifest && manifest.messages && manifest.messages[h53(m)];
+    if (ent) { playMsg(ent, function () { if (_speakMsg) { _speakMsg(m, p); } }); return; }
+    if (_speakMsg) { _speakMsg(m, p); }
+  };
   if (typeof switchTab === 'function') {
     var _switchTab = switchTab;
     window.switchTab = function (n, b) { cancelAll(); _switchTab(n, b); };
   }
   window.addEventListener('pagehide', cancelAll);
+
+  /* ── 읽는 속도 버튼 ── */
+  try { var sv = parseInt(localStorage.getItem('aiStudySpeed'), 10); if (sv >= 0 && sv <= 2) { speedIdx = sv; } } catch (e) {}
+  function buildSpeedBar() {
+    var sub = document.querySelector('.header-sub');
+    if (!sub || document.getElementById('speedbar')) { return; }
+    var st = document.createElement('style');
+    st.textContent = '#speedbar{margin-top:10px;position:relative;z-index:3;font-size:14px;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap}' +
+      '#speedbar b{font-weight:700;margin-right:2px}' +
+      '#speedbar button{border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.14);color:#fff;font:inherit;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer}' +
+      '#speedbar button.on{background:#fff;color:#18243A}' +
+      '#speedbar .vmode{margin-left:6px;opacity:.9;font-size:13px}';
+    document.head.appendChild(st);
+    var bar = document.createElement('div');
+    bar.id = 'speedbar';
+    bar.innerHTML = '<b>읽는 속도</b>' +
+      '<button type="button" data-i="0">느리게</button><button type="button" data-i="1">보통</button><button type="button" data-i="2">빠르게</button>' +
+      '<span class="vmode" id="vmode"></span>';
+    sub.parentNode.insertBefore(bar, sub.nextSibling);
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('button[data-i]') : null;
+      if (!b) { return; }
+      speedIdx = +b.getAttribute('data-i');
+      try { localStorage.setItem('aiStudySpeed', String(speedIdx)); } catch (x) {}
+      try { audio.playbackRate = SPEEDS[speedIdx]; msgAudio.playbackRate = SPEEDS[speedIdx]; } catch (x) {}
+      paintSpeed();
+    });
+    paintSpeed();
+  }
+  function paintSpeed() {
+    var bs = document.querySelectorAll('#speedbar button[data-i]');
+    for (var i = 0; i < bs.length; i++) { bs[i].classList.toggle('on', +bs[i].getAttribute('data-i') === speedIdx); }
+    var vm = document.getElementById('vmode');
+    if (vm) { vm.textContent = manifest ? '🔊 좋은 음성' : ''; }
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', buildSpeedBar); } else { buildSpeedBar(); }
+
+  /* ── 좋은 음성 목록 불러오기(없으면 조용히 기기 음성 사용) ── */
+  try {
+    if (window.fetch) {
+      fetch(AUDIO_DIR + 'manifest.json').then(function (r) {
+        if (!r.ok) { throw new Error('no'); }
+        return r.json();
+      }).then(function (j) {
+        if (j && j.explanations) { manifest = j; paintSpeed(); }
+      }).catch(function () {});
+    }
+  } catch (e) {}
+
+  /* 아이폰: 첫 터치 때 멘트용 소리 장치를 미리 열어 둡니다 */
+  document.addEventListener('click', function () {
+    try {
+      msgAudio.src = SILENT;
+      var p = msgAudio.play();
+      if (p && p.then) { p.then(function () { if (String(msgAudio.src).indexOf('data:audio/wav') === 0) { msgAudio.pause(); msgAudio.removeAttribute('data-src'); } }).catch(function () {}); }
+    } catch (e) {}
+  }, { once: true, capture: true });
 })();
 </script>
 
